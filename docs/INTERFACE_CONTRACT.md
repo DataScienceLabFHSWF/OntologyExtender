@@ -1,6 +1,17 @@
 # Interface Contract with KnowledgeGraphBuilder
 
-## Inputs FROM KGB
+## Overview
+
+OntologyExtender operates in two modes:
+
+- **Standalone** — uses Qdrant documents directly, no KGB dependency
+- **Coupled** — exchanges artefacts with KGB for iterative co-evolution
+
+In both modes, the multi-agent system (OntologyEngineer, DomainExpert, Critic)
+runs the Ont-101 seven-phase pipeline internally. The interface contract below
+defines how artefacts flow between the two systems.
+
+## Inputs FROM KGB (Coupled Mode)
 
 | Artifact | Path | Description |
 |----------|------|-------------|
@@ -38,18 +49,54 @@
 }
 ```
 
+## Inputs FROM Qdrant (Both Modes)
+
+| Artifact | Source | Description |
+|----------|--------|-------------|
+| Document chunks | `QdrantDocumentSource.fetch_chunks()` | Top-k relevant passages per query |
+| Entity summaries | `QdrantDocumentSource.extract_entities()` | Entity type frequencies from collection |
+
+The DomainExpert agent receives document context from Qdrant to ground
+its reviews in actual evidence. The `AgentTeam.set_document_context()` method
+updates this context at each iteration.
+
 ## Outputs TO KGB
 
 | Artifact | KGB CLI Flag | Description |
 |----------|-------------|-------------|
 | Extended ontology OWL | `--ontology-path` | New ontology with accepted classes |
 | Updated CQ JSON | `--questions` | New/refined competency questions |
+| SHACL shapes | (optional) | Validation constraints for the extended ontology |
+| YARRRML mappings | (optional) | RDF mapping rules for re-extraction |
 
 ### Usage
 
 ```bash
+# In KnowledgeGraphBuilder repo:
 python scripts/full_kg_pipeline.py \
-  --ontology-path ../ontology-hitl/data/exports/ontology_v2.0.owl \
-  --questions ../ontology-hitl/data/exports/cq_v2.0.json \
+  --ontology-path ../OntologyExtender/data/exports/ontology_v2.0.owl \
+  --questions ../OntologyExtender/data/exports/cq_v2.0.json \
   --max-iterations 1
+```
+
+## Internal Data Flow
+
+```
+Qdrant ──▸ QdrantDocumentSource ──▸ document_context ──▸ DomainExpert
+                                                          │
+KGB checkpoint ──▸ gap_analyzer ──▸ seed data ──▸ Ont101Pipeline
+                                                          │
+                                    ┌─────────────────────┘
+                                    ▼
+                              AgentTeam (7 debates)
+                                    │
+                              ┌─────┴─────┐
+                              ▼           ▼
+                         Ont101Iteration  AgentQuestions
+                              │           │
+                              ▼           ▼
+                         OWL export    HITL review
+                              │
+                              ▼
+                         KGB re-extraction
 ```

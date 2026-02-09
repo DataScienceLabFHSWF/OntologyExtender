@@ -1,23 +1,47 @@
 # OntologyExtender (ontology-hitl)
 
-**Human-in-the-Loop Ontology Extension** for Knowledge Graph Construction.
+**Multi-Agent Ontology Extension** for Knowledge Graph Construction.
 
 ## What Is This?
 
-This repository implements an iterative, semi-automated workflow for **extending a seed ontology**
+This repository implements an iterative, multi-agent system for **extending a seed ontology**
 (the [AI Planning Ontology](https://github.com/BharathMuppasani/AI-Planning-Ontology))
 with domain-specific classes discovered from nuclear decommissioning documents.
 
-The core loop:
+The system follows the **Ontology 101 methodology** (Noy & McGuinness, 2001) through
+a structured collaboration between three AI agents:
 
-1. **Gap Analysis** — compare entities extracted by [KnowledgeGraphBuilder](https://github.com/yourorg/KnowledgeGraphBuilder) against the current ontology and identify uncovered concepts.
-2. **Class & Relation Proposals** — use an LLM to generate structured definitions, parent-class assignments, properties, and relations for each gap candidate.
-3. **Expert Review (HITL)** — domain experts accept, reject, or revise proposals via an interactive CLI (Rich/Typer).
-4. **Ontology Export** — accepted classes are serialized as OWL, with SHACL shapes and updated competency questions (CQs).
-5. **Evaluation** — re-run KGB with the extended ontology and measure CQ answerability + entity coverage improvement.
-6. **YARRRML Mapping** — generate declarative RDF mapping rules ([YARRRML](https://rml.io/yarrrml/)) for transforming extracted data into the extended ontology.
+- **OntologyEngineer** — proposes ontology artefacts (classes, properties, hierarchy)
+- **DomainExpert** — validates proposals against document evidence from Qdrant
+- **Critic** — checks structural quality, consistency, and methodology compliance
 
-Each cycle produces a versioned ontology snapshot. The target is **80 %+ CQ answerability** and **80 %+ entity coverage** within 3–4 iterations.
+### Core Workflow
+
+Each iteration runs **seven Ont-101 phases**, each as a structured multi-agent **debate**:
+
+1. **Scope & Competency Questions** — define what the ontology should cover
+2. **Reuse Analysis** — identify existing ontologies to reuse
+3. **Term Enumeration** — enumerate important terms from documents
+4. **Class Hierarchy** — organise terms into a taxonomic structure
+5. **Property Definition** — define data and object properties
+6. **Facet Specification** — specify cardinality, ranges, and constraints
+7. **Instance Validation** — verify the ontology against sample instances
+
+Each phase follows the pattern: **propose → review → revise → consensus/escalation**.
+Unresolved disagreements are escalated as questions for human-in-the-loop (HITL) review.
+
+### Feedback Loop
+
+The system runs as a convergence-driven feedback loop:
+
+```
+Documents (Qdrant) → 7-Phase Multi-Agent Pipeline → Extended Ontology
+       ↑                                                    ↓
+       └──── Re-extraction (KGB) ←── OWL + SHACL + CQs ───┘
+```
+
+Each cycle produces a versioned ontology snapshot. The target is **80 %+ CQ answerability**
+and **80 %+ entity coverage** within 3–4 iterations.
 
 ## Quick Start
 
@@ -26,6 +50,7 @@ Each cycle produces a versioned ontology snapshot. The target is **80 %+ CQ answ
 - Python 3.10+
 - Docker & Docker Compose (for Ollama + Fuseki services)
 - Seed ontology OWL file in `data/seed_ontology/`
+- Document collection indexed in Qdrant
 
 ### Setup
 
@@ -41,54 +66,82 @@ pip install -e ".[dev]"
 docker compose up -d
 ```
 
-### Run an Iteration Cycle
+### Run the Feedback Loop
 
 ```bash
-# Step 1 — Gap analysis (needs KGB extraction checkpoint)
+# Standalone mode (uses Qdrant documents directly)
+python scripts/run_feedback_loop.py --mode standalone --max-iterations 4
+
+# Coupled mode (with KGB re-extraction after each iteration)
+python scripts/run_feedback_loop.py --mode coupled \
+    --checkpoint ../KnowledgeGraphBuilder/output/extraction_checkpoint.json \
+    --max-iterations 4
+```
+
+### Individual Steps (via Make)
+
+```bash
+# Gap analysis (needs KGB extraction checkpoint)
 make gap V=v1 CHECKPOINT=../KnowledgeGraphBuilder/output/extraction_checkpoint.json
 
-# Step 2 — Generate class proposals via LLM
+# Generate class proposals via multi-agent debate
 make proposals V=v1
 
-# Step 3 — Expert review (interactive CLI)
+# Expert review (interactive CLI for escalated questions only)
 make review V=v1
 
-# Step 4 — Export extended ontology + CQs
+# Export extended ontology + CQs
 make export V=v1
 
-# Step 5 — Re-run KGB with the extended ontology
-cd ../KnowledgeGraphBuilder
-python scripts/full_kg_pipeline.py \
-  --ontology-path ../OntologyExtender/data/exports/ontology_v1.owl \
-  --questions ../OntologyExtender/data/exports/cq_v1.json \
-  --max-iterations 1
-
-# Step 6 — Evaluate improvement
+# Evaluate improvement
 make evaluate V=v1
 ```
 
 ### Competency Questions
 
-CQs live in `data/evaluation/competency_questions.json`. Each iteration can add
-new CQs; the export step bundles them for KGB.
+CQs live in `data/evaluation/competency_questions.json`. The Ont-101 pipeline
+generates CQs in Phase 1 and refines them across iterations.
 
-## Project Structure
+## Architecture
 
 ```
 src/ontology_hitl/
-├── core/          Config, data models, protocols, exceptions
-├── discovery/     Gap analysis + LLM class/relation generation
+├── agents/        Multi-agent system (OntologyEngineer, DomainExpert, Critic, AgentTeam)
+├── methodology/   Ont-101 7-phase pipeline, data models, prompts, validation rules
+├── core/          Config, feedback protocol, loop orchestrator, data models
+├── discovery/     Gap analysis + class/relation generation
 ├── schema/        Ontology management, SHACL shapes, versioning
-├── review/        CLI + optional Streamlit expert review
+├── review/        CLI + optional Streamlit expert review (for HITL escalations)
 ├── evaluation/    CQ coverage, entity completeness, reporting
+├── sources/       Qdrant document source, CQ generator
 └── mapping/       YARRRML rule generation for RDF transformation
 
-scripts/           Step-by-step CLI entry points (gap → proposals → review → export → evaluate)
+scripts/           CLI entry points (run_feedback_loop, gap, proposals, review, export, evaluate)
 data/
 ├── seed_ontology/ Base OWL file
 ├── evaluation/    Competency questions JSON
-├── iterations/    Per-version artifacts (gap reports, proposals, decisions)
+├── iterations/    Per-version artefacts (debate transcripts, proposals, decisions)
 └── exports/       Final OWL + CQ outputs consumed by KGB
+```
+
+### Multi-Agent Debate Pattern
+
+```
+┌─────────────────┐    propose     ┌─────────────┐
+│ OntologyEngineer │───────────────▸│             │
+│ (proposer)       │◂──────────────│   Debate    │
+└─────────────────┘    revise      │             │
+                                    │  (per phase)│
+┌─────────────────┐    review      │             │
+│  DomainExpert    │───────────────▸│             │
+│ (doc-grounded)   │               └──────┬──────┘
+└─────────────────┘                       │
+                                          │ outcome
+┌─────────────────┐    review      ┌──────▼──────┐
+│     Critic       │───────────────▸│  Consensus  │
+│ (quality check)  │               │  Revised    │
+└─────────────────┘               │  Escalated  │
+                                    └─────────────┘
 ```
 
 ## Interface with KnowledgeGraphBuilder
@@ -99,13 +152,14 @@ data/
 | KGB → here | KG metrics | JSON |
 | here → KGB | Extended ontology | OWL (`--ontology-path`) |
 | here → KGB | Updated CQs | JSON (`--questions`) |
+| Qdrant → here | Document chunks | Vector search (shared collection) |
 
 ## Services (Docker Compose)
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| `ollama-ontology-extender` | `18135` | Dedicated Ollama instance (GPU) for ontology tasks |
-| `fuseki-staging` | `3031` | Optional Fuseki for staging graphs (if not sharing KGB's) |
+| `ollama-ontology-extender` | `18135` | Dedicated Ollama instance (GPU, qwen3-next 79.7B) |
+| `fuseki-staging` | `3031` | Optional Fuseki for staging graphs |
 
 ## Success Criteria
 
@@ -115,6 +169,13 @@ data/
 | Entity Coverage     | 80 %+  |
 | Expert Agreement    | 75 %+  |
 | Ontology Growth     | 20–30 new classes |
+
+## Tests
+
+```bash
+make test          # 106 tests
+make test-verbose  # with full output
+```
 
 ## License
 
