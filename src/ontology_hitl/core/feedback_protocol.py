@@ -100,6 +100,13 @@ class FeedbackMetrics:
     cqs_answerable: int = 0
     cq_coverage_pct: float = 0.0
 
+    # Ontology quality metrics (scientific validation)
+    ontology_consistency_score: float = 0.0
+    ontology_coherence_score: float = 0.0
+    ontology_modularity_score: float = 0.0
+    ontology_expressiveness_score: float = 0.0
+    ontology_overall_quality_score: float = 0.0
+
     # KG quality (only in coupled mode)
     kg_triples_before: int = 0
     kg_triples_after: int = 0
@@ -145,6 +152,10 @@ class ConvergenceReport:
     initial_cq_coverage: float = 0.0
     final_cq_coverage: float = 0.0
 
+    # Ontology quality progression
+    initial_quality_score: float = 0.0
+    final_quality_score: float = 0.0
+
     # Convergence analysis
     converged_at_iteration: int | None = None
     convergence_threshold: float = 0.02  # <2% improvement = converged
@@ -161,6 +172,8 @@ class ConvergenceReport:
         self.final_entity_coverage = last.entity_coverage_pct
         self.initial_cq_coverage = first.cq_coverage_pct
         self.final_cq_coverage = last.cq_coverage_pct
+        self.initial_quality_score = first.ontology_overall_quality_score
+        self.final_quality_score = last.ontology_overall_quality_score
 
         # Find convergence point
         for m in self.metrics_per_iteration[1:]:
@@ -179,6 +192,11 @@ class ConvergenceReport:
                 "initial": self.initial_cq_coverage,
                 "final": self.final_cq_coverage,
                 "delta": self.final_cq_coverage - self.initial_cq_coverage,
+            },
+            "ontology_quality": {
+                "initial": self.initial_quality_score,
+                "final": self.final_quality_score,
+                "delta": self.final_quality_score - self.initial_quality_score,
             },
             "converged_at": self.converged_at_iteration,
             "classes_added_total": sum(

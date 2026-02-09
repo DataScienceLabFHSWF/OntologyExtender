@@ -254,7 +254,16 @@ class CQEvaluator:
             True if all expected classes found, False if any missing,
             None if no expected_classes defined (inconclusive).
         """
-        return None
+        if "expected_classes" not in cq:
+            return None
+        expected = cq["expected_classes"]
+        if not expected:
+            return None
+        class_labels_lower = [label.lower() for label in class_labels]
+        for cls in expected:
+            if cls.lower() not in class_labels_lower:
+                return False
+        return True
 
     def _llm_to_sparql(
         self,
@@ -281,4 +290,19 @@ class CQEvaluator:
         Returns:
             SPARQL ASK query string, or None if translation fails.
         """
+        prompt = _CQ_TO_SPARQL_PROMPT.format(
+            class_labels=", ".join(class_labels),
+            cq_text=cq_text
+        )
+        response = self._call_llm(prompt)
+        if not response:
+            return None
+        # Try to extract ASK query
+        match = re.search(r"(ASK\s*\{.*?\})", response, re.DOTALL | re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        # Check if whole response is SPARQL
+        stripped = response.strip()
+        if stripped.upper().startswith("ASK") or stripped.upper().startswith("PREFIX"):
+            return stripped
         return None

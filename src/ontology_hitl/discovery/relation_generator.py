@@ -270,7 +270,28 @@ class RelationProposalGenerator:
         Returns:
             List of existing relation dicts.
         """
-        return []
+        endpoint = f"{self.fuseki_url}/{self.dataset}/sparql"
+        try:
+            response = httpx.post(
+                endpoint,
+                data={"query": _SPARQL_EXISTING_RELATIONS},
+                headers={"Accept": "application/sparql-results+json"}
+            )
+            response.raise_for_status()
+            data = response.json()
+            relations = []
+            for binding in data.get("results", {}).get("bindings", []):
+                name = binding.get("label", {}).get("value", "")
+                if not name:
+                    uri = binding["prop"]["value"]
+                    name = uri.split("#")[-1] if "#" in uri else uri.split("/")[-1]
+                domain = binding.get("domainLabel", {}).get("value", "")
+                range_ = binding.get("rangeLabel", {}).get("value", "")
+                relations.append({"name": name, "domain": domain, "range": range_})
+            return relations
+        except Exception as e:
+            logger.error("sparql_query_failed", error=str(e))
+            return []
 
     # ── Shared LLM call (TODO) ──────────────────────────────────────
 

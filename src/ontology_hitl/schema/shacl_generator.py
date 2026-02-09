@@ -135,7 +135,7 @@ class SHACLGenerator:
                 lines.append(f"        sh:minCount {min_c} ;")
             if max_c is not None:
                 lines.append(f"        sh:maxCount {max_c} ;")
-            lines.append(f'        sh:description "{getattr(rel, 'description', '')}" ;')
+            lines.append(f'        sh:description "{getattr(rel, "description", "")}" ;')
             lines.append(f"    ] ;")
         shape_turtle = "\n".join(lines) + "\n    .\n"
         return shape_turtle

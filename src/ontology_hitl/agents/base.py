@@ -41,6 +41,16 @@ class AgentRole(str, Enum):
     CRITIC = "critic"
 
 
+class DebateStrategy(str, Enum):
+    """Different debate strategies inspired by philosophical methods."""
+
+    DIALECTICAL = "dialectical"          # Thesis → Antithesis → Synthesis (Hegel)
+    SOCRATIC = "socratic"                # Question-driven inquiry (Plato)
+    DELPHI = "delphi"                    # Iterative expert consensus (Dalkey & Helmer)
+    ABDUCTIVE = "abductive"              # Inference to best explanation (Peirce)
+    CONSENSUS_BUILDING = "consensus"     # Discourse ethics (Habermas)
+
+
 class DebateVerdict(str, Enum):
     """Possible debate outcomes."""
 
@@ -50,7 +60,19 @@ class DebateVerdict(str, Enum):
     PARTIAL = "partial"             # some issues resolved, others escalated
 
 
-# ── Data models ─────────────────────────────────────────────────────
+@dataclass
+class AgentPerformanceMetrics:
+    """Tracks performance metrics for agents across debates."""
+
+    agent_role: AgentRole
+    total_debates: int = 0
+    consensus_contributions: int = 0
+    revisions_requested: int = 0
+    escalations_caused: int = 0
+    avg_response_time: float = 0.0
+    issues_raised_per_debate: float = 0.0
+    approval_rate: float = 0.0
+    debate_participation: dict[str, int] = field(default_factory=dict)  # phase -> count
 
 @dataclass
 class AgentMessage:
@@ -98,6 +120,7 @@ class Debate:
 
     phase: Phase
     messages: list[AgentMessage] = field(default_factory=list)
+    strategy: DebateStrategy = DebateStrategy.CONSENSUS_BUILDING
     max_rounds: int = 2
 
     def add_message(self, msg: AgentMessage) -> None:

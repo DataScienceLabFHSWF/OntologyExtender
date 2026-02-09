@@ -129,13 +129,22 @@ def review(
            h. Print confirmation: ``console.print(f"[green]Recorded: {decision['decision']}[/green]")``
         6. Print summary at end.
     """
-    console.print(f"[bold]Starting review session...[/bold]")
-    console.print(f"  Proposals: {proposals}")
-    console.print(f"  Reviewer:  {reviewer}")
-    console.print(f"  Output:    {output}")
-    console.print()
-    console.print("[yellow]Review loop not yet implemented.[/yellow]")
-    console.print("Run `python scripts/review_proposals.py` for the full review workflow.")
+    data = json.loads(Path(proposals).read_text())
+    existing = json.loads(Path(output).read_text()) if Path(output).exists() else []
+    reviewed_ids = {d["proposal_id"] for d in existing}
+    pending = [p for p in data if p["id"] not in reviewed_ids]
+    console.print(f"[bold]Review session: {len(pending)} pending of {len(data)} total[/bold]")
+    for idx, proposal in enumerate(pending, 1):
+        panel = _render_proposal(proposal, idx, len(pending))
+        console.print(panel)
+        decision = _prompt_decision(proposal["id"])
+        if decision is None:
+            continue
+        decision["reviewer"] = reviewer
+        existing.append(decision)
+        Path(output).write_text(json.dumps(existing, indent=2))
+        console.print(f"[green]Recorded: {decision['decision']}[/green]")
+    console.print(f"[bold]Review complete. Total decisions: {len(existing)}[/bold]")
 
 
 @app.command()

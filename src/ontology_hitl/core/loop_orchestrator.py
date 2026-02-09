@@ -279,6 +279,9 @@ class FeedbackLoopOrchestrator:
             if result.terms and result.terms.terms else 0.0
         )
 
+        # Ontology quality assessment (scientific validation)
+        quality_scores = self._assess_ontology_quality(checkpoint_path, iter_dir / "ontology.ttl")
+
         metrics = FeedbackMetrics(
             iteration=plan.iteration,
             mode=self.mode.value,
@@ -289,6 +292,11 @@ class FeedbackLoopOrchestrator:
             classes_added_this_iter=new_classes,
             entity_coverage_pct=entity_cov,
             cq_coverage_pct=cq_coverage,
+            ontology_consistency_score=quality_scores.get("consistency", 0.0),
+            ontology_coherence_score=quality_scores.get("coherence", 0.0),
+            ontology_modularity_score=quality_scores.get("modularity", 0.0),
+            ontology_expressiveness_score=quality_scores.get("expressiveness", 0.0),
+            ontology_overall_quality_score=quality_scores.get("overall_quality_score", 0.0),
         )
 
         logger.info(
@@ -301,6 +309,51 @@ class FeedbackLoopOrchestrator:
         )
 
         return metrics
+
+    def _assess_ontology_quality(
+        self, checkpoint_path: Path | None, ontology_path: Path | None
+    ) -> dict[str, float]:
+        """Assess ontology quality using scientific metrics."""
+        try:
+            from ontology_hitl.evaluation.ontology_quality import OntologyQualityAnalyzer
+
+            analyzer = OntologyQualityAnalyzer(
+                fuseki_url=self.settings.fuseki_url,
+                dataset=self.settings.fuseki_dataset,
+                ollama_url=self.settings.ollama_url,
+                model=self.settings.ollama_model,
+            )
+
+            if checkpoint_path and ontology_path and ontology_path.exists():
+                assessment = analyzer.comprehensive_quality_assessment(
+                    checkpoint_path=str(checkpoint_path),
+                    ontology_path=str(ontology_path),
+                )
+                return {
+                    "consistency": assessment.get("consistency", {}).get("consistency_score", 0.0),
+                    "coherence": assessment.get("coherence", {}).get("coherence_score", 0.0),
+                    "modularity": assessment.get("modularity", {}).get("modularity_score", 0.0),
+                    "expressiveness": assessment.get("expressiveness", {}).get("expressiveness_score", 0.0),
+                    "overall_quality_score": assessment.get("overall_quality_score", 0.0),
+                }
+            else:
+                # Fallback: basic assessment without full data
+                return {
+                    "consistency": 0.5,
+                    "coherence": 0.5,
+                    "modularity": 0.5,
+                    "expressiveness": 0.5,
+                    "overall_quality_score": 0.5,
+                }
+        except Exception as e:
+            logger.warning("ontology_quality_assessment_failed", error=str(e))
+            return {
+                "consistency": 0.0,
+                "coherence": 0.0,
+                "modularity": 0.0,
+                "expressiveness": 0.0,
+                "overall_quality_score": 0.0,
+            }
 
     # ------------------------------------------------------------------
     # Context gathering for the multi-agent pipeline

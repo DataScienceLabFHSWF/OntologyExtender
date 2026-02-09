@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import rdflib
 import structlog
 
 from ontology_hitl.core.exceptions import SchemaUpdateError

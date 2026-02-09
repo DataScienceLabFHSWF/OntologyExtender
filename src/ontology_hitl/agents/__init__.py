@@ -19,19 +19,41 @@ when high-stakes decisions arise.
 from ontology_hitl.agents.base import (
     AgentRole,
     AgentMessage,
+    AgentPerformanceMetrics,
     Debate,
     DebateOutcome,
+    DebateStrategy,
+    DebateVerdict,
 )
 from ontology_hitl.agents.ontology_engineer import OntologyEngineerAgent
 from ontology_hitl.agents.domain_expert import DomainExpertAgent
 from ontology_hitl.agents.critic import CriticAgent
 from ontology_hitl.agents.team import AgentTeam
+from ontology_hitl.agents.debate_strategies import DebateStrategist
+from ontology_hitl.agents.moderator import (
+    Moderator,
+    DriftThresholds,
+    GroundingReport,
+    DriftReport,
+    GROUNDING_CONSTRAINTS,
+    DEFAULT_STRATEGY_MAP,
+)
 
 __all__ = [
     "AgentRole",
     "AgentMessage",
+    "AgentPerformanceMetrics",
     "Debate",
     "DebateOutcome",
+    "DebateStrategy",
+    "DebateStrategist",
+    "DebateVerdict",
+    "Moderator",
+    "DriftThresholds",
+    "GroundingReport",
+    "DriftReport",
+    "GROUNDING_CONSTRAINTS",
+    "DEFAULT_STRATEGY_MAP",
     "OntologyEngineerAgent",
     "DomainExpertAgent",
     "CriticAgent",

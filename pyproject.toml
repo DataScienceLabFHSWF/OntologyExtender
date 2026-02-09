@@ -44,6 +44,9 @@ dependencies = [
     # Experiment tracking
     "wandb>=0.18",
 
+    # Web dashboard
+    "streamlit>=1.28",
+
     # Utilities
     "python-dotenv>=1.0",
 ]

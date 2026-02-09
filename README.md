@@ -1,68 +1,133 @@
 # OntologyExtender (ontology-hitl)
 
-**Multi-Agent Ontology Extension** for Knowledge Graph Construction.
+**Human-in-the-Loop Ontology Extension** for Knowledge Graph Construction.
 
 ## What Is This?
 
-This repository implements an iterative, multi-agent system for **extending a seed ontology**
-(the [AI Planning Ontology](https://github.com/BharathMuppasani/AI-Planning-Ontology))
-with domain-specific classes discovered from nuclear decommissioning documents.
+This system **extends a seed ontology** by having multiple LLM agents
+debate what to add, while a human reviewer keeps the final say.
 
-The system follows the **Ontology 101 methodology** (Noy & McGuinness, 2001) through
-a structured collaboration between three AI agents:
-
-- **OntologyEngineer** — proposes ontology artefacts (classes, properties, hierarchy)
-- **DomainExpert** — validates proposals against document evidence from Qdrant
-- **Critic** — checks structural quality, consistency, and methodology compliance
-
-The pipeline is enriched with **six literature-inspired modules** (A–F) that
-address state-of-the-art gaps identified through a systematic literature review:
-
-| Module | Feature | Inspired By |
-|--------|---------|-------------|
-| **A** | Seed Protection Pattern | Azure DTDL extension-by-inheritance |
-| **B** | Entity Linking | John et al. (2025) — HITL Neuro-Symbolic KG |
-| **C** | Embedding Advisor (Ollama) | Memariani et al. (2025) — Box Embeddings for Ontologies |
-| **D** | Provenance Chain (PROV-O) | John et al. (2025) — evidence traceability |
-| **E** | Ensemble Strategy | Mossakowski (2023) — neural-symbolic ensemble |
-| **F** | Feedback Learning Loop | John et al. (2025) — SUS 84.17 human feedback |
+The seed ontology is the
+[AI Planning Ontology](https://github.com/BharathMuppasani/AI-Planning-Ontology)
+(`data/seed_ontology/plan-ontology-v1.0.owl`, 18 classes, 26 properties).
+Domain documents live in a Qdrant vector database. The system reads those
+documents, identifies gaps in the ontology, proposes extensions, debates
+them, and asks you to approve the results.
 
 ### Core Workflow
 
-Each iteration runs **seven Ont-101 phases**, each as a structured multi-agent **debate**:
-
-1. **Scope & Competency Questions** — define what the ontology should cover
-2. **Reuse Analysis** — identify existing ontologies to reuse
-   - **2b. Entity Linking** _(Module B)_ — link terms to Wikidata, BFO, EMMO, schema.org
-3. **Term Enumeration** — enumerate important terms from documents
-4. **Class Hierarchy** — organise terms into a taxonomic structure
-   - **4c. Embedding Advisor** _(Module C)_ — Ollama embeddings recommend parent classes
-   - **4e. Ensemble Voting** _(Module E)_ — weighted LLM + embedding + co-occurrence
-5. **Property Definition** — define data and object properties
-6. **Facet Specification** — specify cardinality, ranges, and constraints
-7. **Instance Validation** — verify the ontology against sample instances
-
-Each phase follows the pattern: **propose → review → revise → consensus/escalation**.
-Prompts are augmented with HITL feedback history _(Module F)_ and evidence is tracked
-throughout via PROV-O provenance records _(Module D)_. The seed ontology is protected
-from modification via extension-by-inheritance _(Module A)_.
-
-### Feedback Loop
-
-The system runs as a convergence-driven feedback loop:
-
 ```
-Documents (Qdrant) → 7-Phase Multi-Agent Pipeline → Extended Ontology
-       ↑                    ↑                              ↓
-       │            Feedback Learner (F)           Seed Protection (A)
-       │            Provenance (D)                 Entity Linking (B)
-       │            Embedding Advisor (C)          Ensemble (E)
-       │                                                   ↓
-       └──── Re-extraction (KGB) ←── OWL + SHACL + CQs ──┘
+Documents (Qdrant) → Gap Analysis → Multi-Agent Debate → Human Review → Extended Ontology
+       ↑                                                                          ↓
+       └──────────────── Re-extraction (KGB) ←── OWL + SHACL + CQs ──────────────┘
 ```
 
-Each cycle produces a versioned ontology snapshot. The target is **80 %+ CQ answerability**
-and **80 %+ entity coverage** within 3–4 iterations.
+Each iteration:
+
+1. **Gap Analysis** — Find entities in documents that the ontology can't represent yet.
+2. **7-Phase Pipeline** — Three LLM agents debate scope, terms, hierarchy, properties, etc.
+3. **Human Review** — You accept, reject, or revise what the agents proposed.
+4. **Export** — Produce extended OWL, SHACL constraints, and updated competency questions.
+5. **Evaluate** — Measure improvement. Repeat until 80%+ coverage.
+
+---
+
+## Why the Philosophical Approach?
+
+If you're reading this and wondering *"why does an ontology tool reference
+Hegel and Habermas?"* — this section is for you.
+
+### The Problem We're Solving
+
+When you ask an LLM to build an ontology, three things go wrong:
+
+1. **Hallucination amplification.** Agent A proposes a concept. Agent B,
+   trained on similar data, thinks it sounds plausible. Agent C sees fake
+   consensus and approves. Nobody checked the documents. The concept is
+   fabricated — the agents talked each other into it.
+
+2. **Runaway complexity.** Each review round adds more detail. Nobody
+   ever says "this is too much." After a few rounds, you have an
+   over-engineered ontology with more classes than the domain warrants.
+
+3. **Groupthink.** If all agents share the same training data biases,
+   they converge on the same mistakes. Averaging wrong answers doesn't
+   make them right.
+
+These are not hypothetical — they are documented failure modes of
+multi-agent LLM systems (Du et al. 2023, Ji et al. 2023, Bender &
+Koller 2020).
+
+### How Philosophy Gives Us Concrete Solutions
+
+Each philosophical tradition we reference maps directly to a **specific
+engineering mechanism** that addresses one of these problems. This is not
+decoration — it's the design rationale for why the code works the way it
+does.
+
+#### Problem → Philosophical Tradition → Engineering Solution
+
+| Problem | Tradition | What It Actually Does in the Code |
+|---------|-----------|-----------------------------------|
+| **Agents agree too easily** | Hegel's *dialectics* — knowledge advances through contradiction | Forces a **thesis → antithesis → synthesis** debate structure. The engineer proposes, reviewers must actively *counter* the proposal, and the revision must genuinely resolve the conflict — not just compromise. |
+| **Nobody questions assumptions** | Plato's *Socratic method* — examine through targeted questioning | Cycles through 5 dimensions of questioning (What *is* this? How do we *know*? What is it *for*? Is it *well-built*? Does it *fit*?). Each round picks a different angle so the same blind spot isn't examined twice. |
+| **First reviewer anchors the rest** | Dalkey & Helmer's *Delphi method* — anonymous expert polling | Agents review independently without seeing each other's opinions. Only the aggregate (approval rate + top issues) is shared. This removes anchoring bias. |
+| **Extensions drift from documents** | Gadamer's *hermeneutics* — meaning comes from context | The DomainExpert agent is instructed to check every proposed concept against the actual document text, not against its own training data. If it's not in the documents, it gets rejected. |
+| **Nobody says "stop, this is enough"** | Popper's *falsificationism* — a good theory is one you can disprove | The Critic agent explicitly tries to *break* proposals. Can you name something that should NOT be in this class? If you can't, the class is too vague. |
+| **Complexity only goes up** | Peirce's *abduction* — infer the simplest explanation | The abductive debate strategy asks: "What is the *simplest* extension that would make this gap expected?" Not "what can we add?" but "what *must* we add?" |
+| **No single metric captures quality** | Feyerabend's *methodological pluralism* — no method is universally best | Quality is measured through 5 independent lenses (QA faithfulness, constraint satisfaction, graph structure, semantic alignment, expert review). They sometimes disagree — that's informative, not a bug. |
+
+### How This Connects to Published Research
+
+None of this is purely theoretical. Each mechanism is backed by recent
+papers that demonstrate its effectiveness:
+
+| Our Mechanism | Paper | Key Finding |
+|---------------|-------|-------------|
+| Multi-agent debate | Du et al. (2023) "Improving Factuality through Multiagent Debate" | Debate between LLM agents improved factuality by 15–25% over single-agent baselines |
+| Multi-agent debate | Liang et al. (2023) "Encouraging Divergent Thinking through Multi-Agent Debate" | Structured disagreement reduces convergence on wrong answers |
+| HITL feedback loop | John et al. (2025) "HITL Workflow for Neuro-Symbolic KG" | Achieved SUS score of 84.17 ("good" usability) for human-reviewed KG construction |
+| Embedding-based parent recommendation | Memariani et al. (2025) "Box Embeddings for Extending Ontologies" | Embedding-based methods outperform string matching for ontology alignment |
+| Neural-symbolic ensemble | Mossakowski (2023+) DFG project on neural-symbolic integration | Combining LLM, embedding, and structural signals is more robust than any single method |
+| Structured agent evaluation | Chan et al. (2023) "ChatEval" | Multi-agent evaluators produce more reliable quality assessments than single evaluators |
+| Ontology 101 methodology | Noy & McGuinness (2001) | The 7-phase structure (scope → reuse → terms → hierarchy → properties → facets → instances) is the standard ontology engineering workflow |
+| Quality evaluation | Vrandečić (2009), Gangemi et al. (2006) | Multi-dimensional ontology evaluation is necessary because no single metric captures quality |
+
+### The Moderator: Keeping Agents Honest
+
+The Moderator is not an LLM — it's deterministic code.
+It does not contribute opinions. It enforces structural rules:
+
+1. **Every proposed concept must cite a document.** No citation → auto-rejection.
+2. **Every proposed concept must serve a competency question.** No CQ → scope creep → removed.
+3. **Every extension must connect to the seed ontology.** Free-floating concepts = drift.
+4. **If all agents agree too easily, inject harder questions.** (Echo chamber detection.)
+5. **If revisions only add and never remove, demand simplification.** (Complexity ratchet detection.)
+
+This is the Habermasian idea made concrete: the Moderator doesn't control
+*what* gets decided — it ensures the *conditions* under which good
+decisions can be made. Think of it as a code review bot that checks
+process, not content.
+
+### Summary: Why Not Just Prompt the LLM?
+
+Because a single prompt has no checks and balances. Our approach uses:
+
+- **Three agents** with genuinely different roles (propose / ground-check / stress-test)
+- **Five debate strategies** rotated by phase to avoid strategy lock-in
+- **A deterministic Moderator** that detects when agents are fooling themselves
+- **Six layers of grounding** from document citations to human veto
+- **Multi-perspectival quality metrics** that don't collapse into one number
+
+The philosophy isn't there because it sounds impressive. It's there because
+each tradition solved a problem of *how to produce reliable knowledge under
+uncertainty* — and that's exactly what we're doing when we extend an
+ontology with LLMs.
+
+For the full philosophical derivation, see [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md).
+For the detailed implementation plan, see [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
+
+---
 
 ## Quick Start
 
@@ -70,7 +135,7 @@ and **80 %+ entity coverage** within 3–4 iterations.
 
 - Python 3.10+
 - Docker & Docker Compose (for Ollama + Fuseki services)
-- Seed ontology OWL file in `data/seed_ontology/`
+- Seed ontology OWL file in `data/seed_ontology/` (included: AI Planning Ontology)
 - Document collection indexed in Qdrant
 
 ### Setup
@@ -83,14 +148,19 @@ python3 -m venv .venv && source .venv/bin/activate
 cp .env.example .env          # adjust ports/model as needed
 pip install -e ".[dev]"
 
-# 3. Start services (Ollama for ontology extension + optional Fuseki)
+# 3. Start services (Ollama for LLM calls + optional Fuseki for ontology storage)
 docker compose up -d
+```
+
+**Note**: Always activate the virtual environment before running any Python commands:
+```bash
+source .venv/bin/activate
 ```
 
 ### Run the Feedback Loop
 
 ```bash
-# Standalone mode (uses Qdrant documents directly)
+# Standalone mode (uses Qdrant documents directly, no KGB dependency)
 python scripts/run_feedback_loop.py --mode standalone --max-iterations 4
 
 # Coupled mode (with KGB re-extraction after each iteration)
@@ -99,85 +169,97 @@ python scripts/run_feedback_loop.py --mode coupled \
     --max-iterations 4
 ```
 
-### Individual Steps (via Make)
+### Individual Steps
 
 ```bash
-# Gap analysis (needs KGB extraction checkpoint)
-make gap V=v1 CHECKPOINT=../KnowledgeGraphBuilder/output/extraction_checkpoint.json
+# Gap analysis (needs extraction checkpoint)
+python scripts/run_gap_analysis.py --checkpoint checkpoint.json --output gap_report.json
 
-# Generate class proposals via multi-agent debate
-make proposals V=v1
+# Generate proposals
+python scripts/generate_proposals.py --gap-report gap_report.json --output proposals.json
 
-# Expert review (interactive CLI for escalated questions only)
-make review V=v1
+# Expert review (interactive CLI)
+python scripts/review_proposals.py --proposals proposals.json --output decisions.json
 
-# Export extended ontology + CQs
-make export V=v1
+# Export extended ontology
+python scripts/export_ontology.py --decisions decisions.json --proposals proposals.json \
+    --output-owl extended.owl --output-cq updated_cqs.json
 
 # Evaluate improvement
-make evaluate V=v1
+python scripts/evaluate_iteration.py --before before_metrics.json --after after_metrics.json \
+    --output report.json
 ```
 
-### Competency Questions
+---
 
-CQs live in `data/evaluation/competency_questions.json`. The Ont-101 pipeline
-generates CQs in Phase 1 and refines them across iterations.
+## Multi-Agent Debate Strategies
+
+The system selects a debate strategy per pipeline phase. The Moderator
+chooses automatically, but you can override via `HITL_DEBATE_STRATEGY`.
+
+| Strategy | When Used | What Agents Do | Prevents |
+|----------|-----------|---------------|----------|
+| **Consensus** | Reuse analysis (Phase 2) | Equal-voice review — everyone has the same standing | Authority bias |
+| **Dialectical** | Hierarchy + Properties (4–5) | Thesis → Antithesis → Synthesis — forced structured disagreement | Premature agreement |
+| **Socratic** | Scope + Terms (1, 3) | 5-dimension questioning — rotates through ontological, epistemological, pragmatic, methodological, coherence questions | Unexamined assumptions |
+| **Delphi** | Facets (Phase 6) | Anonymous independent reviews → aggregate → iterate | Anchoring + groupthink |
+| **Abductive** | Instances (Phase 7) | "What's the *simplest* extension that explains this gap?" | Over-engineering |
+
+### Agent Roles
+
+| Agent | Job | Identity | How It Challenges |
+|-------|-----|----------|-------------------|
+| **OntologyEngineer** | Propose extensions | Builder — follows Ont-101 methodology | Generates structured proposals |
+| **DomainExpert** | Check against documents | Interpreter — checks terms match *actual usage* | "Where does this appear in the documents?" |
+| **Critic** | Stress-test quality | Devil's advocate — tries to break proposals | "Can you name something that should NOT be in this class?" |
+
+---
 
 ## Architecture
 
 ```
 src/ontology_hitl/
-├── agents/        Multi-agent system (OntologyEngineer, DomainExpert, Critic, AgentTeam)
-├── methodology/   Ont-101 7-phase pipeline, data models, prompts, validation rules
-├── core/          Config, feedback protocol, loop orchestrator, data models
-├── discovery/     Gap analysis, class/relation generation, entity linker (B),
-│                  embedding advisor (C), ensemble strategy (E)
-├── schema/        Ontology management, SHACL shapes, versioning, seed protection (A)
-├── review/        CLI + optional Streamlit expert review (for HITL escalations)
-├── evaluation/    CQ coverage, completeness, reporting, provenance (D),
-│                  feedback learner (F)
+├── agents/        Multi-agent system
+│   ├── base.py                  Agent abstractions, LLM communication
+│   ├── ontology_engineer.py     Proposer (7 phase-specific prompts)
+│   ├── domain_expert.py         Document-grounded reviewer
+│   ├── critic.py                Structural quality reviewer
+│   ├── team.py                  Debate orchestration
+│   ├── epistemics.py            Philosophical framework
+│   ├── debate_strategies.py     5 debate strategies
+│   └── moderator.py             Deterministic strategy + drift detection
+├── core/          Loop orchestrator, config, data models
+├── methodology/   Ont-101 pipeline (7 phases), validation rules
+├── discovery/     Gap analysis, class/relation generation, entity linking,
+│                  embedding advisor, ensemble strategy
+├── schema/        OWL export, SHACL generation, seed protection, versioning
+├── evaluation/    CQ evaluator, completeness, quality metrics, provenance, feedback learning
+├── review/        CLI (Rich/Typer) + web dashboard (Streamlit)
 ├── sources/       Qdrant document source, CQ generator
-└── mapping/       YARRRML rule generation for RDF transformation
+└── mapping/       YARRRML/RML mapping rules
 
-scripts/           CLI entry points (run_feedback_loop, gap, proposals, review, export, evaluate)
+scripts/           CLI entry points
 data/
-├── seed_ontology/ Base OWL file
+├── seed_ontology/ AI Planning Ontology (plan-ontology-v1.0.owl)
 ├── evaluation/    Competency questions JSON
-├── iterations/    Per-version artefacts (debate transcripts, proposals, decisions,
-│                  entity links, embedding recs, ensemble reports, provenance)
-└── exports/       Final OWL + CQ outputs consumed by KGB
+├── iterations/    Per-version artefacts
+└── exports/       Final OWL + SHACL + CQ outputs
 ```
 
-### Literature-Inspired Modules (A–F)
+### Literature-Inspired Modules
 
-| Module | File | Description |
-|--------|------|-------------|
-| **A — Seed Protection** | `schema/seed_manager.py` | Extension-by-inheritance graph management. Never modifies the base ontology; new classes extend seed classes via `rdfs:subClassOf`. |
-| **B — Entity Linking** | `discovery/entity_linker.py` | Links proposed classes to Wikidata, BFO, EMMO, schema.org, and SAREF using Ollama embedding similarity + live Wikidata search. |
-| **C — Embedding Advisor** | `discovery/embedding_advisor.py` | Uses Ollama `/api/embed` vectors to recommend parent classes by nearest-neighbour search over seed embeddings. Confidence = gap between best and runner-up. |
-| **D — Provenance Chain** | `evaluation/provenance.py` | Records evidence citations from agent debates. Exports PROV-O RDF triples and JSON audit trails for transparency. |
-| **E — Ensemble Strategy** | `discovery/ensemble_strategy.py` | Weighted voting across three strategies (LLM 0.5, Embedding 0.3, Co-occurrence 0.2). Reports agreement scores and flags split decisions for human review. |
-| **F — Feedback Learner** | `evaluation/feedback_learner.py` | Learns from HITL accept/reject decisions. Augments agent prompts with few-shot examples and rejection warnings. Persists memory as JSON across sessions. |
+Six modules were added based on state-of-the-art papers:
 
-### Multi-Agent Debate Pattern
+| Module | Paper | What It Does |
+|--------|-------|-------------|
+| **A. Seed Protection** (`seed_manager.py`) | Azure DTDL pattern | Locks the seed ontology — extensions only via `subClassOf`, never by modification |
+| **B. Entity Linking** (`entity_linker.py`) | John et al. (2025) | Links proposed classes to Wikidata, BFO, EMMO, schema.org, SAREF |
+| **C. Embedding Advisor** (`embedding_advisor.py`) | Memariani et al. (2025) | Uses embeddings to recommend parent classes from the seed |
+| **D. Provenance** (`provenance.py`) | John et al. (2025) | PROV-O evidence chains — every decision is traceable to a document |
+| **E. Ensemble Strategy** (`ensemble_strategy.py`) | Mossakowski (2023+) | Weighted vote: LLM (0.5) + embedding (0.3) + co-occurrence (0.2) |
+| **F. Feedback Learning** (`feedback_learner.py`) | John et al. (2025) | Learns from your accept/reject decisions to improve future proposals |
 
-```
-┌─────────────────┐    propose     ┌─────────────┐
-│ OntologyEngineer │───────────────▸│             │
-│ (proposer)       │◂──────────────│   Debate    │
-└─────────────────┘    revise      │             │
-                                    │  (per phase)│
-┌─────────────────┐    review      │             │
-│  DomainExpert    │───────────────▸│             │
-│ (doc-grounded)   │               └──────┬──────┘
-└─────────────────┘                       │
-                                          │ outcome
-┌─────────────────┐    review      ┌──────▼──────┐
-│     Critic       │───────────────▸│  Consensus  │
-│ (quality check)  │               │  Revised    │
-└─────────────────┘               │  Escalated  │
-                                    └─────────────┘
-```
+---
 
 ## Interface with KnowledgeGraphBuilder
 
@@ -187,57 +269,60 @@ data/
 | KGB → here | KG metrics | JSON |
 | here → KGB | Extended ontology | OWL (`--ontology-path`) |
 | here → KGB | Updated CQs | JSON (`--questions`) |
-| Qdrant → here | Document chunks | Vector search (shared collection) |
+| Qdrant → here | Document chunks | Vector search (shared collection `documents`) |
 
 ## Services (Docker Compose)
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| `ollama-ontology-extender` | `18135` | Dedicated Ollama instance (GPU, qwen3-next 79.7B) |
-| `fuseki-staging` | `3031` | Optional Fuseki for staging graphs |
+| `ollama-ontology-extender` | `18135` | Ollama LLM (qwen3-next, GPU-accelerated) |
+| `fuseki-staging` | `3031` | Optional Fuseki for ontology versioning |
 
-## Success Criteria
+## Configuration
 
-| Metric              | Target |
-|---------------------|--------|
-| CQ Answerability    | 80 %+  |
-| Entity Coverage     | 80 %+  |
-| Expert Agreement    | 75 %+  |
-| Ontology Growth     | 20–30 new classes |
-
-## Configuration (Modules A–F)
-
-All new modules are configurable via environment variables or `.env`:
+Key settings in `.env`:
 
 ```bash
-# Entity Linking (B)
-HITL_ENTITY_LINKING_ENABLED=true
-HITL_ENTITY_LINKING_THRESHOLD=0.75
+# LLM
+HITL_OLLAMA_URL=http://localhost:18135
+HITL_OLLAMA_MODEL=qwen3-next
 
-# Embedding Advisor (C)
-HITL_EMBEDDING_ADVISOR_ENABLED=true
+# Qdrant
+HITL_QDRANT_URL=http://localhost:6333
+HITL_QDRANT_COLLECTION=documents
 
-# Provenance (D)
-HITL_PROVENANCE_ENABLED=true
+# Ontology
+HITL_FUSEKI_URL=http://localhost:3030
+HITL_FUSEKI_DATASET=kgbuilder
 
-# Ensemble Strategy (E)
-HITL_ENSEMBLE_ENABLED=true
-HITL_ENSEMBLE_WEIGHT_LLM=0.5
-HITL_ENSEMBLE_WEIGHT_EMBEDDING=0.3
-HITL_ENSEMBLE_WEIGHT_COOCCURRENCE=0.2
+# Gap Analysis
+HITL_MIN_ENTITY_FREQUENCY=3
+HITL_SEMANTIC_SIMILARITY_THRESHOLD=0.65
 
-# Feedback Learner (F)
-HITL_FEEDBACK_LEARNING_ENABLED=true
-HITL_FEEDBACK_MEMORY_PATH=data/feedback_memory.json
-HITL_FEEDBACK_MAX_FEW_SHOT=5
+# Evaluation Targets
+HITL_CQ_ANSWERABILITY_TARGET=0.80
+HITL_ENTITY_COVERAGE_TARGET=0.80
+
+# Debate Strategy (optional override — Moderator selects per phase by default)
+# HITL_DEBATE_STRATEGY=dialectical
 ```
 
 ## Tests
 
 ```bash
-make test          # ~170 tests (core + literature modules)
-make test-verbose  # with full output
+python -m pytest tests/ -v     # ~144 passing
 ```
+
+## Documentation
+
+| Document | Audience | Content |
+|----------|----------|---------|
+| This README | Everyone | Why + how to run |
+| [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) | Deep dive | Full philosophical derivation with sources |
+| [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) | Developers | What's done, what remains, how strategies integrate |
+| [docs/IMPLEMENTATION_GUIDE.md](docs/IMPLEMENTATION_GUIDE.md) | Developers | Module reference, API examples, testing |
+| [docs/EXPERT_GUIDE.md](docs/EXPERT_GUIDE.md) | Domain experts | How to review proposals |
+| [docs/WORKFLOW.md](docs/WORKFLOW.md) | Operators | Step-by-step operational workflow |
 
 ## License
 

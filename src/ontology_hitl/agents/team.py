@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import structlog
 
@@ -25,6 +26,7 @@ from ontology_hitl.agents.base import (
     Debate,
     DebateOutcome,
     DebateVerdict,
+    AgentPerformanceMetrics,
 )
 from ontology_hitl.agents.ontology_engineer import OntologyEngineerAgent
 from ontology_hitl.agents.domain_expert import DomainExpertAgent
@@ -78,6 +80,13 @@ class AgentTeam:
         self.feedback_learner = feedback_learner
         self.provenance = provenance
 
+        # Performance analytics
+        self.performance_metrics: dict[AgentRole, AgentPerformanceMetrics] = {
+            AgentRole.ONTOLOGY_ENGINEER: AgentPerformanceMetrics(AgentRole.ONTOLOGY_ENGINEER),
+            AgentRole.DOMAIN_EXPERT: AgentPerformanceMetrics(AgentRole.DOMAIN_EXPERT),
+            AgentRole.CRITIC: AgentPerformanceMetrics(AgentRole.CRITIC),
+        }
+
         # Create agents
         self.engineer = OntologyEngineerAgent(settings=self.settings)
         self.domain_expert = DomainExpertAgent(
@@ -91,8 +100,24 @@ class AgentTeam:
         self.domain_expert.set_documents(context)
 
     def set_competency_questions(self, cqs: list[dict]) -> None:
-        """Update CQs for the Critic (after Phase 1 completes)."""
+        """Forward CQs to the Critic for evaluation-aware reviews."""
         self.critic.set_competency_questions(cqs)
+
+    def get_performance_analytics(self) -> dict[str, Any]:
+        """Get comprehensive performance analytics for all agents."""
+        return {
+            role.value: {
+                "total_debates": metrics.total_debates,
+                "consensus_contributions": metrics.consensus_contributions,
+                "revisions_requested": metrics.revisions_requested,
+                "escalations_caused": metrics.escalations_caused,
+                "avg_response_time": metrics.avg_response_time,
+                "issues_raised_per_debate": metrics.issues_raised_per_debate,
+                "approval_rate": metrics.approval_rate,
+                "debate_participation": metrics.debate_participation,
+            }
+            for role, metrics in self.performance_metrics.items()
+        }
 
     # ── Main debate orchestration ───────────────────────────────────
 

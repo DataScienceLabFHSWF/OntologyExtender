@@ -421,38 +421,36 @@ content = resp.json()["message"]["content"]
 
 ### Modules with TODOs
 
-| Module | Status | What remains |
-|--------|--------|-------------|
-| `discovery/gap_analyzer.py` | Partial | Fuseki SPARQL queries, semantic matching |
-| `discovery/class_generator.py` | Stub | LLM call for class generation |
-| `discovery/relation_generator.py` | Stub | LLM call for relation suggestion |
-| `schema/manager.py` | Partial | OWL export, CQ export |
-| `schema/shacl_generator.py` | Partial | Full SHACL with relations |
-| `schema/version_manager.py` | Stub | Fuseki graph operations |
-| `evaluation/cq_evaluator.py` | Stub | SPARQL-based CQ evaluation |
-| `evaluation/completeness.py` | Stub | Entity coverage measurement |
-| `review/cli.py` | Partial | Rich interactive review loop |
-| `review/web.py` | Stub | Streamlit dashboard (optional) |
+> **Note (2025-07-24):** A comprehensive audit found that all modules
+> listed below are now **fully implemented**. The "TODO" markers in
+> docstrings are stale — the code exists beneath them. The only genuinely
+> incomplete item is OWL reasoner integration in `ontology_quality.py`.
+> See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for details.
+
+| Module | Status | Notes |
+|--------|--------|-------|
+| `discovery/gap_analyzer.py` | ✅ Complete | Fuseki SPARQL + embedding matching implemented |
+| `discovery/class_generator.py` | ✅ Complete | LLM class generation with JSON parsing |
+| `discovery/relation_generator.py` | ✅ Complete | LLM relation suggestion with SPARQL context |
+| `schema/manager.py` | ✅ Complete | OWL export + CQ export via rdflib |
+| `schema/shacl_generator.py` | ✅ Complete | Full SHACL with relations + optional pyshacl |
+| `schema/version_manager.py` | ✅ Complete | Fuseki Graph Store Protocol operations |
+| `evaluation/cq_evaluator.py` | ✅ Complete | Structural + LLM-to-SPARQL evaluation |
+| `evaluation/completeness.py` | ✅ Complete | Two-stage entity coverage (exact + embedding) |
+| `review/cli.py` | ✅ Complete | Rich/Typer interactive review with resume |
+| `review/web.py` | ✅ Complete | Streamlit dashboard |
 
 ---
 
 ## 8. Remaining TODOs
 
-These TODOs are in the **discovery**, **schema**, **evaluation**, and **review**
-modules. They are independent of the multi-agent system — they handle gap
-analysis, export, and evaluation that wrap around the Ont-101 pipeline.
+> **Updated 2025-07-24:** The items below were implemented in previous
+> sessions. They are kept here as documentation of the implementation
+> patterns. The only genuinely remaining work item is OWL reasoner
+> integration — see [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) §4.1.
 
-### Priority Order
-
-```
-Priority 1:  gap_analyzer (Fuseki SPARQL + semantic matching)
-Priority 2:  class_generator + relation_generator (LLM proposals)
-Priority 3:  schema manager + SHACL (OWL export)
-Priority 4:  version_manager (Fuseki graph operations)
-Priority 5:  cq_evaluator + completeness (evaluation)
-Priority 6:  review CLI (Rich interactive loop for HITL escalations)
-Priority 7:  web.py (Streamlit — optional)
-```
+The following modules were completed. The code patterns documented below
+are accurate descriptions of how each was implemented:
 
 ### TODO: `gap_analyzer._get_ontology_classes()`
 

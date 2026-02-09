@@ -1,0 +1,86 @@
+[
+  {
+    "id": "prop_001",
+    "label": "DecommissioningFacility",
+    "parent_label": "Facility",
+    "frequency": 15,
+    "confidence": 0.85,
+    "coverage": {
+      "document_count": 8,
+      "sentence_count": 23,
+      "unique_contexts": 12
+    },
+    "examples": [
+      "The decommissioning facility must be secured before operations begin.",
+      "Facility decommissioning involves multiple phases of cleanup.",
+      "Nuclear decommissioning facilities require special permits."
+    ],
+    "definition": "A specialized facility designed for the decommissioning of nuclear installations, including containment structures and processing areas.",
+    "suggested_properties": [
+      {"name": "facility_type", "datatype": "string"},
+      {"name": "security_level", "datatype": "string"},
+      {"name": "capacity", "datatype": "integer"}
+    ],
+    "suggested_relations": [
+      {"name": "located_in", "range": "Location"},
+      {"name": "requires", "range": "Permit"},
+      {"name": "employs", "range": "DecommissioningStrategy"}
+    ]
+  },
+  {
+    "id": "prop_002",
+    "label": "RadiationHazard",
+    "parent_label": "Hazard",
+    "frequency": 22,
+    "confidence": 0.92,
+    "coverage": {
+      "document_count": 12,
+      "sentence_count": 34,
+      "unique_contexts": 18
+    },
+    "examples": [
+      "Radiation hazards must be monitored continuously during decommissioning.",
+      "The site contains multiple radiation hazard zones.",
+      "Personal protective equipment is required in radiation hazard areas."
+    ],
+    "definition": "A hazardous condition resulting from ionizing radiation exposure, requiring specific safety protocols and monitoring.",
+    "suggested_properties": [
+      {"name": "radiation_level", "datatype": "float"},
+      {"name": "monitoring_required", "datatype": "boolean"},
+      {"name": "exposure_limits", "datatype": "string"}
+    ],
+    "suggested_relations": [
+      {"name": "mitigated_by", "range": "SafetyProtocol"},
+      {"name": "affects", "range": "Personnel"},
+      {"name": "requires", "range": "ProtectiveEquipment"}
+    ]
+  },
+  {
+    "id": "prop_003",
+    "label": "LegalRequirement",
+    "parent_label": "Requirement",
+    "frequency": 18,
+    "confidence": 0.78,
+    "coverage": {
+      "document_count": 10,
+      "sentence_count": 28,
+      "unique_contexts": 15
+    },
+    "examples": [
+      "All legal requirements must be satisfied before decommissioning begins.",
+      "Regulatory compliance with legal requirements is mandatory.",
+      "Legal requirements include environmental impact assessments."
+    ],
+    "definition": "Mandatory obligations imposed by law or regulation that must be fulfilled for decommissioning activities.",
+    "suggested_properties": [
+      {"name": "authority", "datatype": "string"},
+      {"name": "deadline", "datatype": "date"},
+      {"name": "penalty", "datatype": "string"}
+    ],
+    "suggested_relations": [
+      {"name": "enforced_by", "range": "RegulatoryBody"},
+      {"name": "applies_to", "range": "DecommissioningActivity"},
+      {"name": "documented_in", "range": "Regulation"}
+    ]
+  }
+]
