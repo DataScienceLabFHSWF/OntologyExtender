@@ -64,7 +64,7 @@ class QdrantDocumentSource:
     def __init__(
         self,
         qdrant_url: str = "http://localhost:6333",
-        collection: str = "documents",
+        collection: str = "kgbuilder",
         ollama_url: str = "http://localhost:18135",
         ollama_model: str = "qwen3-next",
     ) -> None:

@@ -7,7 +7,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment."""
+    """Application settings loaded from environment.
+
+    Environment variables use HITL_ prefix (e.g., HITL_FUSEKI_URL).
+    Defaults follow INTERFACE_CONTRACT.md for compatibility with
+    KnowledgeGraphBuilder and GraphQAAgent.
+    """
 
     model_config = SettingsConfigDict(
         env_prefix="HITL_",
@@ -15,16 +20,21 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Fuseki
+    # Neo4j (optional — for future GraphQAAgent integration)
+    neo4j_uri: str = "bolt://localhost:7687"
+    neo4j_username: str = ""
+    neo4j_password: str = ""
+
+    # Fuseki (per INTERFACE_CONTRACT.md §3)
     fuseki_url: str = "http://localhost:3030"
     fuseki_dataset: str = "kgbuilder"
     fuseki_staging_dataset: str = "kgbuilder-staging"
     fuseki_user: str = "admin"
     fuseki_password: str = ""
 
-    # Qdrant (document vector store — shared with KGB)
+    # Qdrant (document vector store — shared with KGB, per INTERFACE_CONTRACT.md §2)
     qdrant_url: str = "http://localhost:6333"
-    qdrant_collection: str = "documents"
+    qdrant_collection: str = "kgbuilder"
 
     # LLM (for definition generation)
     ollama_url: str = "http://localhost:18135"
