@@ -125,20 +125,18 @@ class SHACLGenerator:
             lines.append(f'        sh:description "{prop.description}" ;')
             lines.append(f"    ] ;")
 
-        # TODO: Add ObjectProperty (relation) constraints here.
-        # For each rel in proposed_class.suggested_relations:
-        #   lines.append(f"    sh:property [")
-        #   lines.append(f"        sh:path ex:{rel.name} ;")
-        #   lines.append(f"        sh:nodeKind sh:IRI ;")
-        #   lines.append(f"        sh:class ex:{rel.range} ;")
-        #   min_c, max_c = _CARDINALITY_MAP.get(rel.cardinality, (None, None))
-        #   if min_c is not None:
-        #       lines.append(f"        sh:minCount {min_c} ;")
-        #   if max_c is not None:
-        #       lines.append(f"        sh:maxCount {max_c} ;")
-        #   lines.append(f'        sh:description "{rel.description}" ;')
-        #   lines.append(f"    ] ;")
-
+        for rel in getattr(proposed_class, 'suggested_relations', []):
+            lines.append(f"    sh:property [")
+            lines.append(f"        sh:path ex:{rel.name} ;")
+            lines.append(f"        sh:nodeKind sh:IRI ;")
+            lines.append(f"        sh:class ex:{rel.range} ;")
+            min_c, max_c = _CARDINALITY_MAP.get(getattr(rel, 'cardinality', '0..*'), (None, None))
+            if min_c is not None:
+                lines.append(f"        sh:minCount {min_c} ;")
+            if max_c is not None:
+                lines.append(f"        sh:maxCount {max_c} ;")
+            lines.append(f'        sh:description "{getattr(rel, 'description', '')}" ;')
+            lines.append(f"    ] ;")
         shape_turtle = "\n".join(lines) + "\n    .\n"
         return shape_turtle
 
@@ -203,4 +201,18 @@ class SHACLGenerator:
         Returns:
             Tuple of (conforms: bool, results_turtle: str, results_text: str).
         """
-        raise NotImplementedError("pyshacl validation not yet implemented")
+        try:
+            from rdflib import Graph
+            import pyshacl
+            data_graph = Graph().parse(data=data_turtle, format="turtle")
+            shapes_graph = Graph().parse(data=shapes_turtle, format="turtle")
+            conforms, results_graph, results_text = pyshacl.validate(
+                data_graph,
+                shacl_graph=shapes_graph,
+                inference="rdfs",
+                abort_on_first=False,
+            )
+            return (conforms, results_graph.serialize(format="turtle"), results_text)
+        except Exception as e:
+            logger.warning("pyshacl_validation_failed", error=str(e))
+            return (False, "", str(e))

@@ -185,8 +185,46 @@ class OntologySchemaManager:
             path=str(output_path),
             classes=len(self._accepted_classes),
         )
-        # Placeholder — will use rdflib to build and serialize OWL graph
-        raise NotImplementedError("OWL export not yet implemented")
+        try:
+            from rdflib import Graph, Namespace, Literal, URIRef, RDF, RDFS, OWL, XSD
+        except ImportError as e:
+            logger.error("rdflib_import_failed", error=str(e))
+            raise SchemaUpdateError("rdflib is required for OWL export")
+        g = Graph()
+        try:
+            g.parse(str(self.seed_ontology_path))
+        except Exception as e:
+            logger.error("seed_ontology_parse_failed", error=str(e))
+            raise SchemaUpdateError("Failed to parse seed ontology")
+        EX = Namespace(_ONTOLOGY_BASE)
+        g.bind("ex", EX)
+        for cls in self._accepted_classes:
+            class_uri = EX[cls.label]
+            g.add((class_uri, RDF.type, OWL.Class))
+            g.add((class_uri, RDFS.label, Literal(cls.label)))
+            g.add((class_uri, RDFS.comment, Literal(cls.definition)))
+            parent = URIRef(cls.parent_uri) if cls.parent_uri else OWL.Thing
+            g.add((class_uri, RDFS.subClassOf, parent))
+            for prop in getattr(cls, 'suggested_properties', []):
+                prop_uri = EX[prop.name]
+                g.add((prop_uri, RDF.type, OWL.DatatypeProperty))
+                g.add((prop_uri, RDFS.domain, class_uri))
+                xsd_uri = URIRef(_XSD_TYPE_MAP.get(prop.datatype, _XSD_TYPE_MAP["xsd:string"]))
+                g.add((prop_uri, RDFS.range, xsd_uri))
+                g.add((prop_uri, RDFS.label, Literal(prop.name)))
+                g.add((prop_uri, RDFS.comment, Literal(prop.description)))
+            for rel in getattr(cls, 'suggested_relations', []):
+                rel_uri = EX[rel.name]
+                g.add((rel_uri, RDF.type, OWL.ObjectProperty))
+                g.add((rel_uri, RDFS.domain, EX[rel.domain]))
+                g.add((rel_uri, RDFS.range, EX[rel.range]))
+                g.add((rel_uri, RDFS.label, Literal(rel.name)))
+                g.add((rel_uri, RDFS.comment, Literal(rel.description)))
+                if getattr(rel, 'inverse_name', None):
+                    inv_uri = EX[rel.inverse_name]
+                    g.add((rel_uri, OWL.inverseOf, inv_uri))
+        g.serialize(str(output_path), format="xml")
+        logger.info("owl_exported", path=str(output_path), classes=len(self._accepted_classes))
 
     # ── CQ export (TODO) ────────────────────────────────────────────
 
@@ -229,5 +267,34 @@ class OntologySchemaManager:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         logger.info("export_cqs", path=str(output_path))
-        # Placeholder
-        raise NotImplementedError("CQ export not yet implemented")
+        cqs = []
+        for cls in self._accepted_classes:
+            cqs.append({
+                "id": f"cq_{cls.id}_1",
+                "class": cls.label,
+                "question": f"What properties does a {cls.label} have?",
+                "expected_answer_type": "list",
+            })
+            cqs.append({
+                "id": f"cq_{cls.id}_2",
+                "class": cls.label,
+                "question": f"Which {cls.parent_label} instances are also {cls.label}?",
+                "expected_answer_type": "list",
+            })
+            for rel in getattr(cls, 'suggested_relations', []):
+                cqs.append({
+                    "id": f"cq_{cls.id}_{rel.name}",
+                    "class": cls.label,
+                    "question": f"What {rel.range} does {cls.label} {rel.name}?",
+                    "expected_answer_type": "list",
+                })
+        if output_path.exists():
+            try:
+                with open(output_path) as f:
+                    existing = json.load(f)
+                cqs = existing + cqs
+            except Exception:
+                pass
+        with open(output_path, "w") as f:
+            json.dump(cqs, f, indent=2)
+        logger.info("export_cqs", path=str(output_path), count=len(cqs))
