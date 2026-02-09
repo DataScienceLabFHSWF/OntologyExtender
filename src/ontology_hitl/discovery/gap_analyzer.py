@@ -6,10 +6,10 @@ This module compares KGB extraction checkpoint entities against the current
 ontology in Fuseki to identify gap candidates — entity types that should
 become new ontology classes.
 
-Three methods still need real implementation (marked with TODO):
-  1. ``_get_ontology_classes()``  — SPARQL query against Fuseki
-  2. ``_classify_entities()``     — Embedding-based semantic matching
-  3. ``_build_gap_candidates()``  — Semantic grouping via embeddings
+All methods are now implemented:
+  1. ``_get_ontology_classes()``  — SPARQL query against Fuseki ✅
+  2. ``_classify_entities()``     — Embedding-based semantic matching ✅
+  3. ``_build_gap_candidates()``  — Semantic grouping via embeddings ✅
 
 Dependencies:
   - ``httpx`` for Fuseki SPARQL and Ollama /api/embed calls
@@ -189,12 +189,11 @@ class OntologyGapAnalyzer:
             )
         return entities
 
-    # ── Fuseki SPARQL (TODO) ────────────────────────────────────────
+    # ── Fuseki SPARQL ──────────────────────────────────────────────
 
     def _get_ontology_classes(self) -> list[str]:
         """Get all class labels from the current ontology via SPARQL.
 
-        TODO: Implement this method.
 
         Steps:
             1. Build the SPARQL endpoint URL:
@@ -217,16 +216,39 @@ class OntologyGapAnalyzer:
         Returns:
             List of class label strings from the ontology.
         """
-        # Placeholder — will query Fuseki in implementation
-        logger.warning("using_placeholder_ontology_classes")
-        return []
+        url = f"{self.fuseki_url}/{self.dataset}/sparql"
+        try:
+            resp = httpx.post(
+                url,
+                data={"query": _SPARQL_ALL_CLASSES},
+                headers={"Accept": "application/sparql-results+json"},
+                timeout=30.0,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            
+            labels = []
+            for binding in data.get("results", {}).get("bindings", []):
+                if "label" in binding and binding["label"]["value"]:
+                    labels.append(binding["label"]["value"])
+                elif "class" in binding:
+                    # Extract local name from URI
+                    uri = binding["class"]["value"]
+                    local_name = uri.split("#")[-1].split("/")[-1]
+                    if local_name:
+                        labels.append(local_name)
+            
+            # Deduplicate
+            return list(set(labels))
+            
+        except httpx.HTTPError as e:
+            logger.warning("failed_to_query_ontology_classes", error=str(e))
+            return []
 
-    # ── Embedding helper (TODO) ─────────────────────────────────────
+    # ── Embedding helper ────────────────────────────────────────────
 
     def _get_embedding(self, text: str) -> np.ndarray:
         """Get embedding vector for a text string via Ollama /api/embed.
-
-        TODO: Implement this method.
 
         Steps:
             1. POST to ``f"{self.ollama_url}/api/embed"`` with JSON body:
@@ -244,12 +266,23 @@ class OntologyGapAnalyzer:
         Returns:
             1-D numpy array of floats (embedding vector).
         """
-        return np.zeros(1)
+        url = f"{self.ollama_url}/api/embed"
+        try:
+            resp = httpx.post(
+                url,
+                json={"model": self.embedding_model, "input": text},
+                timeout=30.0,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            embedding = data["embeddings"][0]
+            return np.array(embedding, dtype=np.float32)
+        except (httpx.HTTPError, KeyError, IndexError) as e:
+            logger.warning("failed_to_get_embedding", text=text, error=str(e))
+            return np.zeros(1)
 
     def _get_class_embeddings(self, classes: list[str]) -> dict[str, np.ndarray]:
         """Embed all ontology class labels, using cache.
-
-        TODO: Implement this method.
 
         Steps:
             1. For each class label not in ``self._class_embeddings``:
@@ -263,9 +296,13 @@ class OntologyGapAnalyzer:
         Returns:
             Dict mapping class label → embedding vector.
         """
+        for class_name in classes:
+            if class_name not in self._class_embeddings:
+                embedding = self._get_embedding(class_name)
+                self._class_embeddings[class_name] = embedding
         return self._class_embeddings
 
-    # ── Entity classification (TODO: add semantic matching) ─────────
+    # ── Entity classification ───────────────────────────────────────
 
     def _classify_entities(
         self,
@@ -274,11 +311,9 @@ class OntologyGapAnalyzer:
     ) -> tuple[list[ExtractedEntitySummary], list[ExtractedEntitySummary]]:
         """Split entities into covered (match ontology) and uncovered.
 
-        TODO: Enhance with embedding-based semantic matching.
+        Uses embedding-based semantic matching for classification.
 
-        Current behaviour: exact string match on entity_type vs class labels.
-
-        Target behaviour:
+        Behaviour:
             1. Build ``ontology_set = {c.lower() for c in ontology_classes}``
             2. For each entity:
                a. If ``entity.entity_type.lower() in ontology_set`` → covered (exact match).
@@ -303,15 +338,47 @@ class OntologyGapAnalyzer:
 
         ontology_set = {c.lower() for c in ontology_classes}
 
+        # Get class embeddings for semantic matching
+        class_embeddings = self._get_class_embeddings(ontology_classes)
+
         for entity in entities:
+            # First check for exact match
             if entity.entity_type.lower() in ontology_set:
+                covered.append(entity)
+                continue
+
+            # Semantic matching with embeddings
+            entity_embed = self._get_embedding(entity.entity_type)
+            if entity_embed.shape[0] == 1:  # Failed embedding
+                uncovered.append(entity)
+                continue
+
+            # Find best matching class
+            best_sim = -1.0
+            best_class = None
+            for class_name, class_embed in class_embeddings.items():
+                if class_embed.shape[0] == 1:  # Failed embedding
+                    continue
+                sim = _cosine_similarity(entity_embed, class_embed)
+                if sim > best_sim:
+                    best_sim = sim
+                    best_class = class_name
+
+            if best_sim >= self.similarity_threshold:
+                # Consider it covered, log the semantic match
+                logger.info(
+                    "semantic_match_found",
+                    entity_type=entity.entity_type,
+                    matched_class=best_class,
+                    similarity=best_sim,
+                )
                 covered.append(entity)
             else:
                 uncovered.append(entity)
 
         return covered, uncovered
 
-    # ── Gap candidate grouping (TODO: add semantic grouping) ────────
+    # ── Gap candidate grouping ──────────────────────────────────────
 
     def _build_gap_candidates(
         self,
@@ -320,11 +387,9 @@ class OntologyGapAnalyzer:
     ) -> list[GapCandidate]:
         """Group uncovered entities into gap candidates by entity type.
 
-        TODO: Add semantic similarity grouping and closest_seed_class.
+        Includes semantic similarity grouping and closest_seed_class computation.
 
-        Current behaviour: groups by exact ``entity_type`` string.
-
-        Target behaviour:
+        Behaviour:
             1. Group by ``entity_type`` into ``type_groups`` (current logic).
             2. For each group, find ``closest_seed_class``:
                a. Embed the ``entity_type`` label.
@@ -348,11 +413,34 @@ class OntologyGapAnalyzer:
         for entity in uncovered:
             type_groups[entity.entity_type].append(entity)
 
+        # Get class embeddings for closest seed computation
+        class_embeddings = {}
+        if ontology_classes:
+            class_embeddings = self._get_class_embeddings(ontology_classes)
+
         candidates: list[GapCandidate] = []
         for entity_type, group in type_groups.items():
             freq = len(group)
             if freq < self.min_frequency:
                 continue
+
+            # Find closest seed class
+            closest_seed_class = None
+            semantic_distance = None
+            if class_embeddings:
+                entity_embed = self._get_embedding(entity_type)
+                if entity_embed.shape[0] > 1:  # Valid embedding
+                    best_sim = -1.0
+                    best_class = None
+                    for class_name, class_embed in class_embeddings.items():
+                        if class_embed.shape[0] > 1:  # Valid embedding
+                            sim = _cosine_similarity(entity_embed, class_embed)
+                            if sim > best_sim:
+                                best_sim = sim
+                                best_class = class_name
+                    if best_class:
+                        closest_seed_class = best_class
+                        semantic_distance = 1.0 - best_sim
 
             candidates.append(
                 GapCandidate(
@@ -361,8 +449,8 @@ class OntologyGapAnalyzer:
                     examples=[e.label for e in group[:5]],
                     frequency=freq,
                     avg_confidence=sum(e.confidence for e in group) / freq,
-                    # TODO: Set closest_seed_class and semantic_distance
-                    # by embedding comparison against ontology_classes.
+                    closest_seed_class=closest_seed_class,
+                    semantic_distance=semantic_distance,
                 )
             )
 
