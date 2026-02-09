@@ -51,67 +51,49 @@ console = Console()
 
 
 def _render_proposal(proposal: dict, index: int, total: int) -> Panel:
-    """Build a Rich Panel for a single proposal.
-
-    TODO: Implement rendering.
-
-    Steps:
-        1. Create a Rich ``Table`` with ``show_header=False, box=None``.
-        2. Add rows for key fields:
-           - ``("Parent:", proposal.get("parent_label", "—"))``
-           - ``("Definition:", proposal.get("definition", "—"))``
-           - ``("Confidence:", str(proposal.get("confidence", 0)))``
-           - ``("Frequency:", str(proposal.get("frequency", 0)))``
-        3. Add a blank row, then header "Properties:".
-        4. For each prop in ``proposal.get("suggested_properties", [])``:
-           ``table.add_row("  •", f"{prop['name']} ({prop.get('datatype','?')}"
-                          f"{', required' if prop.get('required') else ''})")``
-        5. If ``proposal.get("suggested_relations")``:
-           Add header "Relations:", then for each rel:
-           ``table.add_row("  •", f"{rel['name']} → {rel['range']} ({rel.get('cardinality','0..*')})")``
-        6. Wrap table in ``Panel(table,
-               title=f"[{index}/{total}] Proposed Class: {proposal['label']}",
-               border_style="cyan")``
-        7. Return the Panel.
-    """
-    # Minimal fallback rendering
-    body = (
-        f"Parent: {proposal.get('parent_label', '—')}\n"
-        f"Definition: {proposal.get('definition', '—')}\n"
-        f"Confidence: {proposal.get('confidence', 0):.2f}  "
-        f"Frequency: {proposal.get('frequency', 0)}"
-    )
-    return Panel(body, title=f"[{index}/{total}] {proposal.get('label', '?')}")
+    from rich.table import Table
+    table = Table(show_header=False, box=None)
+    table.add_row("Parent:", proposal.get("parent_label", "—"))
+    table.add_row("Definition:", proposal.get("definition", "—"))
+    table.add_row("Confidence:", str(proposal.get("confidence", 0)))
+    table.add_row("Frequency:", str(proposal.get("frequency", 0)))
+    table.add_row("", "")
+    table.add_row("[bold]Properties:[/bold]", "")
+    for prop in proposal.get("suggested_properties", []):
+        table.add_row("  •", f"{prop['name']} ({prop.get('datatype','?')}{', required' if prop.get('required') else ''})")
+    if proposal.get("suggested_relations"):
+        table.add_row("", "")
+        table.add_row("[bold]Relations:[/bold]", "")
+        for rel in proposal["suggested_relations"]:
+            table.add_row("  •", f"{rel['name']} → {rel['range']} ({rel.get('cardinality','0..*')})")
+    return Panel(table, title=f"[{index}/{total}] Proposed Class: {proposal.get('label', '?')}", border_style="cyan")
 
 
 def _prompt_decision(proposal_id: str) -> dict:
-    """Prompt the reviewer for a decision on the current proposal.
-
-    TODO: Implement interactive prompt.
-
-    Steps:
-        1. Use ``Prompt.ask`` from Rich:
-           ``choice = Prompt.ask(
-               "[a]ccept / [r]eject / [e]dit / [s]kip",
-               choices=["a", "r", "e", "s"],
-               default="s")``
-        2. Map choice:
-           - "a" → ``decision = "accepted"``
-           - "r" → ``decision = "rejected"``
-           - "e" → ``decision = "needs_revision"``
-           - "s" → return ``None``  (skip, no decision recorded)
-        3. ``rationale = Prompt.ask("Rationale (optional)", default="")``
-        4. If ``decision == "needs_revision"``:
-           ``changes = Prompt.ask("Suggested changes (optional)", default="")``
-        5. Return dict:
-           ``{"proposal_id": proposal_id, "decision": decision,
-             "rationale": rationale, "timestamp": datetime.now().isoformat(),
-             "suggested_changes": changes if decision == "needs_revision" else ""}``
-
-    Returns:
-        Decision dict or None if skipped.
-    """
-    return None
+    from rich.prompt import Prompt
+    from datetime import datetime
+    choice = Prompt.ask(
+        "[a]ccept / [r]eject / [e]dit / [s]kip",
+        choices=["a", "r", "e", "s"],
+        default="s")
+    if choice == "s":
+        return None
+    decision = {
+        "a": "accepted",
+        "r": "rejected",
+        "e": "needs_revision"
+    }[choice]
+    rationale = Prompt.ask("Rationale (optional)", default="")
+    changes = ""
+    if decision == "needs_revision":
+        changes = Prompt.ask("Suggested changes (optional)", default="")
+    return {
+        "proposal_id": proposal_id,
+        "decision": decision,
+        "rationale": rationale,
+        "timestamp": datetime.now().isoformat(),
+        "suggested_changes": changes if decision == "needs_revision" else ""
+    }
 
 
 @app.command()
