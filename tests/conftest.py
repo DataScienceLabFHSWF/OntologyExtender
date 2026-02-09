@@ -21,25 +21,33 @@ def sample_entities() -> list[ExtractedEntitySummary]:
     """Sample extracted entities for testing."""
     return [
         ExtractedEntitySummary(
+            id="ent_a1b2c3d4e5f6",
             label="Kernkraftwerk Greifswald",
             entity_type="Facility",
+            description="A nuclear power plant in Mecklenburg-Vorpommern",
+            aliases=["KGR", "Greifswald NPP"],
             confidence=0.87,
             frequency=5,
-            source_documents=["doc_01.pdf", "doc_02.pdf"],
+            source_ids=["chunk_01", "chunk_02"],
+            evidence_spans=["Das Kernkraftwerk Greifswald..."],
         ),
         ExtractedEntitySummary(
+            id="ent_b2c3d4e5f6a7",
             label="Sicherheitsgenehmigung A-2024",
             entity_type="Permit",
             confidence=0.92,
             frequency=3,
-            source_documents=["doc_03.pdf"],
+            source_ids=["chunk_03"],
+            evidence_spans=["Sicherheitsgenehmigung..."],
         ),
         ExtractedEntitySummary(
+            id="ent_c3d4e5f6a7b8",
             label="Demontage",
             entity_type="Action",
             confidence=0.78,
             frequency=8,
-            source_documents=["doc_01.pdf", "doc_04.pdf"],
+            source_ids=["chunk_01", "chunk_04"],
+            evidence_spans=["Demontage..."],
         ),
     ]
 

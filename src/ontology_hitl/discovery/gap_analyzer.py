@@ -172,15 +172,18 @@ class OntologyGapAnalyzer:
         for ent in data.get("entities", []):
             entities.append(
                 ExtractedEntitySummary(
+                    id=ent.get("id", ""),  # KGB entity ID
                     label=ent["label"],
                     entity_type=ent.get("entity_type", "Unknown"),
+                    description=ent.get("description", ""),
+                    aliases=ent.get("aliases", []),
                     confidence=ent.get("confidence", 0.0),
                     frequency=len(ent.get("evidence", [])),
-                    source_documents=[
-                        ev.get("document", "") for ev in ent.get("evidence", [])
+                    source_ids=[
+                        ev.get("source_id", "") for ev in ent.get("evidence", [])
                     ],
-                    evidence_snippets=[
-                        ev.get("text_snippet", "") for ev in ent.get("evidence", [])
+                    evidence_spans=[
+                        ev.get("text_span", "") for ev in ent.get("evidence", [])
                     ],
                 )
             )

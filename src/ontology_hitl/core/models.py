@@ -20,14 +20,21 @@ class ProposalStatus(str, Enum):
 
 @dataclass
 class ExtractedEntitySummary:
-    """Lightweight entity reference from KGB extraction checkpoint."""
+    """Lightweight entity reference derived from KGB extraction checkpoint.
 
+    See INTERFACE_CONTRACT.md §4 for the raw checkpoint schema.
+    This model transforms checkpoint entities into the HITL workflow format.
+    """
+
+    id: str  # KGB entity ID: "ent_<hex12>"
     label: str
     entity_type: str
-    confidence: float
-    frequency: int  # How many chunks/documents mention this
-    source_documents: list[str] = field(default_factory=list)
-    evidence_snippets: list[str] = field(default_factory=list)
+    description: str = ""  # Present in checkpoint
+    aliases: list[str] = field(default_factory=list)  # Present in checkpoint
+    confidence: float = 0.0
+    frequency: int = 0  # Computed: len(evidence) or deduplicated source count
+    source_ids: list[str] = field(default_factory=list)  # Derived: evidence[*].source_id
+    evidence_spans: list[str] = field(default_factory=list)  # Derived: evidence[*].text_span
 
 
 @dataclass

@@ -21,6 +21,7 @@ document ingestion pipeline.
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass, field
 
 import httpx
@@ -194,13 +195,19 @@ class QdrantDocumentSource:
         # Convert to ExtractedEntitySummary
         entities: list[ExtractedEntitySummary] = []
         for etype, data in accumulator.items():
+            # Generate a stable ID from entity type and label (mimics KGB pattern)
+            label = data["labels"][0]
+            entity_id = f"ent_{hashlib.sha256(f'{label}::{etype}'.encode()).hexdigest()[:12]}"
             entities.append(ExtractedEntitySummary(
-                label=data["labels"][0],  # representative
+                id=entity_id,
+                label=label,  # representative
                 entity_type=etype,
+                description="",  # No description from Qdrant extraction
+                aliases=data["labels"][1:] if len(data["labels"]) > 1 else [],
                 confidence=sum(data["confidences"]) / len(data["confidences"]),
                 frequency=len(data["labels"]),
-                source_documents=sorted(data["docs"]),
-                evidence_snippets=data["snippets"][:5],
+                source_ids=sorted(data["docs"]),
+                evidence_spans=data["snippets"][:5],
             ))
 
         entities.sort(key=lambda e: e.frequency, reverse=True)
