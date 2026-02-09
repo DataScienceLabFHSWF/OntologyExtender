@@ -260,17 +260,99 @@ class ClassDefinitionGenerator:
         """
         logger.info("generating_class_definition", entity_type=entity_type)
 
-        # Fallback: return placeholder until LLM call is implemented
+        # Format parent_candidates
+        if not parent_candidates:
+            parent_candidates = [{"uri": "owl:Thing", "label": "Thing", "parent": ""}]
+        parent_list = "\n".join(f"- {c['label']} ({c['uri']})" for c in parent_candidates)
+
+        # Format examples
+        examples_str = ", ".join(examples[:5])
+
+        prompt = _CLASS_DEFINITION_PROMPT.format(
+            entity_type=entity_type,
+            examples=examples_str,
+            frequency=frequency,
+            avg_confidence=avg_confidence,
+            parent_candidates=parent_list
+        )
+
+        response = self._call_llm(prompt)
+        if not response:
+            # Fallback
+            return ProposedClass(
+                id=proposal_id,
+                label=entity_type,
+                definition=f"A {entity_type} in the nuclear decommissioning domain.",
+                parent_uri="http://purl.org/2024/planning-ontology#DomainConstant",
+                parent_label="DomainConstant",
+                examples=examples,
+                frequency=frequency,
+                confidence=avg_confidence,
+                suggested_properties=self._suggest_default_properties(entity_type),
+                source_gap_candidates=[entity_type],
+            )
+
+        # Parse JSON
+        parsed = None
+        try:
+            parsed = json.loads(response)
+        except json.JSONDecodeError:
+            match = re.search(r'\{.*\}', response, re.DOTALL)
+            if match:
+                try:
+                    parsed = json.loads(match.group(0))
+                except json.JSONDecodeError:
+                    pass
+
+        if not parsed or not isinstance(parsed, dict):
+            logger.warning("failed_to_parse_llm_response", entity_type=entity_type)
+            # Fallback
+            return ProposedClass(
+                id=proposal_id,
+                label=entity_type,
+                definition=f"A {entity_type} in the nuclear decommissioning domain.",
+                parent_uri="http://purl.org/2024/planning-ontology#DomainConstant",
+                parent_label="DomainConstant",
+                examples=examples,
+                frequency=frequency,
+                confidence=avg_confidence,
+                suggested_properties=self._suggest_default_properties(entity_type),
+                source_gap_candidates=[entity_type],
+            )
+
+        # Extract fields
+        label = parsed.get("label", entity_type)
+        definition = parsed.get("definition", "")
+        parent_label = parsed.get("parent_class", "Thing")
+        properties_raw = parsed.get("properties", [])
+
+        # Resolve parent_uri
+        parent_uri = "owl:Thing"
+        for c in parent_candidates:
+            if c["label"] == parent_label:
+                parent_uri = c["uri"]
+                break
+
+        # Convert properties
+        props = []
+        for p in properties_raw:
+            props.append(PropertyDef(
+                name=p.get("name", "unknown"),
+                datatype=p.get("datatype", "xsd:string"),
+                description=p.get("description", ""),
+                required=p.get("required", False),
+            ))
+
         return ProposedClass(
             id=proposal_id,
-            label=entity_type,
-            definition=f"A {entity_type} in the nuclear decommissioning domain.",
-            parent_uri="http://purl.org/2024/planning-ontology#DomainConstant",
-            parent_label="DomainConstant",
+            label=label,
+            definition=definition,
+            parent_uri=parent_uri,
+            parent_label=parent_label,
             examples=examples,
             frequency=frequency,
             confidence=avg_confidence,
-            suggested_properties=self._suggest_default_properties(entity_type),
+            suggested_properties=props,
             source_gap_candidates=[entity_type],
         )
 
@@ -294,21 +376,70 @@ class ClassDefinitionGenerator:
         Returns:
             List of PropertyDef objects.
         """
-        return [
-            PropertyDef(
-                name="label",
-                datatype="xsd:string",
-                description=f"Human-readable label for this {entity_type}.",
-                required=True,
-                max_count=1,
-            ),
-            PropertyDef(
-                name="description",
-                datatype="xsd:string",
-                description=f"Description of this {entity_type}.",
-                required=False,
-            ),
-        ]
+        prompt = _PROPERTY_SUGGESTION_PROMPT.format(entity_type=entity_type)
+        response = self._call_llm(prompt)
+        if not response:
+            return [
+                PropertyDef(
+                    name="label",
+                    datatype="xsd:string",
+                    description=f"Human-readable label for this {entity_type}.",
+                    required=True,
+                    max_count=1,
+                ),
+                PropertyDef(
+                    name="description",
+                    datatype="xsd:string",
+                    description=f"Description of this {entity_type}.",
+                    required=False,
+                ),
+            ]
+        try:
+            properties_raw = json.loads(response)
+            if not isinstance(properties_raw, list):
+                raise ValueError("Not a list")
+            props = []
+            for p in properties_raw:
+                props.append(PropertyDef(
+                    name=p.get("name", "unknown"),
+                    datatype=p.get("datatype", "xsd:string"),
+                    description=p.get("description", ""),
+                    required=p.get("required", False),
+                ))
+            return props
+        except (json.JSONDecodeError, ValueError):
+            # Fallback to regex
+            match = re.search(r'\[.*\]', response, re.DOTALL)
+            if match:
+                try:
+                    properties_raw = json.loads(match.group(0))
+                    props = []
+                    for p in properties_raw:
+                        props.append(PropertyDef(
+                            name=p.get("name", "unknown"),
+                            datatype=p.get("datatype", "xsd:string"),
+                            description=p.get("description", ""),
+                            required=p.get("required", False),
+                        ))
+                    return props
+                except:
+                    pass
+            logger.warning("failed_to_parse_properties", entity_type=entity_type)
+            return [
+                PropertyDef(
+                    name="label",
+                    datatype="xsd:string",
+                    description=f"Human-readable label for this {entity_type}.",
+                    required=True,
+                    max_count=1,
+                ),
+                PropertyDef(
+                    name="description",
+                    datatype="xsd:string",
+                    description=f"Description of this {entity_type}.",
+                    required=False,
+                ),
+            ]
 
     # ── Fuseki parent lookup (TODO) ─────────────────────────────────
 
@@ -329,7 +460,28 @@ class ClassDefinitionGenerator:
         Returns:
             List of dicts with keys ``uri``, ``label``, ``parent``.
         """
-        return [{"uri": "owl:Thing", "label": "Thing", "parent": ""}]
+        endpoint = f"{self.fuseki_url}/{self.dataset}/sparql"
+        try:
+            response = httpx.post(
+                endpoint,
+                data={"query": _SPARQL_CLASS_HIERARCHY},
+                headers={"Accept": "application/sparql-results+json"}
+            )
+            response.raise_for_status()
+            data = response.json()
+            candidates = []
+            for binding in data.get("results", {}).get("bindings", []):
+                uri = binding["class"]["value"]
+                label = binding.get("label", {}).get("value", "")
+                if not label:
+                    # Extract local name from URI
+                    label = uri.split("#")[-1] if "#" in uri else uri.split("/")[-1]
+                parent = binding.get("parent", {}).get("value", "")
+                candidates.append({"uri": uri, "label": label, "parent": parent})
+            return candidates if candidates else [{"uri": "owl:Thing", "label": "Thing", "parent": ""}]
+        except Exception as e:
+            logger.error("sparql_query_failed", error=str(e))
+            return [{"uri": "owl:Thing", "label": "Thing", "parent": ""}]
 
     # ── Shared LLM call (TODO) ──────────────────────────────────────
 
@@ -360,4 +512,29 @@ class ClassDefinitionGenerator:
         Returns:
             LLM response text, or empty string on error.
         """
-        return ""
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": self.temperature}
+        }
+        try:
+            response = httpx.post(
+                f"{self.ollama_url}/api/generate",
+                json=payload,
+                timeout=300.0
+            )
+            response.raise_for_status()
+            raw_response = response.json()["response"]
+            cleaned = raw_response.strip()
+            # Extract after </think> if present
+            think_match = re.search(r'</think>\s*(.*)', cleaned, re.DOTALL)
+            if think_match:
+                cleaned = think_match.group(1).strip()
+            return cleaned
+        except httpx.HTTPError as e:
+            logger.error("llm_call_failed", error=str(e))
+            return ""
+        except Exception as e:
+            logger.error("llm_call_error", error=str(e))
+            return ""
