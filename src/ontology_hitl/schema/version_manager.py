@@ -121,7 +121,20 @@ class OntologyVersionManager:
             4. Parse ``resp.json()["results"]["bindings"]``
             5. Return list of dicts: ``[{var: b[var]["value"]} for b in bindings for var in b]``
         """
-        raise NotImplementedError("_sparql_query")
+        url = f"{self.fuseki_url}/{self.main_dataset}/sparql"
+        try:
+            resp = httpx.post(url, content=query,
+                             headers={"Content-Type": "application/sparql-query",
+                                      "Accept": "application/sparql-results+json"})
+            resp.raise_for_status()
+            bindings = resp.json()["results"]["bindings"]
+            return [
+                {var: b[var]["value"] for var in b}
+                for b in bindings
+            ]
+        except Exception as e:
+            logger.warning("sparql_query_failed", error=str(e))
+            return []
 
     def _sparql_update(self, update: str) -> None:
         """Execute a SPARQL UPDATE command.
@@ -134,7 +147,13 @@ class OntologyVersionManager:
                headers={"Content-Type": "application/sparql-update"})``
             3. ``resp.raise_for_status()``
         """
-        raise NotImplementedError("_sparql_update")
+        url = f"{self.fuseki_url}/{self.main_dataset}/update"
+        try:
+            resp = httpx.post(url, content=update,
+                             headers={"Content-Type": "application/sparql-update"})
+            resp.raise_for_status()
+        except Exception as e:
+            logger.warning("sparql_update_failed", error=str(e))
 
     # ── Public API ───────────────────────────────────────────────────
 
@@ -167,6 +186,13 @@ class OntologyVersionManager:
             notes=notes,
         )
         self._versions.append(version)
+        staging_name = f"{self.staging_prefix}-{version_id}"
+        staging_uri = self._graph_uri(staging_name)
+        main_uri = self._graph_uri(self.main_dataset)
+        try:
+            self._sparql_update(_SPARQL_COPY_GRAPH.format(source=main_uri, target=staging_uri))
+        except Exception as e:
+            logger.warning("main_graph_copy_failed", error=str(e))
         logger.info("version_created", version=version_id)
         return version
 
@@ -199,7 +225,18 @@ class OntologyVersionManager:
                )``
         """
         logger.info("computing_diff", from_v=from_version, to_v=to_version)
-        return OntologyDiff(from_version=from_version, to_version=to_version)
+        from_uri = self._graph_uri(f"{self.staging_prefix}-{from_version}") if from_version != "main" else self._graph_uri(self.main_dataset)
+        to_uri = self._graph_uri(f"{self.staging_prefix}-{to_version}") if to_version != "main" else self._graph_uri(self.main_dataset)
+        added = self._sparql_query(_SPARQL_DIFF_CLASSES.format(graph_a=to_uri, graph_b=from_uri))
+        removed = self._sparql_query(_SPARQL_DIFF_CLASSES.format(graph_a=from_uri, graph_b=to_uri))
+        added_classes = [r["class"] for r in added]
+        removed_classes = [r["class"] for r in removed]
+        return OntologyDiff(
+            from_version=from_version,
+            to_version=to_version,
+            added_classes=added_classes,
+            removed_classes=removed_classes,
+        )
 
     def promote_staging_to_main(self, version_id: str) -> None:
         """Move a staging graph into the main dataset.
@@ -219,7 +256,11 @@ class OntologyVersionManager:
             5. Log event ``"staging_promoted"``
         """
         logger.info("promoting_to_main", version=version_id)
-        raise NotImplementedError("Staging promotion not yet implemented")
+        staging_uri = self._graph_uri(f"{self.staging_prefix}-{version_id}")
+        main_uri = self._graph_uri(self.main_dataset)
+        self.create_snapshot(label=f"pre-promote-{version_id}")
+        self._sparql_update(_SPARQL_COPY_GRAPH.format(source=staging_uri, target=main_uri))
+        logger.info("staging_promoted", version=version_id)
 
     def create_snapshot(self, label: str | None = None) -> str:
         """Create a point-in-time snapshot of the main graph.
@@ -238,5 +279,8 @@ class OntologyVersionManager:
             6. Return ``name``
         """
         snapshot_name = label or f"snapshot-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
-        logger.info("creating_snapshot", name=snapshot_name)
+        snap_uri = self._graph_uri(snapshot_name)
+        main_uri = self._graph_uri(self.main_dataset)
+        self._sparql_update(_SPARQL_COPY_GRAPH.format(source=main_uri, target=snap_uri))
+        logger.info("snapshot_created", name=snapshot_name)
         return snapshot_name

@@ -106,7 +106,20 @@ class CQEvaluator:
             3. Parse ``resp.json()["results"]["bindings"]``
             4. Return list of dicts mapping var names → values
         """
-        raise NotImplementedError("_sparql_query")
+        url = f"{self.fuseki_url}/{self.dataset}/sparql"
+        try:
+            resp = httpx.post(url, content=query,
+                             headers={"Content-Type": "application/sparql-query",
+                                      "Accept": "application/sparql-results+json"})
+            resp.raise_for_status()
+            bindings = resp.json()["results"]["bindings"]
+            return [
+                {var: b[var]["value"] for var in b}
+                for b in bindings
+            ]
+        except Exception as e:
+            logger.warning("sparql_query_failed", error=str(e))
+            return []
 
     def _sparql_ask(self, query: str) -> bool:
         """Execute SPARQL ASK and return boolean.
@@ -120,7 +133,16 @@ class CQEvaluator:
             3. Return ``resp.json()["boolean"]``
             4. On error, log warning and return ``False``
         """
-        raise NotImplementedError("_sparql_ask")
+        url = f"{self.fuseki_url}/{self.dataset}/sparql"
+        try:
+            resp = httpx.post(url, content=query,
+                             headers={"Content-Type": "application/sparql-query",
+                                      "Accept": "application/sparql-results+json"})
+            resp.raise_for_status()
+            return resp.json().get("boolean", False)
+        except Exception as e:
+            logger.warning("sparql_ask_failed", error=str(e))
+            return False
 
     def _call_llm(self, prompt: str) -> str:
         """Call Ollama /api/generate and return the response text.
@@ -133,7 +155,17 @@ class CQEvaluator:
             3. Strip ``<think>...</think>`` blocks: ``re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)``
             4. Return stripped text
         """
-        raise NotImplementedError("_call_llm")
+        url = f"{self.ollama_url}/api/generate"
+        payload = {"model": self.model, "prompt": prompt, "stream": False}
+        try:
+            resp = httpx.post(url, json=payload, timeout=120.0)
+            resp.raise_for_status()
+            text = resp.json()["response"].strip()
+            text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+            return text
+        except Exception as e:
+            logger.warning("llm_call_failed", error=str(e))
+            return ""
 
     # ── Public API ───────────────────────────────────────────────────
 
@@ -173,12 +205,29 @@ class CQEvaluator:
         """
         logger.info("evaluating_cq_coverage", cq_path=cq_path)
 
-        # Placeholder
+        cqs = json.loads(Path(cq_path).read_text())
+        labels_result = self._sparql_query(_SPARQL_ALL_CLASS_LABELS)
+        class_labels = [r["label"] for r in labels_result]
+        results = []
+        for cq in cqs:
+            res = {"cq": cq["question"]}
+            struct = self._structural_check(cq, class_labels)
+            if struct is not None:
+                res["answerable"] = struct
+                res["method"] = "structural"
+            else:
+                sparql = self._llm_to_sparql(cq["question"], class_labels)
+                answerable = self._sparql_ask(sparql) if sparql else False
+                res["answerable"] = answerable
+                res["method"] = "llm"
+            results.append(res)
+        answerable_count = sum(1 for r in results if r["answerable"])
+        coverage_pct = answerable_count / len(cqs) * 100 if cqs else 0.0
         return {
-            "total_cqs": 0,
-            "answerable": 0,
-            "coverage_pct": 0.0,
-            "results": [],
+            "total_cqs": len(cqs),
+            "answerable": answerable_count,
+            "coverage_pct": coverage_pct,
+            "results": results,
         }
 
     def _structural_check(

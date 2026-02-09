@@ -195,8 +195,59 @@ class RelationProposalGenerator:
             existing_count=len(existing_classes),
         )
 
-        # Placeholder — will use LLM in full implementation
-        return []
+        existing_rels = self._get_existing_relations()
+        existing_rel_names = {rel.get('name') for rel in existing_rels}
+        existing_classes_set = set(existing_classes + [proposed_class.label])
+        existing_classes_list = "\n".join(f"- {cls}" for cls in existing_classes)
+        existing_relations_list = "\n".join(
+            f"- {rel.get('name')} ({rel.get('domain')}  {rel.get('range')})" for rel in existing_rels
+        ) or "(none)"
+        prompt = _RELATION_PROMPT.format(
+            proposed_label=proposed_class.label,
+            proposed_definition=proposed_class.definition,
+            proposed_parent=proposed_class.parent_label,
+            proposed_examples=", ".join(proposed_class.examples[:5]),
+            existing_classes_list=existing_classes_list,
+            existing_relations_list=existing_relations_list
+        )
+        response = self._call_llm(prompt)
+        if not response:
+            return []
+        try:
+            rels_raw = json.loads(response)
+        except json.JSONDecodeError:
+            match = re.search(r'\[.*\]', response, re.DOTALL)
+            if match:
+                try:
+                    rels_raw = json.loads(match.group(0))
+                except Exception:
+                    logger.warning("failed_to_parse_llm_relations", response=response)
+                    return []
+            else:
+                logger.warning("failed_to_parse_llm_relations", response=response)
+                return []
+        results = []
+        for rel in rels_raw:
+            name = rel.get("name")
+            domain = rel.get("domain")
+            range_ = rel.get("range")
+            if not name or not domain or not range_:
+                logger.warning("invalid_relation_dict", rel=rel)
+                continue
+            if name in existing_rel_names:
+                continue
+            if domain not in existing_classes_set or range_ not in existing_classes_set:
+                logger.warning("invalid_domain_or_range", rel=rel)
+                continue
+            results.append(RelationDef(
+                name=name,
+                domain=domain,
+                range=range_,
+                description=rel.get("description", ""),
+                inverse_name=rel.get("inverse_name"),
+                cardinality=rel.get("cardinality", "0..*")
+            ))
+        return results
 
     # ── Fuseki existing relations (TODO) ────────────────────────────
 
@@ -248,4 +299,28 @@ class RelationProposalGenerator:
         Returns:
             LLM response text, or empty string on error.
         """
-        return ""
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": self.temperature}
+        }
+        try:
+            response = httpx.post(
+                f"{self.ollama_url}/api/generate",
+                json=payload,
+                timeout=300.0
+            )
+            response.raise_for_status()
+            raw_response = response.json()["response"]
+            cleaned = raw_response.strip()
+            think_match = re.search(r'</think>\s*(.*)', cleaned, re.DOTALL)
+            if think_match:
+                cleaned = think_match.group(1).strip()
+            return cleaned
+        except httpx.HTTPError as e:
+            logger.error("llm_call_failed", error=str(e))
+            return ""
+        except Exception as e:
+            logger.error("llm_call_error", error=str(e))
+            return ""
