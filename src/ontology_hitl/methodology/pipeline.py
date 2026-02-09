@@ -26,6 +26,16 @@ import structlog
 from ontology_hitl.agents.team import AgentTeam
 from ontology_hitl.agents.base import DebateVerdict
 from ontology_hitl.core.config import Settings
+from ontology_hitl.discovery.entity_linker import EntityLinker
+from ontology_hitl.discovery.embedding_advisor import EmbeddingAdvisor
+from ontology_hitl.discovery.ensemble_strategy import (
+    EnsembleStrategy,
+    StrategyName,
+    StrategyVote,
+)
+from ontology_hitl.evaluation.provenance import ProvenanceTracker
+from ontology_hitl.evaluation.feedback_learner import FeedbackLearner
+from ontology_hitl.schema.seed_manager import SeedProtectedOntology
 from ontology_hitl.methodology.ontology101 import (
     AgentQuestion,
     CQTestResult,
@@ -83,6 +93,9 @@ class Ont101Pipeline:
         iteration: int = 1,
         output_dir: Path | None = None,
         max_debate_rounds: int = 2,
+        seed_manager: SeedProtectedOntology | None = None,
+        provenance: ProvenanceTracker | None = None,
+        feedback_learner: FeedbackLearner | None = None,
     ) -> None:
         self.settings = settings or Settings()
         self.iteration = iteration
@@ -96,6 +109,42 @@ class Ont101Pipeline:
         # Agent team (created lazily with document context)
         self._team: AgentTeam | None = None
 
+        # Literature-inspired modules (A–F)
+        self.seed_manager = seed_manager
+        self.provenance = provenance if provenance is not None else (
+            ProvenanceTracker(settings=self.settings)
+            if self.settings.provenance_enabled else None
+        )
+        self.feedback_learner = feedback_learner if feedback_learner is not None else (
+            FeedbackLearner(
+                max_few_shot=self.settings.feedback_max_few_shot,
+                memory_path=Path(self.settings.feedback_memory_path),
+            )
+            if self.settings.feedback_learning_enabled else None
+        )
+        self.entity_linker: EntityLinker | None = (
+            EntityLinker(
+                settings=self.settings,
+                similarity_threshold=self.settings.entity_linking_threshold,
+            )
+            if self.settings.entity_linking_enabled else None
+        )
+        self.embedding_advisor: EmbeddingAdvisor | None = (
+            EmbeddingAdvisor(settings=self.settings)
+            if self.settings.embedding_advisor_enabled else None
+        )
+        self.ensemble: EnsembleStrategy | None = (
+            EnsembleStrategy(
+                settings=self.settings,
+                weights={
+                    StrategyName.LLM: self.settings.ensemble_weight_llm,
+                    StrategyName.EMBEDDING: self.settings.ensemble_weight_embedding,
+                    StrategyName.COOCCURRENCE: self.settings.ensemble_weight_cooccurrence,
+                },
+            )
+            if self.settings.ensemble_enabled else None
+        )
+
     # ── Main entry point ────────────────────────────────────────────
 
     def _get_team(self, docs_text: str) -> AgentTeam:
@@ -106,6 +155,8 @@ class Ont101Pipeline:
                 document_context=docs_text,
                 max_debate_rounds=self.max_debate_rounds,
                 output_dir=self.output_dir,
+                feedback_learner=self.feedback_learner,
+                provenance=self.provenance,
             )
         else:
             self._team.set_document_context(docs_text)
@@ -156,6 +207,31 @@ class Ont101Pipeline:
             team, seed_cls, seed_props, term_preview, cqs_text,
         )
 
+        # ── Module B: Entity Linking (after reuse, before terms) ────
+        if self.entity_linker and self.result.reuse:
+            try:
+                link_labels = self.result.reuse.terms_still_needed[:20]
+                if link_labels:
+                    link_report = self.entity_linker.link_classes(link_labels)
+                    self._save_phase("2b_entity_links", {
+                        "total_proposed": link_report.total_proposed,
+                        "linked_count": link_report.linked_count,
+                        "coverage_pct": link_report.coverage_pct,
+                        "links": [
+                            {"label": lk.proposed_label, "match": lk.matched_label,
+                             "uri": lk.matched_uri, "source": lk.source,
+                             "similarity": lk.similarity}
+                            for lk in link_report.links
+                        ],
+                    })
+                    logger.info(
+                        "entity_linking_done",
+                        linked=link_report.linked_count,
+                        total=link_report.total_proposed,
+                    )
+            except Exception as e:
+                logger.warning("entity_linking_failed", error=str(e))
+
         # Phase 3: Term enumeration
         self.result.terms = self._run_phase_terms(team, docs_text, seed_cls)
 
@@ -167,6 +243,12 @@ class Ont101Pipeline:
         self.result.hierarchy = self._run_phase_hierarchy(
             team, seed_hier, class_terms, cqs_text,
         )
+
+        # ── Module C+E: Embedding Advisor + Ensemble (after hierarchy) ──
+        if self.result.hierarchy and self.result.hierarchy.nodes:
+            self._run_embedding_ensemble(
+                class_terms, seed_classes or [], document_excerpts or [],
+            )
 
         # Run Ont-101 validation on hierarchy
         if self.result.hierarchy:
@@ -226,6 +308,21 @@ class Ont101Pipeline:
         # Persist entire iteration
         self._save_iteration()
 
+        # ── Module D: Provenance export ─────────────────────────────
+        if self.provenance:
+            try:
+                prov_report = self.provenance.report()
+                self._save_phase("provenance", self.provenance.to_json())
+                logger.info(
+                    "provenance_exported",
+                    records=prov_report.total_records,
+                    elements=prov_report.elements_with_evidence,
+                )
+            except Exception as e:
+                logger.warning("provenance_export_failed", error=str(e))
+
+        # Module F: feedback memory is auto-persisted on each record()
+
         logger.info(
             "ont101_iteration_complete",
             iteration=self.iteration,
@@ -235,6 +332,139 @@ class Ont101Pipeline:
         )
 
         return self.result
+
+    # ── Literature-inspired integration helpers ───────────────────
+
+    def _run_embedding_ensemble(
+        self,
+        class_terms: list[str],
+        seed_classes: list[str],
+        document_excerpts: list[str],
+    ) -> None:
+        """Run embedding advisor and ensemble voting for hierarchy refinement.
+
+        This enriches the hierarchy from Phase 4 with:
+        - Module C: Embedding-based parent recommendations
+        - Module E: Ensemble voting (LLM + Embedding + Co-occurrence)
+
+        Results are saved as supplementary artefacts alongside the hierarchy.
+        """
+        hierarchy = self.result.hierarchy
+        if not hierarchy:
+            return
+
+        proposed = [
+            {"label": n.label, "definition": n.definition}
+            for n in hierarchy.nodes if not n.is_from_seed
+        ]
+        if not proposed:
+            return
+
+        # Module C: Embedding Advisor
+        embedding_votes: list[StrategyVote] = []
+        if self.embedding_advisor:
+            try:
+                # Index seed classes
+                seed_dicts = [
+                    {"uri": f"seed:{lbl}", "label": lbl, "definition": ""}
+                    for lbl in seed_classes
+                ]
+                # Also include seed nodes from hierarchy
+                for n in hierarchy.nodes:
+                    if n.is_from_seed:
+                        seed_dicts.append({
+                            "uri": n.uri, "label": n.label,
+                            "definition": n.definition,
+                        })
+
+                self.embedding_advisor.index_seed_classes(seed_dicts)
+                advisor_report = self.embedding_advisor.recommend_parents(proposed)
+
+                self._save_phase("4c_embedding_advisor", {
+                    "model": advisor_report.model_used,
+                    "recommendations": [
+                        {
+                            "label": r.proposed_label,
+                            "parent": r.recommended_parent_label,
+                            "similarity": r.similarity_score,
+                            "confidence": r.structural_confidence,
+                        }
+                        for r in advisor_report.recommendations
+                    ],
+                })
+
+                # Convert to StrategyVotes for ensemble
+                for rec in advisor_report.recommendations:
+                    embedding_votes.append(StrategyVote(
+                        strategy=StrategyName.EMBEDDING,
+                        proposed_label=rec.proposed_label,
+                        recommended_parent_uri=rec.recommended_parent_uri,
+                        recommended_parent_label=rec.recommended_parent_label,
+                        confidence=rec.similarity_score,
+                    ))
+
+                logger.info("embedding_advisor_done",
+                            recommendations=len(advisor_report.recommendations))
+            except Exception as e:
+                logger.warning("embedding_advisor_failed", error=str(e))
+
+        # Module E: Ensemble Strategy
+        if self.ensemble:
+            try:
+                # Collect LLM votes (from the hierarchy debate)
+                llm_votes: list[StrategyVote] = []
+                for n in hierarchy.nodes:
+                    if not n.is_from_seed and n.parent_label:
+                        llm_votes.append(StrategyVote(
+                            strategy=StrategyName.LLM,
+                            proposed_label=n.label,
+                            recommended_parent_uri=n.parent_uri or "",
+                            recommended_parent_label=n.parent_label,
+                            confidence=0.8,  # LLM debated → reasonable confidence
+                        ))
+
+                # Co-occurrence votes
+                seed_for_cooc = [
+                    {"uri": f"seed:{lbl}", "label": lbl}
+                    for lbl in seed_classes
+                ]
+                cooc_votes = EnsembleStrategy.compute_cooccurrence_votes(
+                    [{"label": p["label"]} for p in proposed],
+                    document_excerpts,
+                    seed_for_cooc,
+                )
+
+                # Group all votes by class
+                all_votes: dict[str, list[StrategyVote]] = {}
+                for v in llm_votes + embedding_votes + cooc_votes:
+                    all_votes.setdefault(v.proposed_label, []).append(v)
+
+                ensemble_report = self.ensemble.aggregate(all_votes)
+
+                self._save_phase("4e_ensemble", {
+                    "avg_agreement": ensemble_report.avg_agreement,
+                    "avg_confidence": ensemble_report.avg_confidence,
+                    "unanimous": ensemble_report.unanimous_count,
+                    "split": ensemble_report.split_count,
+                    "decisions": [
+                        {
+                            "label": d.proposed_label,
+                            "parent": d.final_parent_label,
+                            "confidence": d.final_confidence,
+                            "agreement": d.agreement_score,
+                        }
+                        for d in ensemble_report.decisions
+                    ],
+                })
+
+                logger.info(
+                    "ensemble_done",
+                    classes=len(ensemble_report.decisions),
+                    unanimous=ensemble_report.unanimous_count,
+                    split=ensemble_report.split_count,
+                )
+            except Exception as e:
+                logger.warning("ensemble_failed", error=str(e))
 
     # ── Phase runners (multi-agent debates) ─────────────────────────
 

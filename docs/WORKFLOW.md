@@ -47,6 +47,11 @@ or escalation to HITL.
 - Check for overlap with seed ontology
 - Output: `ReuseReport` with candidates and recommendations
 
+#### Phase 2b: Entity Linking _(Module B)_
+- Link uncovered terms to external ontologies (Wikidata, BFO, EMMO, schema.org, SAREF)
+- Uses Ollama embeddings for cosine similarity matching + live Wikidata search
+- Output: `EntityLinkReport` with links, coverage stats, and confidence scores
+
 ### Phase 3: Term Enumeration
 - Extract important domain terms from Qdrant documents
 - Classify as class, property, or instance candidates
@@ -57,6 +62,20 @@ or escalation to HITL.
 - Apply Ont-101 naming and depth rules
 - Validate hierarchy (max depth, naming conventions, disjointness)
 - Output: `ClassHierarchy` with validated tree
+
+#### Phase 4c: Embedding Advisor _(Module C)_
+- Compute Ollama embeddings for seed classes and proposed classes
+- Recommend parent classes via nearest-neighbour search
+- Confidence score = gap between best and runner-up similarity
+- Output: `EmbeddingAdvisorReport` with parent recommendations
+
+#### Phase 4e: Ensemble Strategy _(Module E)_
+- Weighted voting across three strategies: LLM (0.5), Embedding (0.3), Co-occurrence (0.2)
+- LLM votes come from the Phase 4 debate consensus
+- Embedding votes come from Module C recommendations
+- Co-occurrence votes come from document chunk analysis
+- Reports agreement scores and flags split decisions for HITL
+- Output: `EnsembleReport` with final decisions and diagnostics
 
 ### Phase 5: Property Definition
 - Define datatype and object properties for each class
@@ -75,6 +94,21 @@ or escalation to HITL.
 - Output: `SampleInstance` list with test results
 
 ## Debate Pattern (per phase)
+
+### Cross-Cutting Modules (active throughout all phases)
+
+**Module A — Seed Protection**: The seed ontology is loaded into a
+`SeedProtectedOntology` (extension-by-inheritance, inspired by Azure DTDL).
+New classes always extend seed classes via `rdfs:subClassOf`; the seed graph
+is never modified directly.
+
+**Module D — Provenance Chain**: Evidence citations from agent proposals and
+reviews are recorded by `ProvenanceTracker` throughout all debate phases.
+Exports as PROV-O RDF triples or JSON audit trail.
+
+**Module F — Feedback Learning Loop**: `FeedbackLearner` augments agent prompts
+with few-shot examples from prior HITL accept/reject decisions. Rejection warnings
+prevent repeated mistakes. Memory persists as JSON across sessions.
 
 ```
 Round 1:
@@ -167,11 +201,15 @@ Each iteration produces artefacts in `data/iterations/{version}/`:
 |----------|-------------|
 | `scope.json` | Phase 1 — domain scope and CQs |
 | `reuse_report.json` | Phase 2 — reuse analysis |
+| `2b_entity_links.json` | Phase 2b — entity linking to external ontologies _(Module B)_ |
 | `terms.json` | Phase 3 — enumerated terms |
 | `hierarchy.json` | Phase 4 — class hierarchy |
+| `4c_embedding_advisor.json` | Phase 4c — embedding-based parent recommendations _(Module C)_ |
+| `4e_ensemble.json` | Phase 4e — ensemble voting results _(Module E)_ |
 | `properties.json` | Phase 5 — property definitions |
 | `facets.json` | Phase 6 — facet specifications |
 | `instances.json` | Phase 7 — instance validation |
+| `provenance.json` | PROV-O evidence chain _(Module D)_ |
 | `debates/` | Full debate transcripts per phase |
 | `questions.json` | Escalated questions for HITL |
 | `evaluation_report.json` | Coverage and CQ metrics |

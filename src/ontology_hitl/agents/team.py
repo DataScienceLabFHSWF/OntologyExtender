@@ -43,6 +43,10 @@ class AgentTeam:
     - **DomainExpert**: validates against document evidence
     - **Critic**: checks structural quality and consistency
 
+    Optionally enriched with literature-inspired modules:
+    - **FeedbackLearner** (F): augments prompts with HITL history
+    - **ProvenanceTracker** (D): records evidence citations from debates
+
     Parameters
     ----------
     settings:
@@ -53,6 +57,10 @@ class AgentTeam:
         Maximum propose→review→revise cycles per phase (default 2).
     output_dir:
         Where to persist debate transcripts.
+    feedback_learner:
+        Optional FeedbackLearner for prompt augmentation.
+    provenance:
+        Optional ProvenanceTracker for evidence recording.
     """
 
     def __init__(
@@ -61,10 +69,14 @@ class AgentTeam:
         document_context: str = "",
         max_debate_rounds: int = 2,
         output_dir: Path | None = None,
+        feedback_learner: "FeedbackLearner | None" = None,
+        provenance: "ProvenanceTracker | None" = None,
     ) -> None:
         self.settings = settings or Settings()
         self.max_debate_rounds = max_debate_rounds
         self.output_dir = output_dir
+        self.feedback_learner = feedback_learner
+        self.provenance = provenance
 
         # Create agents
         self.engineer = OntologyEngineerAgent(settings=self.settings)
@@ -109,9 +121,37 @@ class AgentTeam:
         logger.info("debate_start", phase=phase.value, max_rounds=self.max_debate_rounds)
         debate = Debate(phase=phase, max_rounds=self.max_debate_rounds)
 
+        # Module F: Augment context with feedback learner history
+        augmented_context = context
+        if self.feedback_learner:
+            try:
+                augmented_context = self.feedback_learner.augment_prompt(
+                    context, phase=phase.value,
+                )
+            except Exception as e:
+                logger.warning("feedback_augmentation_failed", error=str(e))
+
         # Round 1: Engineer proposes
-        proposal_msg = self.engineer.propose(phase, context)
+        proposal_msg = self.engineer.propose(phase, augmented_context)
         debate.add_message(proposal_msg)
+
+        # Module D: Record provenance from proposal
+        if self.provenance and proposal_msg.content:
+            try:
+                for key in ("nodes", "terms", "properties"):
+                    for item in proposal_msg.content.get(key, []):
+                        label = item.get("label", item.get("name", item.get("term", "")))
+                        uri = item.get("uri", f"plan:{label}")
+                        if label:
+                            self.provenance.record_from_agent_message(
+                                element_uri=uri,
+                                element_label=label,
+                                agent_content=item,
+                                agent_role="ontology_engineer",
+                                phase=phase.value,
+                            )
+            except Exception as e:
+                logger.debug("provenance_record_failed", error=str(e))
 
         if not proposal_msg.content:
             logger.warning("engineer_proposal_empty", phase=phase.value)

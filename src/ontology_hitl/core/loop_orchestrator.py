@@ -27,6 +27,9 @@ from ontology_hitl.core.feedback_protocol import (
     IterationPlan,
     LoopMode,
 )
+from ontology_hitl.evaluation.provenance import ProvenanceTracker
+from ontology_hitl.evaluation.feedback_learner import FeedbackLearner
+from ontology_hitl.schema.seed_manager import SeedProtectedOntology
 
 logger = structlog.get_logger(__name__)
 
@@ -82,6 +85,21 @@ class FeedbackLoopOrchestrator:
         self.max_debate_rounds = max_debate_rounds
         self.metrics_history: list[FeedbackMetrics] = []
         self._iteration = 0
+
+        # Literature-inspired modules (shared across iterations)
+        self.seed_manager: SeedProtectedOntology | None = None
+        self.provenance = (
+            ProvenanceTracker(settings=self.settings)
+            if self.settings.provenance_enabled else None
+        )
+        self.feedback_learner = (
+            FeedbackLearner(
+                max_few_shot=self.settings.feedback_max_few_shot,
+                memory_path=Path(self.settings.feedback_memory_path),
+            )
+            if self.settings.feedback_learning_enabled else None
+        )
+        # Feedback memory is auto-loaded in FeedbackLearner.__init__
 
     # ------------------------------------------------------------------
     # Main entry point
@@ -168,6 +186,22 @@ class FeedbackLoopOrchestrator:
         self._save_report(report, summary)
         self._finish_wandb(summary)
 
+        # Module D: Export full provenance trail
+        if self.provenance:
+            try:
+                output_dir = Path(self.settings.exports_dir)
+                output_dir.mkdir(parents=True, exist_ok=True)
+                prov_path = output_dir / "provenance.json"
+                prov_data = self.provenance.to_json()
+                import json as _json
+                with open(prov_path, "w") as f:
+                    _json.dump(prov_data, f, indent=2, default=str)
+                logger.info("provenance_trail_exported", path=str(prov_path))
+            except Exception as e:
+                logger.warning("provenance_export_failed", error=str(e))
+
+        # Module F: feedback memory is auto-persisted on each record()
+
         return report
 
     # ------------------------------------------------------------------
@@ -202,12 +236,28 @@ class FeedbackLoopOrchestrator:
         seed_properties = self._get_seed_properties()
         seed_hierarchy = self._get_seed_hierarchy_text()
 
+        # Module A: Seed Protection — load once per loop
+        if self.seed_manager is None:
+            try:
+                self.seed_manager = SeedProtectedOntology()
+                self.seed_manager.load_seed(self.settings.seed_ontology_path)
+                logger.info(
+                    "seed_manager_loaded",
+                    classes=len(self.seed_manager.seed_classes()),
+                )
+            except Exception as e:
+                logger.warning("seed_manager_load_failed", error=str(e))
+                self.seed_manager = None
+
         # Run the 7-phase multi-agent pipeline
         pipeline = Ont101Pipeline(
             settings=self.settings,
             iteration=plan.iteration,
             output_dir=iter_dir,
             max_debate_rounds=self.max_debate_rounds,
+            seed_manager=self.seed_manager,
+            provenance=self.provenance,
+            feedback_learner=self.feedback_learner,
         )
         result = pipeline.run_iteration(
             document_excerpts=doc_excerpts,

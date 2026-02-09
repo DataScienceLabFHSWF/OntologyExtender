@@ -1,8 +1,8 @@
 # OntologyExtender — Implementation Guide
 
 > **Audience**: Developers working on the OntologyExtender codebase.
-> **Last updated**: 2026-02-09
-> **Tests**: 106 passing
+> **Last updated**: 2026-02-10
+> **Tests**: ~170 passing
 
 ---
 
@@ -11,13 +11,14 @@
 1. [Architecture Overview](#1-architecture-overview)
 2. [Multi-Agent System](#2-multi-agent-system)
 3. [Ont-101 Methodology Pipeline](#3-ont-101-methodology-pipeline)
-4. [Feedback Loop Orchestrator](#4-feedback-loop-orchestrator)
-5. [Infrastructure & Services](#5-infrastructure--services)
-6. [Module Reference](#6-module-reference)
-7. [Remaining TODOs](#7-remaining-todos)
-8. [W&B Logging Integration](#8-wandb-logging-integration)
-9. [Fuseki SPARQL Reference](#9-fuseki-sparql-reference)
-10. [Testing Strategy](#10-testing-strategy)
+4. [Literature-Inspired Modules (A–F)](#4-literature-inspired-modules-af)
+5. [Feedback Loop Orchestrator](#5-feedback-loop-orchestrator)
+6. [Infrastructure & Services](#6-infrastructure--services)
+7. [Module Reference](#7-module-reference)
+8. [Remaining TODOs](#8-remaining-todos)
+9. [W&B Logging Integration](#9-wandb-logging-integration)
+10. [Fuseki SPARQL Reference](#10-fuseki-sparql-reference)
+11. [Testing Strategy](#11-testing-strategy)
 
 ---
 
@@ -212,7 +213,91 @@ Automatic structural checks applied after Phase 4 (hierarchy):
 
 ---
 
-## 4. Feedback Loop Orchestrator
+## 4. Literature-Inspired Modules (A–F)
+
+Six modules were added based on a systematic literature review of state-of-the-art
+ontology extension approaches:
+
+### Source Files
+
+```
+src/ontology_hitl/
+├── schema/seed_manager.py           # A — Seed Protection Pattern
+├── discovery/entity_linker.py       # B — Entity Linking
+├── discovery/embedding_advisor.py   # C — Embedding Advisor (Ollama)
+├── evaluation/provenance.py         # D — Provenance Chain (PROV-O)
+├── discovery/ensemble_strategy.py   # E — Ensemble Strategy
+└── evaluation/feedback_learner.py   # F — Feedback Learning Loop
+```
+
+### A — Seed Protection Pattern (`schema/seed_manager.py`)
+
+Inspired by the Azure Digital Twins DTDL extension-by-inheritance pattern.
+
+- `SeedProtectedOntology` manages a ConjunctiveGraph with separate named graphs
+  for seed (`urn:graph:seed`) and extension (`urn:graph:ext:*`) data
+- Never modifies the seed graph; new classes extend via `rdfs:subClassOf`
+- `build_merged()` creates a read-only union, `export_merged()` serializes both
+- `validate_parent_exists()` ensures extension classes reference valid parents
+
+### B — Entity Linking (`discovery/entity_linker.py`)
+
+Inspired by John et al. (2025) — HITL Workflow for Neuro-Symbolic KG.
+
+- `EntityLinker` links proposed class labels to external ontologies
+- Built-in registry: Wikidata, BFO, EMMO, schema.org, SAREF
+- Uses Ollama `/api/embed` for cosine similarity matching
+- Live Wikidata search via `wbsearchentities` API
+- Configurable similarity threshold (default 0.75)
+- Integration point: after Phase 2 (Reuse Analysis)
+
+### C — Embedding Advisor (`discovery/embedding_advisor.py`)
+
+Inspired by Memariani et al. (2025) — Box Embeddings for Extending Ontologies.
+
+- `EmbeddingAdvisor` encodes seed classes as Ollama embedding vectors
+- For each proposed class, finds nearest seed class as parent recommendation
+- `structural_confidence` = gap between best and runner-up similarity
+- Identifies potential siblings (proposed classes sharing the same parent)
+- Integration point: after Phase 4 (Class Hierarchy)
+
+### D — Provenance Chain (`evaluation/provenance.py`)
+
+Inspired by John et al. (2025) — evidence traceability requirement.
+
+- `ProvenanceTracker` records evidence citations from agent debates
+- `record_from_agent_message()` extracts evidence from structured responses
+- `to_prov_graph()` exports PROV-O RDF triples using `rdflib`
+- `to_json()` exports JSON audit trail
+- Integration point: cross-cutting, active during all debate phases
+
+### E — Ensemble Strategy (`discovery/ensemble_strategy.py`)
+
+Inspired by Mossakowski (2023) — neural-symbolic ensemble approach.
+
+- `EnsembleStrategy` aggregates votes from three strategies:
+  - **LLM** (weight 0.5): from the multi-agent debate consensus
+  - **Embedding** (weight 0.3): from Module C recommendations
+  - **Co-occurrence** (weight 0.2): document chunk co-occurrence analysis
+- `agreement_score` indicates consensus level (1.0 = unanimous)
+- Split decisions (agreement < 0.5) are flagged for HITL review
+- Integration point: after Phase 4 (Class Hierarchy)
+
+### F — Feedback Learning Loop (`evaluation/feedback_learner.py`)
+
+Inspired by John et al. (2025) — SUS 84.17 human feedback integration.
+
+- `FeedbackLearner` records HITL accept/reject decisions with comments
+- `get_few_shot_examples()` returns recent accepted patterns for prompts
+- `get_rejection_warnings()` alerts about previously rejected patterns
+- `augment_prompt()` enriches agent prompts with learned history
+- `acceptance_rate()` and `acceptance_trend()` for monitoring
+- Memory persists as JSON across sessions via `save()`/`load()`
+- Integration point: cross-cutting, augments all agent prompts
+
+---
+
+## 5. Feedback Loop Orchestrator
 
 ### Source File
 
@@ -252,7 +337,7 @@ Each iteration:
 
 ---
 
-## 5. Infrastructure & Services
+## 6. Infrastructure & Services
 
 | Service | Container | Port | Purpose |
 |---------|-----------|------|---------|
@@ -302,7 +387,7 @@ content = resp.json()["message"]["content"]
 
 ---
 
-## 6. Module Reference
+## 7. Module Reference
 
 ### Completed Modules
 
@@ -327,6 +412,12 @@ content = resp.json()["message"]["content"]
 | `mapping/yarrrml_generator.py` | ✅ Complete | YARRRML rule generation |
 | `sources/qdrant_source.py` | ✅ Complete | Document chunk retrieval |
 | `sources/cq_generator.py` | ✅ Complete | CQ generation from documents |
+| `schema/seed_manager.py` | ✅ Complete | Module A — Seed protection (extension-by-inheritance) |
+| `discovery/entity_linker.py` | ✅ Complete | Module B — Entity linking to external ontologies |
+| `discovery/embedding_advisor.py` | ✅ Complete | Module C — Ollama embedding parent advisor |
+| `evaluation/provenance.py` | ✅ Complete | Module D — PROV-O provenance chain |
+| `discovery/ensemble_strategy.py` | ✅ Complete | Module E — Weighted ensemble strategy |
+| `evaluation/feedback_learner.py` | ✅ Complete | Module F — HITL feedback learning loop |
 
 ### Modules with TODOs
 
@@ -345,7 +436,7 @@ content = resp.json()["message"]["content"]
 
 ---
 
-## 7. Remaining TODOs
+## 8. Remaining TODOs
 
 These TODOs are in the **discovery**, **schema**, **evaluation**, and **review**
 modules. They are independent of the multi-agent system — they handle gap
@@ -427,7 +518,7 @@ Optional web UI for reviewing escalated questions and monitoring convergence.
 
 ---
 
-## 8. W&B Logging Integration
+## 9. W&B Logging Integration
 
 The project logs to the **`ontology-hitl`** W&B project.
 
@@ -453,7 +544,7 @@ HITL_WANDB_PROJECT=ontology-hitl
 
 ---
 
-## 9. Fuseki SPARQL Reference
+## 10. Fuseki SPARQL Reference
 
 ### Get all classes
 
@@ -495,9 +586,9 @@ curl -X PUT \
 
 ---
 
-## 10. Testing Strategy
+## 11. Testing Strategy
 
-### Current Test Suite (106 tests)
+### Current Test Suite (~170 tests)
 
 ```
 tests/
@@ -511,14 +602,20 @@ tests/
 ├── discovery/
 │   ├── test_class_generator.py
 │   ├── test_gap_analyzer.py
-│   └── test_relation_generator.py
+│   ├── test_relation_generator.py
+│   ├── test_entity_linker.py      # Module B — entity linking tests
+│   ├── test_embedding_advisor.py  # Module C — embedding advisor tests
+│   └── test_ensemble_strategy.py  # Module E — ensemble strategy tests
 ├── schema/
 │   ├── test_manager.py
 │   ├── test_shacl_generator.py
-│   └── test_version_manager.py
+│   ├── test_version_manager.py
+│   └── test_seed_manager.py       # Module A — seed protection tests
 ├── evaluation/
 │   ├── test_completeness.py
-│   └── test_cq_evaluator.py
+│   ├── test_cq_evaluator.py
+│   ├── test_provenance.py         # Module D — provenance chain tests
+│   └── test_feedback_learner.py   # Module F — feedback learner tests
 ├── mapping/
 │   └── test_yarrrml_generator.py
 ├── review/
@@ -532,7 +629,7 @@ tests/
 ### Running Tests
 
 ```bash
-make test            # 106 tests, fast (no network calls)
+make test            # ~170 tests, fast (no network calls)
 make test-verbose    # with full output
 pytest tests/agents/ # just agent tests
 ```
