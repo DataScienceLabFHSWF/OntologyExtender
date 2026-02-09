@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  # Dedicated Ollama instance for ontology extension (port 18135)
+  ollama-ontology-extender:
+    image: ollama/ollama
+    container_name: ollama-ontology-extender
+    ports:
+      - "18135:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+      - OLLAMA_NUM_PARALLEL=2
+      - OLLAMA_FLASH_ATTENTION=1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  # Optional — only needed if NOT sharing Fuseki with KnowledgeGraphBuilder
+  fuseki-staging:
+    image: secoresearch/fuseki:latest
+    container_name: hitl-fuseki
+    ports:
+      - "3031:3030"
+    environment:
+      - ADMIN_PASSWORD=${HITL_FUSEKI_PASSWORD:-admin}
+    volumes:
+      - fuseki_data:/fuseki
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  fuseki_data:

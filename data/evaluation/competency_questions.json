@@ -1,0 +1,101 @@
+[
+  {
+    "id": "CQ_001",
+    "question": "Was ist der Unterschied zwischen Freigabe und Freisetzung?",
+    "expected_entity_types": ["Action", "Regulation"],
+    "expected_relations": ["regulatedBy", "appliesTo"],
+    "difficulty": 3,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Seed ontology baseline CQ"
+  },
+  {
+    "id": "CQ_002",
+    "question": "Welche Anlagen werden in den Dokumenten erwähnt?",
+    "expected_entity_types": ["Facility"],
+    "expected_relations": [],
+    "difficulty": 1,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Basic entity retrieval"
+  },
+  {
+    "id": "CQ_003",
+    "question": "Welche Genehmigungen sind für den Rückbau einer Anlage erforderlich?",
+    "expected_entity_types": ["Facility", "Permit", "DecommissioningStrategy"],
+    "expected_relations": ["requiresPermit", "hasStrategy"],
+    "difficulty": 4,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Facility and Permit classes (likely v1 additions)"
+  },
+  {
+    "id": "CQ_004",
+    "question": "Welche Voraussetzungen müssen für die Stilllegung einer Anlage erfüllt sein?",
+    "expected_entity_types": ["Facility", "Prerequisite", "Regulation"],
+    "expected_relations": ["requiresPrerequisite", "regulatedBy"],
+    "difficulty": 4,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": ""
+  },
+  {
+    "id": "CQ_005",
+    "question": "Welche Vorschriften regeln den Transport von Plutonium?",
+    "expected_entity_types": ["Regulation", "Material", "Action"],
+    "expected_relations": ["regulates", "appliesTo"],
+    "difficulty": 4,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Material and Regulation classes"
+  },
+  {
+    "id": "CQ_006",
+    "question": "Welche Rückbaustrategien werden in den Dokumenten beschrieben?",
+    "expected_entity_types": ["DecommissioningStrategy"],
+    "expected_relations": ["hasPhase", "appliesTo"],
+    "difficulty": 3,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires DecommissioningStrategy class"
+  },
+  {
+    "id": "CQ_007",
+    "question": "Welche Personen oder Organisationen sind für die Stilllegung verantwortlich?",
+    "expected_entity_types": ["Person", "Organization", "Facility"],
+    "expected_relations": ["responsibleFor", "manages"],
+    "difficulty": 3,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": ""
+  },
+  {
+    "id": "CQ_008",
+    "question": "Welche Gefahrstoffe oder Strahlungsrisiken werden erwähnt?",
+    "expected_entity_types": ["RadiationHazard", "Material"],
+    "expected_relations": ["hasHazard", "locatedAt"],
+    "difficulty": 3,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires RadiationHazard class"
+  },
+  {
+    "id": "CQ_009",
+    "question": "Welche zeitlichen Abläufe und Phasen hat ein Rückbauprojekt?",
+    "expected_entity_types": ["Phase", "Action", "DecommissioningStrategy"],
+    "expected_relations": ["hasPhase", "precedes", "follows"],
+    "difficulty": 4,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Phase class and temporal relations"
+  }
+]
