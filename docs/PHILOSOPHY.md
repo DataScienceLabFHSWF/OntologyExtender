@@ -1,7 +1,5 @@
 # Philosophical Foundations for Multi-Agent Ontology Construction
 
-> *"The owl of Minerva spreads its wings only with the falling of the dusk."*
-> — Hegel, *Philosophy of Right* (1820), Preface
 
 This document provides the epistemological and methodological grounding
 for the multi-agent ontology extension system. It connects philosophical
