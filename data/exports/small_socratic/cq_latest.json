@@ -1,0 +1,268 @@
+[
+  {
+    "id": "CQ_001",
+    "question": "Was ist der Unterschied zwischen Freigabe und Freisetzung?",
+    "expected_entity_types": [
+      "Action",
+      "Regulation"
+    ],
+    "expected_relations": [
+      "regulatedBy",
+      "appliesTo"
+    ],
+    "difficulty": 3,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Seed ontology baseline CQ"
+  },
+  {
+    "id": "CQ_002",
+    "question": "Welche Anlagen werden in den Dokumenten erw\u00e4hnt?",
+    "expected_entity_types": [
+      "Facility"
+    ],
+    "expected_relations": [],
+    "difficulty": 1,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Basic entity retrieval"
+  },
+  {
+    "id": "CQ_003",
+    "question": "Welche Genehmigungen sind f\u00fcr den R\u00fcckbau einer Anlage erforderlich?",
+    "expected_entity_types": [
+      "Facility",
+      "Permit",
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "requiresPermit",
+      "hasStrategy"
+    ],
+    "difficulty": 4,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Facility and Permit classes (likely v1 additions)"
+  },
+  {
+    "id": "CQ_004",
+    "question": "Welche Voraussetzungen m\u00fcssen f\u00fcr die Stilllegung einer Anlage erf\u00fcllt sein?",
+    "expected_entity_types": [
+      "Facility",
+      "Prerequisite",
+      "Regulation"
+    ],
+    "expected_relations": [
+      "requiresPrerequisite",
+      "regulatedBy"
+    ],
+    "difficulty": 4,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": ""
+  },
+  {
+    "id": "CQ_005",
+    "question": "Welche Vorschriften regeln den Transport von Plutonium?",
+    "expected_entity_types": [
+      "Regulation",
+      "Material",
+      "Action"
+    ],
+    "expected_relations": [
+      "regulates",
+      "appliesTo"
+    ],
+    "difficulty": 4,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Material and Regulation classes"
+  },
+  {
+    "id": "CQ_006",
+    "question": "Welche R\u00fcckbaustrategien werden in den Dokumenten beschrieben?",
+    "expected_entity_types": [
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "hasPhase",
+      "appliesTo"
+    ],
+    "difficulty": 3,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires DecommissioningStrategy class"
+  },
+  {
+    "id": "CQ_007",
+    "question": "Welche Personen oder Organisationen sind f\u00fcr die Stilllegung verantwortlich?",
+    "expected_entity_types": [
+      "Person",
+      "Organization",
+      "Facility"
+    ],
+    "expected_relations": [
+      "responsibleFor",
+      "manages"
+    ],
+    "difficulty": 3,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": ""
+  },
+  {
+    "id": "CQ_008",
+    "question": "Welche Gefahrstoffe oder Strahlungsrisiken werden erw\u00e4hnt?",
+    "expected_entity_types": [
+      "RadiationHazard",
+      "Material"
+    ],
+    "expected_relations": [
+      "hasHazard",
+      "locatedAt"
+    ],
+    "difficulty": 3,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires RadiationHazard class"
+  },
+  {
+    "id": "CQ_009",
+    "question": "Welche zeitlichen Abl\u00e4ufe und Phasen hat ein R\u00fcckbauprojekt?",
+    "expected_entity_types": [
+      "Phase",
+      "Action",
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "hasPhase",
+      "precedes",
+      "follows"
+    ],
+    "difficulty": 4,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Phase class and temporal relations"
+  },
+  {
+    "id": "cq_genehmigung_properties",
+    "class": "Genehmigung",
+    "question": "What properties does a Genehmigung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_genehmigung_hierarchy",
+    "class": "Genehmigung",
+    "question": "Which DomainConstant instances are also Genehmigung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_bewirtschaftung_properties",
+    "class": "Bewirtschaftung",
+    "question": "What properties does a Bewirtschaftung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_bewirtschaftung_hierarchy",
+    "class": "Bewirtschaftung",
+    "question": "Which DomainConstant instances are also Bewirtschaftung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_schlusslaufplan_properties",
+    "class": "Schlusslaufplan",
+    "question": "What properties does a Schlusslaufplan have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_schlusslaufplan_hierarchy",
+    "class": "Schlusslaufplan",
+    "question": "Which PlanningProcess instances are also Schlusslaufplan?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_properties",
+    "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
+    "question": "What properties does a Umweltvertr\u00e4glichkeitspr\u00fcfung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_hierarchy",
+    "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
+    "question": "Which DomainConstant instances are also Umweltvertr\u00e4glichkeitspr\u00fcfung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulierung_properties",
+    "class": "Regulierung",
+    "question": "What properties does a Regulierung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulierung_hierarchy",
+    "class": "Regulierung",
+    "question": "Which DomainConstant instances are also Regulierung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_verantwortlichkeit_properties",
+    "class": "Verantwortlichkeit",
+    "question": "What properties does a Verantwortlichkeit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_verantwortlichkeit_hierarchy",
+    "class": "Verantwortlichkeit",
+    "question": "Which DomainConstant instances are also Verantwortlichkeit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_schlusslaufverfahren_properties",
+    "class": "Schlusslaufverfahren",
+    "question": "What properties does a Schlusslaufverfahren have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_schlusslaufverfahren_hierarchy",
+    "class": "Schlusslaufverfahren",
+    "question": "Which Schlusslaufplan instances are also Schlusslaufverfahren?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_notifizierung_properties",
+    "class": "Notifizierung",
+    "question": "What properties does a Notifizierung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_notifizierung_hierarchy",
+    "class": "Notifizierung",
+    "question": "Which Schlusslaufverfahren instances are also Notifizierung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  }
+]

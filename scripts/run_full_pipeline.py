@@ -77,13 +77,17 @@ def main():
         return False
 
     # Step 3: Export the extended ontology
-    if not run_command([
+    export_cmd = [
         sys.executable, "scripts/export_ontology.py",
         "--decisions", f"{iteration_dir}/decisions.json",
         "--proposals", f"{iteration_dir}/proposals.json",
         "--output-owl", f"{output_dir}/ontology_latest.owl",
         "--output-cq", f"{output_dir}/cq_latest.json"
-    ], "Export extended ontology and competency questions"):
+    ]
+    if experiment_name:
+        export_cmd.extend(["--experiment-name", experiment_name])
+        
+    if not run_command(export_cmd, "Export extended ontology and competency questions"):
         return False
 
     # Step 4: Run evaluation on the new ontology

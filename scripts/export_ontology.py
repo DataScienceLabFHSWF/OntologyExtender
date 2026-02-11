@@ -32,8 +32,26 @@ def main(
     output_owl: Path = typer.Option("data/exports/ontology_latest.owl", help="Output OWL file"),
     output_cq: Path = typer.Option("data/exports/cq_latest.json", help="Output CQ JSON"),
     existing_cq: Path = typer.Option("data/evaluation/competency_questions.json", help="Existing CQ file to extend"),
+    experiment_name: str = typer.Option("", help="Experiment name for directory lookup"),
 ) -> None:
     """Export accepted proposals as extended ontology."""
+    # Set default paths based on experiment name
+    if experiment_name:
+        base_iterations = Path("data/iterations") / experiment_name
+        base_exports = Path("data/exports") / experiment_name
+        base_exports.mkdir(parents=True, exist_ok=True)
+
+        decisions = decisions or base_iterations / "decisions.json"
+        proposals = proposals or base_iterations / "proposals.json"
+        output_owl = output_owl or base_exports / "ontology_latest.owl"
+        output_cq = output_cq or base_exports / "cq_latest.json"
+    else:
+        # Legacy defaults
+        decisions = decisions or Path("data/iterations/v1/decisions.json")
+        proposals = proposals or Path("data/iterations/v1/proposals.json")
+        output_owl = output_owl or Path("data/exports/ontology_latest.owl")
+        output_cq = output_cq or Path("data/exports/cq_latest.json")
+
     manager = OntologySchemaManager(seed_ontology_path=seed)
 
     # Load accepted proposals
