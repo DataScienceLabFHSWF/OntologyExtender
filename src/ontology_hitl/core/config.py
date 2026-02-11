@@ -22,8 +22,9 @@ class Settings(BaseSettings):
 
     # Neo4j (optional — for future GraphQAAgent integration)
     neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_username: str = ""
-    neo4j_password: str = ""
+    neo4j_http_url: str = "http://localhost:7474"  # HTTP API for LawGraphSource
+    neo4j_username: str = "neo4j"
+    neo4j_password: str = "changeme"
 
     # Fuseki (per INTERFACE_CONTRACT.md §3)
     fuseki_url: str = "http://localhost:3030"
@@ -38,8 +39,9 @@ class Settings(BaseSettings):
 
     # LLM (for definition generation)
     ollama_url: str = "http://localhost:18135"
-    ollama_model: str = "qwen3-next"
+    ollama_model: str = "llama3.2:3b"  # Using smaller model for faster testing
     llm_temperature: float = 0.5
+    llm_timeout_seconds: int = 300  # Reduced for smaller model
 
     # Gap Analysis
     min_entity_frequency: int = 3
