@@ -519,7 +519,12 @@ class Moderator:
         new_cqs = []
 
         for cls in accepted_classes:
-            class_label = cls.get("label", "")
+            # Handle both dict and object (ProposedClass)
+            if isinstance(cls, dict):
+                class_label = cls.get("label", "")
+            else:
+                class_label = getattr(cls, "label", "")
+            
             if not class_label:
                 continue
 
@@ -538,9 +543,15 @@ class Moderator:
                 })
 
             # CQ 2: Hierarchy question
+            if isinstance(cls, dict):
+                parent = cls.get("parent_label", "entity")
+                suggested_relations = cls.get("suggested_relations")
+            else:
+                parent = getattr(cls, "parent_label", "entity")
+                suggested_relations = getattr(cls, "suggested_relations", None)
+            
             cq_id = f"{base_id}_hierarchy"
             if cq_id not in existing_ids:
-                parent = cls.get("parent_label", "entity")
                 new_cqs.append({
                     "id": cq_id,
                     "class": class_label,
@@ -550,10 +561,10 @@ class Moderator:
                 })
 
             # CQ 3: Relations question (if relations were proposed)
-            if cls.get("suggested_relations"):
-                for rel in cls["suggested_relations"][:2]:  # Limit to 2 relations
-                    rel_name = rel.get("name", "")
-                    rel_range = rel.get("range", "")
+            if suggested_relations:
+                for rel in suggested_relations[:2]:  # Limit to 2 relations
+                    rel_name = rel.get("name", "") if isinstance(rel, dict) else getattr(rel, "name", "")
+                    rel_range = rel.get("range", "") if isinstance(rel, dict) else getattr(rel, "range", "")
                     if rel_name and rel_range:
                         cq_id = f"{base_id}_rel_{rel_name}"
                         if cq_id not in existing_ids:

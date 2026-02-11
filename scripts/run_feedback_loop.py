@@ -37,6 +37,7 @@ def main(
     max_iterations: int = typer.Option(4, help="Max iteration cycles"),
     convergence_threshold: float = typer.Option(0.02, help="Stop when improvement < this"),
     auto_review: bool = typer.Option(False, help="Auto-accept proposals (no interactive review)"),
+    experiment_name: str = typer.Option("", help="Experiment name for wandb run naming"),
 ) -> None:
     """Run the ontology extension feedback loop."""
     settings = Settings()
@@ -52,6 +53,7 @@ def main(
         mode=loop_mode,
         max_iterations=max_iterations,
         convergence_threshold=convergence_threshold,
+        experiment_name=experiment_name,
     )
 
     report = orchestrator.run(

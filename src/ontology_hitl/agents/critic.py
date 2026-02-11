@@ -208,30 +208,52 @@ class CriticAgent(BaseAgent):
         # Parse the review
         issues: list[str] = []
         approves = True
-        if response:
+        if isinstance(response, dict):
             approves = response.get("approves", True)
             for si in response.get("structural_issues", []):
-                issues.append(
-                    f"Structure [{si.get('type', '?')}]: {si.get('element', '?')} "
-                    f"— {si.get('issue', '')}; fix: {si.get('suggestion', '')}"
-                )
+                if isinstance(si, dict):
+                    issues.append(
+                        f"Structure [{si.get('type', '?')}]: {si.get('element', '?')} "
+                        f"— {si.get('issue', '')}; fix: {si.get('suggestion', '')}"
+                    )
+                else:
+                    issues.append(f"Structure issue: {str(si)}")
+            
             for r in response.get("redundancies", []):
-                issues.append(
-                    f"Redundancy: {', '.join(r.get('elements', []))} — {r.get('reason', '')}"
-                )
+                if isinstance(r, dict):
+                    elements = r.get('elements', [])
+                    elements_str = ", ".join(elements) if isinstance(elements, list) else str(elements)
+                    issues.append(f"Redundancy: {elements_str} — {r.get('reason', '')}")
+                elif isinstance(r, list):
+                    issues.append(f"Redundancy: {', '.join(map(str, r))}")
+                else:
+                    issues.append(f"Redundancy: {str(r)}")
+
             for ci in response.get("consistency_issues", []):
-                issues.append(f"Consistency [{ci.get('type', '?')}]: {ci.get('details', '')}")
+                if isinstance(ci, dict):
+                    issues.append(f"Consistency [{ci.get('type', '?')}]: {ci.get('details', '')}")
+                else:
+                    issues.append(f"Consistency: {str(ci)}")
 
             uncovered = response.get("uncovered_cqs", [])
             if uncovered:
-                issues.append(f"CQs not covered: {', '.join(uncovered)}")
+                # Handle cases where uncovered_cqs is a list of dicts instead of strings
+                uncovered_labels = []
+                for cq in uncovered:
+                    if isinstance(cq, dict):
+                        # Try to get id, then question, then label, then stringify
+                        label = cq.get("id") or cq.get("question") or cq.get("label") or str(cq)
+                        uncovered_labels.append(str(label))
+                    else:
+                        uncovered_labels.append(str(cq))
+                issues.append(f"CQs not covered: {', '.join(uncovered_labels)}")
 
         return AgentMessage(
             role=self.role,
             phase=phase,
             message_type="review",
             content=response or {},
-            reasoning=response.get("overall_assessment", "") if response else "",
+            reasoning=response.get("overall_assessment", "") if isinstance(response, dict) else str(response),
             issues_raised=issues,
             approves=approves,
         )

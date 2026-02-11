@@ -257,6 +257,25 @@ class ProvenanceTracker:
 
         return text
 
-    def clear(self) -> None:
-        """Clear all records."""
-        self._records.clear()
+    def to_dict(self) -> dict:
+        """Export provenance records as a dictionary.
+
+        Returns:
+            Dictionary with provenance data.
+        """
+        return {
+            "total_records": len(self._records),
+            "records": [
+                {
+                    "element_uri": r.element_uri,
+                    "element_label": r.element_label,
+                    "document_id": r.document_id,
+                    "passage": r.passage,
+                    "confidence": r.confidence,
+                    "agent_role": r.agent_role,
+                    "phase": r.phase,
+                    "timestamp": r.timestamp.isoformat(),
+                }
+                for r in self._records
+            ]
+        }

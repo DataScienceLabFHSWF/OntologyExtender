@@ -266,25 +266,40 @@ class DomainExpertAgent(BaseAgent):
         # Parse the review
         issues: list[str] = []
         approves = True
-        if response:
+        if isinstance(response, dict):
             approves = response.get("approves", True)
             for acc in response.get("accuracy_issues", []):
-                issues.append(f"Accuracy: {acc.get('term', '?')} — {acc.get('issue', '')}")
+                if isinstance(acc, dict):
+                    issues.append(f"Accuracy: {acc.get('term', '?')} — {acc.get('issue', '')}")
+                else:
+                    issues.append(f"Accuracy: {str(acc)}")
             for lc in response.get("legal_compliance_issues", []):
-                issues.append(f"Legal: {lc.get('requirement', '?')} — {lc.get('impact', '')}")
+                if isinstance(lc, dict):
+                    issues.append(f"Legal: {lc.get('requirement', '?')} — {lc.get('impact', '')}")
+                else:
+                    issues.append(f"Legal compliance issue: {str(lc)}")
             for rg in response.get("regulatory_gaps", []):
-                issues.append(f"Regulatory Gap: {rg.get('gap', '?')} (severity: {rg.get('severity', '?')})")
+                if isinstance(rg, dict):
+                    issues.append(f"Regulatory Gap: {rg.get('gap', '?')} (severity: {rg.get('severity', '?')})")
+                else:
+                    issues.append(f"Regulatory Gap: {str(rg)}")
             for mc in response.get("missing_concepts", []):
-                issues.append(f"Missing: {mc.get('concept', '?')} (importance: {mc.get('importance', '?')})")
+                if isinstance(mc, dict):
+                    issues.append(f"Missing: {mc.get('concept', '?')} (importance: {mc.get('importance', '?')})")
+                else:
+                    issues.append(f"Missing concept: {str(mc)}")
             for tf in response.get("terminology_fixes", []):
-                issues.append(f"Rename: '{tf.get('current', '?')}' → '{tf.get('suggested', '?')}'")
+                if isinstance(tf, dict):
+                    issues.append(f"Rename: '{tf.get('current', '?')}' → '{tf.get('suggested', '?')}'")
+                else:
+                    issues.append(f"Terminology fix: {str(tf)}")
 
         return AgentMessage(
             role=self.role,
             phase=phase,
             message_type="review",
             content=response or {},
-            reasoning=response.get("overall_assessment", "") if response else "",
+            reasoning=response.get("overall_assessment", "") if isinstance(response, dict) else str(response),
             issues_raised=issues,
             approves=approves,
         )

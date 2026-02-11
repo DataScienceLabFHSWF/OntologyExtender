@@ -17,6 +17,7 @@ Escalated outcomes become ``AgentQuestion`` items for HITL review.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -259,9 +260,50 @@ class BaseAgent:
             if "```json" in content:
                 content = content.split("```json", 1)[1].split("```", 1)[0]
             elif "```" in content:
-                content = content.split("```", 1)[1].split("```", 1)[0]
+                md_parts = content.split("```")
+                if len(md_parts) >= 3:
+                    content = md_parts[1]
 
-            result = json.loads(content)
+            # More robust JSON extraction using balanced brackets
+            def find_json_objects(text):
+                results = []
+                # Remove control characters that definitely break JSON
+                text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text)
+                
+                start_indices = [i for i, char in enumerate(text) if char in '{[']
+                for start in start_indices:
+                    stack = []
+                    for i in range(start, len(text)):
+                        char = text[i]
+                        if char in '{[':
+                            stack.append(text[start] if not stack else char)
+                        elif char in '}]':
+                            if not stack: break
+                            opening = stack.pop()
+                            if (opening == '{' and char == '}') or (opening == '[' and char == ']'):
+                                if not stack:
+                                    candidate = text[start:i+1]
+                                    try:
+                                        results.append(json.loads(candidate))
+                                    except json.JSONDecodeError:
+                                        # Handle common trailing comma issue
+                                        try:
+                                            results.append(json.loads(re.sub(r',(\s*[}\]])', r'\1', candidate)))
+                                        except json.JSONDecodeError:
+                                            pass
+                                    break
+                            else:
+                                break
+                return results
+
+            json_objects = find_json_objects(content)
+            if json_objects:
+                # Most ontology agents return a single dict or a list. 
+                # If we have multiple, the first one is usually the main response.
+                result = json_objects[0]
+            else:
+                # Last resort fallback
+                result = json.loads(content)
 
             # Cache the result
             if use_cache:
@@ -274,7 +316,10 @@ class BaseAgent:
             logger.warning("llm_call_failed", agent=self.role.value, error=str(e))
             return None
         except (json.JSONDecodeError, KeyError, IndexError) as e:
-            logger.warning("llm_parse_failed", agent=self.role.value, error=str(e))
+            logger.warning("llm_parse_failed",
+                          agent=self.role.value,
+                          error=str(e),
+                          raw_content=content[:500] if 'content' in locals() else "No content received")
             return None
 
     def call_llm_multi_turn(
@@ -319,6 +364,10 @@ class BaseAgent:
                 content = content.split("```json", 1)[1].split("```", 1)[0]
             elif "```" in content:
                 content = content.split("```", 1)[1].split("```", 1)[0]
+
+            # Sanitize JSON content - remove control characters that break parsing
+            import re
+            content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)
 
             return json.loads(content)
 

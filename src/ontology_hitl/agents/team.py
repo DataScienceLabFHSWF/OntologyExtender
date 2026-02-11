@@ -207,7 +207,7 @@ class AgentTeam:
             )
 
         logger.info("engineer_proposed", phase=phase.value,
-                     keys=list(proposal_msg.content.keys()) if proposal_msg.content else [])
+                     keys=list(proposal_msg.content.keys()) if isinstance(proposal_msg.content, dict) and proposal_msg.content else [])
 
         # Review rounds
         for round_num in range(1, self.max_debate_rounds + 1):

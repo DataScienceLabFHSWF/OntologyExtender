@@ -1,0 +1,7 @@
+[
+  {
+    "name": "baseline_test",
+    "strategy_overrides": {},
+    "description": "Test baseline experiment with distinct wandb naming"
+  }
+]

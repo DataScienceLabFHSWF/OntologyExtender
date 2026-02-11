@@ -1,0 +1,145 @@
+{
+  "total_records": 14,
+  "records": [
+    {
+      "element_uri": "plan:Kernkraftwerk Emsland",
+      "element_label": "Kernkraftwerk Emsland",
+      "document_id": "proposal",
+      "passage": "Sehr geehrte Damen und Herren, die Kernkraftwerke Lippe-Ems GmbH (KLE) betreibt im Industriepark Lingen S\u00fcd der Stadt Lingen (Ems), Landkreis Emsland, das Kernkraftwerk Emsland (KKE).",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.870416"
+    },
+    {
+      "element_uri": "plan:Kernkraftwerk Emsland",
+      "element_label": "Kernkraftwerk Emsland",
+      "document_id": "proposal",
+      "passage": "Mit der 13. Novelle des Gesetzes \u00fcber die friedliche Verwendung der Kernenergie und den Schutz gegen ihre Gefahren (Atomgesetz) ist geregelt, dass die Berechtigung zum Leistungsbetrieb f\u00fcr das KKE sp\u00e4testens mit Ablauf des 31. Dezember 2022 erlischt.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.870540"
+    },
+    {
+      "element_uri": "plan:Kernkraftwerk Emsland",
+      "element_label": "Kernkraftwerk Emsland",
+      "document_id": "proposal",
+      "passage": "Beantragt wird die Stilllegung der atomrechtlich genehmigten Anlage KKE.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.870645"
+    },
+    {
+      "element_uri": "plan:Stilllegung",
+      "element_label": "Stilllegung",
+      "document_id": "proposal",
+      "passage": "Mit der Stilllegung der atomrechtlich genehmigten Anlage erfolgt die endg\u00fcltige und dauerhafte Betriebseinstellung des KKE.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.870743"
+    },
+    {
+      "element_uri": "plan:Stilllegung",
+      "element_label": "Stilllegung",
+      "document_id": "proposal",
+      "passage": "Beantragt wird die Stilllegung der atomrechtlich genehmigten Anlage KKE.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.870834"
+    },
+    {
+      "element_uri": "plan:Stilllegung",
+      "element_label": "Stilllegung",
+      "document_id": "proposal",
+      "passage": "Der Restbetrieb umfasst den Weiterbetrieb von noch ben\u00f6tigten Anlagenteilen des KKE, soweit und solange diese zur Einhaltung der noch zutreffenden Schutzziele oder f\u00fcr den Abbau erforderlich sind.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.870923"
+    },
+    {
+      "element_uri": "plan:Abbau",
+      "element_label": "Abbau",
+      "document_id": "proposal",
+      "passage": "Mit der Stilllegung der atomrechtlich genehmigten Anlage erfolgt die endg\u00fcltige und dauerhafte Betriebseinstellung des KKE.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.875525"
+    },
+    {
+      "element_uri": "plan:Abbau",
+      "element_label": "Abbau",
+      "document_id": "proposal",
+      "passage": "Beantragt wird die Stilllegung der atomrechtlich genehmigten Anlage KKE.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.875937"
+    },
+    {
+      "element_uri": "plan:Kernkraftwerk Lippe-Ems GmbH",
+      "element_label": "Kernkraftwerk Lippe-Ems GmbH",
+      "document_id": "proposal",
+      "passage": "Sehr geehrte Damen und Herren, die Kernkraftwerke Lippe-Ems GmbH (KLE) betreibt im Industriepark Lingen S\u00fcd der Stadt Lingen (Ems), Landkreis Emsland, das Kernkraftwerk Emsland (KKE).",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.878360"
+    },
+    {
+      "element_uri": "plan:Atomgesetz",
+      "element_label": "Atomgesetz",
+      "document_id": "proposal",
+      "passage": "Mit der 13. Novelle des Gesetzes \u00fcber die friedliche Verwendung der Kernenergie und den Schutz gegen ihre Gefahren (Atomgesetz) ist geregelt, dass die Berechtigung zum Leistungsbetrieb f\u00fcr das KKE sp\u00e4testens mit Ablauf des 31. Dezember 2022 erlischt.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.878588"
+    },
+    {
+      "element_uri": "plan:Antrag",
+      "element_label": "Antrag",
+      "document_id": "proposal",
+      "passage": "Sehr geehrte Damen und Herren, die Kernkraftwerke Lippe-Ems GmbH (KLE) betreibt im Industriepark Lingen S\u00fcd der Stadt Lingen (Ems), Landkreis Emsland, das Kernkraftwerk Emsland (KKE). Die KLE besitzt f\u00fcr das KKE eine Errichtungs- und Betriebsgenehmigung nach \u00a7 7 Abs. 1 AtG als Anlage zur Spaltung von Kernbrennstoffen zur gewerblichen Erzeugung von Elektrizit\u00e4t.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.878800"
+    },
+    {
+      "element_uri": "plan:Errichtungs- und Betriebsgenehmigung",
+      "element_label": "Errichtungs- und Betriebsgenehmigung",
+      "document_id": "proposal",
+      "passage": "Die KLE besitzt f\u00fcr das KKE eine Errichtungs- und Betriebsgenehmigung nach \u00a7 7 Abs. 1 AtG als Anlage zur Spaltung von Kernbrennstoffen zur gewerblichen Erzeugung von Elektrizit\u00e4t.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.878964"
+    },
+    {
+      "element_uri": "plan:Kernbrennstoff",
+      "element_label": "Kernbrennstoff",
+      "document_id": "proposal",
+      "passage": "Die KLE besitzt f\u00fcr das KKE eine Errichtungs- und Betriebsgenehmigung nach \u00a7 7 Abs. 1 AtG als Anlage zur Spaltung von Kernbrennstoffen zur gewerblichen Erzeugung von Elektrizit\u00e4t.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.879070"
+    },
+    {
+      "element_uri": "plan:Kernbrennstoff",
+      "element_label": "Kernbrennstoff",
+      "document_id": "proposal",
+      "passage": "Mit der Stilllegung der atomrechtlich genehmigten Anlage erfolgt die endg\u00fcltige und dauerhafte Betriebseinstellung des KKE.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-02-11T14:54:41.879164"
+    }
+  ]
+}
