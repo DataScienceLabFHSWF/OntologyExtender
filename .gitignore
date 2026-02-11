@@ -209,4 +209,6 @@ __marimo__/
 # ontology-hitl specific
 .env
 data/iterations/*/extraction_checkpoint.json
+data/iterations/
+wandb/
 *.log
