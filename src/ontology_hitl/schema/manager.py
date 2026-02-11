@@ -5,7 +5,7 @@ Implementation Guide
 This module applies accepted review decisions to a seed ontology and
 produces an extended OWL file with new classes, properties, and relations.
 
-Two methods need real implementation (marked with TODO):
+All methods are implemented with:
   1. ``export_owl()``          — Build RDF graph with rdflib and serialize
   2. ``export_updated_cqs()``  — Generate CQs for new classes
 
@@ -111,73 +111,10 @@ class OntologySchemaManager:
         logger.info("decisions_applied", accepted=len(accepted), total=len(proposals))
         return accepted
 
-    # ── OWL export (TODO) ───────────────────────────────────────────
+    # ── OWL export ───────────────────────────────────────────
 
     def export_owl(self, output_path: Path | str) -> None:
-        """Export extended ontology as OWL/XML.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. Import rdflib: ``from rdflib import Graph, Namespace, Literal, URIRef, RDF, RDFS, OWL, XSD``
-
-            2. Load the seed ontology into a graph:
-               ``g = Graph()``
-               ``g.parse(str(self.seed_ontology_path))``
-               This preserves all existing classes, properties, and axioms.
-
-            3. Define the ontology namespace:
-               ``EX = Namespace(_ONTOLOGY_BASE)``
-               ``g.bind("ex", EX)``
-
-            4. For each accepted class in ``self._accepted_classes``:
-               a. Create the class URI: ``class_uri = EX[cls.label]``
-               b. Add class declaration:
-                  ``g.add((class_uri, RDF.type, OWL.Class))``
-               c. Add label:
-                  ``g.add((class_uri, RDFS.label, Literal(cls.label)))``
-               d. Add definition as comment:
-                  ``g.add((class_uri, RDFS.comment, Literal(cls.definition)))``
-               e. Add subClassOf if parent_uri is set:
-                  ``parent = URIRef(cls.parent_uri) if cls.parent_uri else OWL.Thing``
-                  ``g.add((class_uri, RDFS.subClassOf, parent))``
-
-            5. For each accepted class's ``suggested_properties``:
-               a. Create property URI: ``prop_uri = EX[prop.name]``
-               b. ``g.add((prop_uri, RDF.type, OWL.DatatypeProperty))``
-               c. ``g.add((prop_uri, RDFS.domain, class_uri))``
-               d. Map datatype: ``xsd_uri = URIRef(_XSD_TYPE_MAP.get(prop.datatype, _XSD_TYPE_MAP["xsd:string"]))``
-                  ``g.add((prop_uri, RDFS.range, xsd_uri))``
-               e. ``g.add((prop_uri, RDFS.label, Literal(prop.name)))``
-               f. ``g.add((prop_uri, RDFS.comment, Literal(prop.description)))``
-
-            6. For each accepted class's ``suggested_relations``:
-               a. Create relation URI: ``rel_uri = EX[rel.name]``
-               b. ``g.add((rel_uri, RDF.type, OWL.ObjectProperty))``
-               c. ``g.add((rel_uri, RDFS.domain, EX[rel.domain]))``
-               d. ``g.add((rel_uri, RDFS.range, EX[rel.range]))``
-               e. ``g.add((rel_uri, RDFS.label, Literal(rel.name)))``
-               f. ``g.add((rel_uri, RDFS.comment, Literal(rel.description)))``
-               g. If ``rel.inverse_name``:
-                  ``inv_uri = EX[rel.inverse_name]``
-                  ``g.add((rel_uri, OWL.inverseOf, inv_uri))``
-
-            7. Ensure output directory exists:
-               ``output_path = Path(output_path)``
-               ``output_path.parent.mkdir(parents=True, exist_ok=True)``
-
-            8. Serialize the graph:
-               ``g.serialize(str(output_path), format="xml")``
-
-            9. Log success:
-               ``logger.info("owl_exported", path=str(output_path), classes=len(self._accepted_classes))``
-
-        Raises:
-            SchemaUpdateError: If seed ontology fails to parse or serialization fails.
-
-        Args:
-            output_path: Where to write the OWL file.
-        """
+        """Export extended ontology as OWL/XML."""
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -227,43 +164,10 @@ class OntologySchemaManager:
         g.serialize(str(output_path), format="xml")
         logger.info("owl_exported", path=str(output_path), classes=len(self._accepted_classes))
 
-    # ── CQ export (TODO) ────────────────────────────────────────────
+    # ── CQ export ────────────────────────────────────────────
 
     def export_updated_cqs(self, output_path: Path | str) -> None:
-        """Export updated competency questions JSON.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. For each accepted class in ``self._accepted_classes``:
-               a. Generate 2-3 competency questions.  Templates:
-                  - ``f"What properties does a {cls.label} have?"``
-                  - ``f"Which {cls.parent_label} instances are also {cls.label}?"``
-                  - For each relation in ``cls.suggested_relations``:
-                    ``f"What {rel.range} does {cls.label} {rel.name}?"``
-
-            2. Build CQ list:
-               ```python
-               cqs = []
-               for cls in self._accepted_classes:
-                   cqs.append({
-                       "id": f"cq_{cls.id}",
-                       "class": cls.label,
-                       "question": f"What properties does a {cls.label} have?",
-                       "expected_answer_type": "list",
-                   })
-                   # ... add more CQs per class
-               ```
-
-            3. Load existing CQs if file exists (merge, don't overwrite):
-               If ``output_path`` exists, load it and append new CQs.
-
-            4. Write merged CQs:
-               ``json.dump(cqs, open(output_path, "w"), indent=2)``
-
-        Args:
-            output_path: Where to write the CQ JSON file.
-        """
+        """Export updated competency questions JSON."""
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 

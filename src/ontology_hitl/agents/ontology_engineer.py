@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import json
 import structlog
 
 from ontology_hitl.agents.base import AgentMessage, AgentRole, BaseAgent
@@ -270,7 +271,6 @@ Original context:
 
 Please revise and return the complete improved JSON."""
 
-        import json
         response = self.call_llm(user_prompt, system_prompt=system)
 
         addressed = []

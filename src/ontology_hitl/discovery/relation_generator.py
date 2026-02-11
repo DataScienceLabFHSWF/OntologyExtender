@@ -5,7 +5,7 @@ Implementation Guide
 This module uses LLM calls to suggest OWL ObjectProperties connecting
 proposed new classes to existing ontology classes.
 
-Two methods need real implementation (marked with TODO):
+All methods are implemented with LLM integration for:
   1. ``suggest_relations()``        — LLM-based relation inference
   2. ``_get_existing_relations()``  — SPARQL for current ObjectProperties
 
@@ -139,49 +139,6 @@ class RelationProposalGenerator:
     ) -> list[RelationDef]:
         """Suggest relations for a proposed class.
 
-        TODO: Implement this method.
-
-        Steps:
-            1. Fetch existing relations:
-               ``existing_rels = self._get_existing_relations()``
-
-            2. Format ``_RELATION_PROMPT`` with:
-               - ``proposed_label``: ``proposed_class.label``
-               - ``proposed_definition``: ``proposed_class.definition``
-               - ``proposed_parent``: ``proposed_class.parent_label``
-               - ``proposed_examples``: comma-joined ``proposed_class.examples[:5]``
-               - ``existing_classes_list``: bullet list ``"- {cls}"`` per class
-               - ``existing_relations_list``:
-                 bullet list ``"- {name} ({domain} → {range})"`` per relation,
-                 or ``"(none)"`` if empty.
-
-            3. Call ``self._call_llm(prompt)`` to get LLM response.
-
-            4. Parse JSON array:
-               a. ``json.loads(response)``
-               b. On failure: regex ``re.search(r'\\[.*\\]', response, re.DOTALL)``
-               c. On failure: log warning, return ``[]``
-
-            5. Validate each relation dict:
-               a. ``domain`` must be in ``existing_classes + [proposed_class.label]``
-               b. ``range`` must be in ``existing_classes + [proposed_class.label]``
-               c. ``name`` must not duplicate existing relations
-               d. Skip invalid relations with a log warning.
-
-            6. Convert valid dicts to ``RelationDef`` objects:
-               ```python
-               RelationDef(
-                   name=rel["name"],
-                   domain=rel["domain"],
-                   range=rel["range"],
-                   description=rel.get("description", ""),
-                   inverse_name=rel.get("inverse_name"),
-                   cardinality=rel.get("cardinality", "0..*"),
-               )
-               ```
-
-            7. Return the list of validated ``RelationDef`` objects.
-
         Args:
             proposed_class: The new class to find relations for.
             existing_classes: Labels of existing ontology classes.
@@ -249,23 +206,8 @@ class RelationProposalGenerator:
             ))
         return results
 
-    # ── Fuseki existing relations (TODO) ────────────────────────────
-
     def _get_existing_relations(self) -> list[dict[str, str]]:
         """Get existing ObjectProperties from Fuseki via SPARQL.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. Build SPARQL endpoint: ``f"{self.fuseki_url}/{self.dataset}/sparql"``
-            2. POST ``_SPARQL_EXISTING_RELATIONS`` query using httpx.
-            3. Parse JSON response bindings.
-            4. Return list of dicts:
-               ``[{"name": "involves", "domain": "Action", "range": "Phase"}]``
-               - ``name``: use ``label`` if present, else extract from URI
-               - ``domain``: use ``domainLabel`` if present, else ""
-               - ``range``: use ``rangeLabel`` if present, else ""
-            5. On error, log warning and return ``[]``.
 
         Returns:
             List of existing relation dicts.
@@ -293,26 +235,8 @@ class RelationProposalGenerator:
             logger.error("sparql_query_failed", error=str(e))
             return []
 
-    # ── Shared LLM call (TODO) ──────────────────────────────────────
-
     def _call_llm(self, prompt: str) -> str:
         """Call Ollama /api/generate and return the response text.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. POST to ``f"{self.ollama_url}/api/generate"`` with JSON:
-               ``{
-                   "model": self.model,
-                   "prompt": prompt,
-                   "stream": False,
-                   "options": {"temperature": self.temperature}
-               }``
-            2. Set timeout to 300 seconds.
-            3. Parse response: ``response.json()["response"]``
-            4. Strip whitespace.  If response contains ``<think>...</think>``,
-               extract only content after ``</think>``.
-            5. On error, return empty string.
 
         Args:
             prompt: Full prompt string.

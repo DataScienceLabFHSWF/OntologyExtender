@@ -368,7 +368,7 @@ class FeedbackLoopOrchestrator:
                 ollama_url=self.settings.ollama_url,
                 ollama_model=self.settings.ollama_model,
             )
-            chunks = source.fetch_chunks(limit=max_chunks)
+            chunks = source.fetch_chunks(limit=max_chunks, prioritize_legal=True)
             return [c.text for c in chunks]
         except Exception as e:
             logger.warning("qdrant_fetch_failed", error=str(e))

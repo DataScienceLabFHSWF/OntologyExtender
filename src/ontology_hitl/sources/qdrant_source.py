@@ -81,6 +81,7 @@ class QdrantDocumentSource:
         self,
         limit: int = 500,
         offset: int | None = None,
+        prioritize_legal: bool = True,
     ) -> list[DocumentChunk]:
         """Scroll through the Qdrant collection and return text chunks.
 
@@ -90,6 +91,7 @@ class QdrantDocumentSource:
         Args:
             limit: Maximum number of chunks to return.
             offset: Qdrant point-id to start after (for pagination).
+            prioritize_legal: If True, prioritize legal/regulatory documents.
 
         Returns:
             List of ``DocumentChunk`` with text + metadata.
@@ -128,13 +130,21 @@ class QdrantDocumentSource:
 
             for pt in points:
                 pl = pt.get("payload", {})
-                chunks.append(DocumentChunk(
+                chunk = DocumentChunk(
                     chunk_id=str(pt["id"]),
                     text=pl.get("text", pl.get("content", "")),
                     document_name=pl.get("document", pl.get("source", "unknown")),
                     metadata={k: v for k, v in pl.items()
                               if k not in ("text", "content")},
-                ))
+                )
+                
+                # Prioritize legal/regulatory documents if requested
+                is_legal = prioritize_legal and self._is_legal_document(chunk)
+                if is_legal:
+                    chunks.insert(0, chunk)  # Add to front for priority
+                else:
+                    chunks.append(chunk)
+                    
                 collected += 1
                 if collected >= limit:
                     break
@@ -143,8 +153,30 @@ class QdrantDocumentSource:
             if next_offset is None:
                 break
 
-        logger.info("qdrant_chunks_fetched", count=len(chunks))
+        logger.info("qdrant_chunks_fetched", count=len(chunks), prioritized_legal=prioritize_legal)
         return chunks
+
+    def _is_legal_document(self, chunk: DocumentChunk) -> bool:
+        """Check if a document chunk appears to be from a legal/regulatory source."""
+        doc_name = chunk.document_name.lower()
+        text_sample = chunk.text[:200].lower()
+        
+        # Check document name for legal indicators
+        legal_doc_indicators = [
+            'law', 'regulation', 'regulatory', 'statute', 'act', 'code',
+            'directive', 'guidance', 'permit', 'license', 'compliance',
+            'standard', 'requirement', 'policy', 'legislation'
+        ]
+        
+        # Check metadata for legal document types
+        metadata_indicators = chunk.metadata.get('document_type', '').lower()
+        
+        # Check if any legal indicators are present
+        has_legal_name = any(indicator in doc_name for indicator in legal_doc_indicators)
+        has_legal_metadata = any(indicator in metadata_indicators for indicator in legal_doc_indicators)
+        has_legal_content = any(indicator in text_sample for indicator in legal_doc_indicators)
+        
+        return has_legal_name or has_legal_metadata or has_legal_content
 
     # ------------------------------------------------------------------
     # Public: standalone entity extraction (no KGB needed)

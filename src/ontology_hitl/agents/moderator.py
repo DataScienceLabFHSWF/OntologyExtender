@@ -498,7 +498,76 @@ class Moderator:
             "strategy_fallbacks": self._strategy_fallback_count,
         }
 
-    def reset_tracking(self) -> None:
-        """Reset drift tracking state between debates."""
-        self._revision_sizes.clear()
-        self._trivial_consensus_count = 0
+    def generate_competency_questions(
+        self,
+        accepted_classes: list[dict],
+        existing_cqs: list[dict] | None = None,
+    ) -> list[dict]:
+        """Generate competency questions for newly accepted classes.
+
+        The Moderator generates CQs based on the debate outcomes,
+        ensuring they reflect the actual extensions made during discourse.
+
+        Args:
+            accepted_classes: List of accepted class proposals from the debate.
+            existing_cqs: Existing CQs to avoid duplication.
+
+        Returns:
+            List of new CQ dictionaries.
+        """
+        existing_ids = {cq.get("id", "") for cq in (existing_cqs or [])}
+        new_cqs = []
+
+        for cls in accepted_classes:
+            class_label = cls.get("label", "")
+            if not class_label:
+                continue
+
+            # Generate 2-3 CQs per class based on debate-discovered needs
+            base_id = f"cq_{class_label.lower().replace(' ', '_')}"
+
+            # CQ 1: Properties question
+            cq_id = f"{base_id}_properties"
+            if cq_id not in existing_ids:
+                new_cqs.append({
+                    "id": cq_id,
+                    "class": class_label,
+                    "question": f"What properties does a {class_label} have?",
+                    "expected_answer_type": "list",
+                    "generated_during": "debate_phase",
+                })
+
+            # CQ 2: Hierarchy question
+            cq_id = f"{base_id}_hierarchy"
+            if cq_id not in existing_ids:
+                parent = cls.get("parent_label", "entity")
+                new_cqs.append({
+                    "id": cq_id,
+                    "class": class_label,
+                    "question": f"Which {parent} instances are also {class_label}?",
+                    "expected_answer_type": "list",
+                    "generated_during": "debate_phase",
+                })
+
+            # CQ 3: Relations question (if relations were proposed)
+            if cls.get("suggested_relations"):
+                for rel in cls["suggested_relations"][:2]:  # Limit to 2 relations
+                    rel_name = rel.get("name", "")
+                    rel_range = rel.get("range", "")
+                    if rel_name and rel_range:
+                        cq_id = f"{base_id}_rel_{rel_name}"
+                        if cq_id not in existing_ids:
+                            new_cqs.append({
+                                "id": cq_id,
+                                "class": class_label,
+                                "question": f"What {rel_range} does {class_label} {rel_name}?",
+                                "expected_answer_type": "list",
+                                "generated_during": "debate_phase",
+                            })
+
+        logger.info(
+            "generated_cqs",
+            new_count=len(new_cqs),
+            classes=len(accepted_classes),
+        )
+        return new_cqs

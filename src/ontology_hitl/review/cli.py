@@ -7,7 +7,7 @@ The expert sees each proposed class one-at-a-time with Rich panels
 and decides: accept / reject / revise.
 
 Two commands:
-  1. ``review``  — Interactive loop over proposals (TODO: implement)
+  1. ``review``  — Interactive loop over proposals (implemented)
   2. ``status``  — Summary of decisions (done)
 
 UI pattern per proposal (using Rich):
@@ -102,33 +102,7 @@ def review(
     output: str = typer.Option("decisions.json", help="Output decisions JSON"),
     reviewer: str = typer.Option("expert", help="Reviewer name"),
 ) -> None:
-    """Interactive review session for proposed ontology classes.
-
-    TODO: Implement the review loop.
-
-    Steps:
-        1. Load proposals:
-           ``data = json.loads(Path(proposals).read_text())``
-           Expect list of dicts matching ``ProposedClass`` fields.
-        2. Load existing decisions if output file exists (for resume):
-           ``existing = json.loads(Path(output).read_text()) if Path(output).exists() else []``
-           ``reviewed_ids = {d["proposal_id"] for d in existing}``
-        3. Filter proposals not yet reviewed:
-           ``pending = [p for p in data if p["id"] not in reviewed_ids]``
-        4. Print session header:
-           ``console.print(f"[bold]Review session: {len(pending)} pending of {len(data)} total[/bold]")``
-        5. For each proposal (with enumerate for index):
-           a. Render with ``_render_proposal(proposal, idx+1, len(pending))``
-           b. ``console.print(panel)``
-           c. Get decision: ``decision = _prompt_decision(proposal["id"])``
-           d. If decision is None (skipped), continue.
-           e. Add ``"reviewer": reviewer`` to decision dict.
-           f. Append to ``existing`` list.
-           g. **Save incrementally**: ``Path(output).write_text(json.dumps(existing, indent=2))``
-              This ensures no data loss if the session is interrupted.
-           h. Print confirmation: ``console.print(f"[green]Recorded: {decision['decision']}[/green]")``
-        6. Print summary at end.
-    """
+    """Interactive review session for proposed ontology classes."""
     data = json.loads(Path(proposals).read_text())
     existing = json.loads(Path(output).read_text()) if Path(output).exists() else []
     reviewed_ids = {d["proposal_id"] for d in existing}

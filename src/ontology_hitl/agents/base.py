@@ -197,12 +197,14 @@ class BaseAgent:
     ) -> None:
         self.settings = settings or Settings()
         self.system_prompt = system_prompt
+        self._response_cache: dict[str, dict[str, Any]] = {}  # Simple in-memory cache
 
     def call_llm(
         self,
         user_prompt: str,
         system_prompt: str | None = None,
         temperature: float | None = None,
+        use_cache: bool = True,
     ) -> dict[str, Any] | None:
         """Call Ollama chat API and parse JSON from the response.
 
@@ -213,6 +215,7 @@ class BaseAgent:
             user_prompt: The user message.
             system_prompt: Override the default system prompt.
             temperature: LLM temperature (default from settings).
+            use_cache: Whether to cache and reuse responses for identical prompts.
 
         Returns:
             Parsed JSON dict, or None if the call fails.
@@ -220,7 +223,15 @@ class BaseAgent:
         sys_prompt = system_prompt or self.system_prompt
         temp = temperature if temperature is not None else self.settings.llm_temperature
 
+        # Create cache key from prompt and parameters
+        if use_cache:
+            cache_key = f"{hash(sys_prompt)}:{hash(user_prompt)}:{temp}"
+            if cache_key in self._response_cache:
+                logger.debug("llm_cache_hit", agent=self.role.value, cache_key=cache_key[:16])
+                return self._response_cache[cache_key]
+
         try:
+            logger.debug("llm_call_start", agent=self.role.value, timeout=self.settings.llm_timeout_seconds)
             resp = httpx.post(
                 f"{self.settings.ollama_url}/api/chat",
                 json={
@@ -235,7 +246,7 @@ class BaseAgent:
                         "num_predict": 4096,
                     },
                 },
-                timeout=300.0,
+                timeout=self.settings.llm_timeout_seconds,
             )
             resp.raise_for_status()
             content = resp.json()["message"]["content"]
@@ -250,7 +261,14 @@ class BaseAgent:
             elif "```" in content:
                 content = content.split("```", 1)[1].split("```", 1)[0]
 
-            return json.loads(content)
+            result = json.loads(content)
+
+            # Cache the result
+            if use_cache:
+                self._response_cache[cache_key] = result
+                logger.debug("llm_cache_stored", agent=self.role.value, cache_key=cache_key[:16])
+
+            return result
 
         except httpx.HTTPError as e:
             logger.warning("llm_call_failed", agent=self.role.value, error=str(e))
@@ -289,7 +307,7 @@ class BaseAgent:
                         "num_predict": 4096,
                     },
                 },
-                timeout=300.0,
+                timeout=self.settings.llm_timeout_seconds,
             )
             resp.raise_for_status()
             content = resp.json()["message"]["content"]
@@ -310,3 +328,8 @@ class BaseAgent:
         except (json.JSONDecodeError, KeyError, IndexError) as e:
             logger.warning("llm_multi_turn_parse_failed", agent=self.role.value, error=str(e))
             return None
+    def clear_response_cache(self) -> None:
+        """Clear the LLM response cache."""
+        cache_size = len(self._response_cache)
+        self._response_cache.clear()
+        logger.info("llm_cache_cleared", agent=self.role.value, cleared_entries=cache_size)
