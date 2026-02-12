@@ -3,15 +3,15 @@ version: "3.8"
 services:
   # Dedicated Ollama instance for ontology extension (port 18135)
   ollama-ontology-extender:
-    image: ollama/ollama
+    image: ollama/ollama:0.14.3
     container_name: ollama-ontology-extender
     ports:
       - "18135:11434"
     volumes:
       - ollama_data:/root/.ollama
     environment:
-      - OLLAMA_KEEP_ALIVE=24h
-      - OLLAMA_NUM_PARALLEL=2
+      - OLLAMA_KEEP_ALIVE=1h
+      - OLLAMA_NUM_PARALLEL=4
       - OLLAMA_FLASH_ATTENTION=1
     deploy:
       resources:

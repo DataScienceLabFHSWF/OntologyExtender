@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
-"""LLM-Only Ontology Extension Baseline.
+"""Multiple LLM-Only Ontology Extension Baselines.
 
-This script implements the naive baseline used in most related work:
-a single LLM call that directly extends an ontology from seed + CQs.
-
-This bypasses the entire multi-agent debate system and represents
-the "traditional" LLM approach that papers typically compare against.
+This script implements several baseline approaches for ontology extension:
+1. Naive: Just ask LLM to extend everything at once
+2. Modular: Break down by competency question themes
+3. Iterative: Extend one theme at a time
+4. Adaptive: Let LLM decide how many classes to add
 
 Usage:
     python scripts/llm_only_baseline.py \\
         --model llama3.2:3b \\
-        --output data/exports/llm_only_baseline/ \\
-        --experiment-name llm_only_small
+        --strategy naive \\
+        --output data/exports/baseline_naive \\
+        --experiment-name baseline_naive
 
-The script will:
-1. Load seed ontology and competency questions
-2. Generate a single comprehensive prompt
-3. Call LLM once to extend ontology
-4. Parse LLM response into OWL additions
-5. Export extended ontology
+Strategies:
+- naive: Single comprehensive prompt (original approach)
+- modular: Group CQs by theme, single focused prompt
+- iterative: Extend one theme at a time, combine results
+- adaptive: Let LLM decide class count based on needs
 """
 
 from __future__ import annotations
@@ -26,10 +26,12 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Literal
 
 import httpx
 import structlog
+import wandb
+from pydantic import BaseModel, Field
 from rdflib import Graph, Namespace, RDF, RDFS, OWL, URIRef, Literal
 from rdflib.namespace import XSD
 
@@ -42,20 +44,130 @@ ONTOLOGY_NS = Namespace("http://www.semanticweb.org/ontology#")
 PLAN_NS = Namespace("http://www.semanticweb.org/plan-ontology#")
 
 
+class OntologyClass(BaseModel):
+    """A new ontology class to add."""
+    name: str = Field(description="The name of the new class")
+    description: str = Field(description="What this class represents")
+    parent_class: Optional[str] = Field(None, description="Existing class to inherit from, or null")
+    properties: List[str] = Field(default_factory=list, description="Properties this class should have")
+
+
+class OntologyProperty(BaseModel):
+    """A new ontology property to add."""
+    name: str = Field(description="The name of the new property")
+    type: Literal["object", "datatype"] = Field(description="Type of property")
+    domain: str = Field(description="Class this property belongs to")
+    range: str = Field(description="Target class or datatype (e.g., xsd:string, xsd:date)")
+    description: str = Field(description="What this property represents")
+
+
+class OntologyExtension(BaseModel):
+    """Complete ontology extension response."""
+    new_classes: List[OntologyClass] = Field(description="New classes to add to the ontology")
+    new_properties: List[OntologyProperty] = Field(description="New properties to add to the ontology")
+
+
+class BaselineStrategy:
+    """Abstract base for different baseline strategies."""
+    
+    def __init__(self, baseline: 'LLMOnlyBaseline'):
+        self.baseline = baseline
+    
+    def extend_ontology(self) -> Graph:
+        """Implement the specific extension strategy."""
+        raise NotImplementedError
+
+
+class NaiveStrategy(BaselineStrategy):
+    """Original naive approach: single comprehensive prompt."""
+    
+    def extend_ontology(self) -> Graph:
+        prompt = self.baseline.generate_naive_prompt()
+        response = self.baseline.call_llm(prompt, verbose=self.baseline.verbose)
+        parsed_data = self.baseline.parse_llm_response(response)
+        return self.baseline.generate_owl_extensions(parsed_data)
+
+
+class ModularStrategy(BaselineStrategy):
+    """Modular approach: focused prompt with CQ grouping."""
+    
+    def extend_ontology(self) -> Graph:
+        prompt = self.baseline.generate_modular_prompt()
+        response = self.baseline.call_llm(prompt, verbose=self.baseline.verbose)
+        parsed_data = self.baseline.parse_llm_response(response)
+        return self.baseline.generate_owl_extensions(parsed_data)
+
+
+class IterativeStrategy(BaselineStrategy):
+    """Iterative approach: extend one theme at a time."""
+    
+    def extend_ontology(self) -> Graph:
+        combined_graph = Graph()
+        prompts = self.baseline.generate_iterative_prompts()
+        
+        for i, prompt in enumerate(prompts):
+            print(f"\n🔄 Iteration {i+1}/{len(prompts)}: Processing theme...")
+            try:
+                response = self.baseline.call_llm(prompt, verbose=self.baseline.verbose)
+                parsed_data = self.baseline.parse_llm_response(response)
+                theme_graph = self.baseline.generate_owl_extensions(parsed_data)
+                
+                # Merge into combined graph
+                for triple in theme_graph:
+                    combined_graph.add(triple)
+                    
+                print(f"✅ Added {len(theme_graph)} triples from iteration {i+1}")
+                
+            except Exception as e:
+                print(f"❌ Failed iteration {i+1}: {e}")
+                continue
+        
+        return combined_graph
+
+
+class AdaptiveStrategy(BaselineStrategy):
+    """Adaptive approach: let LLM decide class count."""
+    
+    def extend_ontology(self) -> Graph:
+        prompt = self.baseline.generate_adaptive_prompt()
+        response = self.baseline.call_llm(prompt, verbose=self.baseline.verbose)
+        parsed_data = self.baseline.parse_llm_response(response)
+        return self.baseline.generate_owl_extensions(parsed_data)
+
+
 class LLMOnlyBaseline:
-    """Naive LLM-only ontology extension baseline."""
+    """Multi-strategy LLM-only ontology extension baseline."""
 
     def __init__(
         self,
         seed_ontology_path: Path,
         cq_path: Path,
+        strategy: Literal["naive", "modular", "iterative", "adaptive"] = "naive",
         ollama_url: str = "http://localhost:18135",
         model: str = "llama3.2:3b",
+        verbose: bool = False,
     ):
         self.seed_path = seed_ontology_path
         self.cq_path = cq_path
+        self.strategy_name = strategy
         self.ollama_url = ollama_url.rstrip("/")
         self.model = model
+        self.verbose = verbose
+        
+        # Get timeout from settings (dynamic based on model size)
+        settings = Settings()
+        # Override timeout based on actual model being used
+        model_lower = model.lower()
+        print(f"DEBUG: model_lower = {model_lower}")
+        if "qwen" in model_lower or "79b" in model_lower or "72b" in model_lower or "70b" in model_lower:
+            self.timeout = 2400.0  # 40 minutes for large models
+            print("DEBUG: Set timeout to 2400 for large model")
+        elif "3b" in model_lower or "1.5b" in model_lower:
+            self.timeout = 600.0   # 10 minutes for small models
+            print("DEBUG: Set timeout to 600 for small model")
+        else:
+            self.timeout = 900.0   # 15 minutes for medium models
+            print("DEBUG: Set timeout to 900 for medium model")
 
         # Load seed ontology
         self.seed_graph = Graph()
@@ -65,19 +177,70 @@ class LLMOnlyBaseline:
         with open(cq_path) as f:
             self.cqs = json.load(f)
 
+        # Initialize strategy
+        self.strategy = self._create_strategy()
+
         logger.info("llm_baseline_initialized",
                    seed_classes=len(list(self.seed_graph.subjects(RDF.type, OWL.Class))),
                    cqs=len(self.cqs),
-                   model=model)
+                   model=model,
+                   strategy=strategy,
+                   timeout=self.timeout)
 
-    def generate_extension_prompt(self) -> str:
-        """Generate the comprehensive prompt for LLM-only extension."""
+    def _create_strategy(self) -> BaselineStrategy:
+        """Create the appropriate strategy instance."""
+        if self.strategy_name == "naive":
+            return NaiveStrategy(self)
+        elif self.strategy_name == "modular":
+            return ModularStrategy(self)
+        elif self.strategy_name == "iterative":
+            return IterativeStrategy(self)
+        elif self.strategy_name == "adaptive":
+            return AdaptiveStrategy(self)
+        else:
+            raise ValueError(f"Unknown strategy: {self.strategy_name}")
 
-        # Extract existing classes and properties
+    def _group_competency_questions(self) -> Dict[str, List[str]]:
+        """Group competency questions by theme (literature approach: modular decomposition)."""
+        groups = {
+            "Planning & Scheduling": [],
+            "Resource Management": [],
+            "Safety & Risk": [],
+            "Equipment & Facilities": [],
+            "Regulatory & Compliance": [],
+            "Waste Management": [],
+            "Monitoring & Assessment": [],
+            "Other": []
+        }
+        
+        # Simple keyword-based grouping
+        for cq_dict in self.cqs:
+            cq_text = cq_dict["question"].lower()  # Extract question text from dict
+            if any(word in cq_text for word in ["plan", "schedule", "sequence", "timeline"]):
+                groups["Planning & Scheduling"].append(cq_dict["question"])
+            elif any(word in cq_text for word in ["resource", "personnel", "budget", "cost"]):
+                groups["Resource Management"].append(cq_dict["question"])
+            elif any(word in cq_text for word in ["safety", "risk", "hazard", "protection"]):
+                groups["Safety & Risk"].append(cq_dict["question"])
+            elif any(word in cq_text for word in ["equipment", "facility", "site", "building"]):
+                groups["Equipment & Facilities"].append(cq_dict["question"])
+            elif any(word in cq_text for word in ["regulatory", "compliance", "license", "permit"]):
+                groups["Regulatory & Compliance"].append(cq_dict["question"])
+            elif any(word in cq_text for word in ["waste", "disposal", "contamination"]):
+                groups["Waste Management"].append(cq_dict["question"])
+            elif any(word in cq_text for word in ["monitor", "assess", "measure", "evaluate"]):
+                groups["Monitoring & Assessment"].append(cq_dict["question"])
+            else:
+                groups["Other"].append(cq_dict["question"])
+        
+        # Remove empty groups
+        return {k: v for k, v in groups.items() if v}
+
+    def generate_naive_prompt(self) -> str:
+        """Generate the original naive prompt (comprehensive but overwhelming)."""
         existing_classes = set()
         for s in self.seed_graph.subjects(RDF.type, OWL.Class):
             if isinstance(s, URIRef):
-                # Get local name
                 local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
                 existing_classes.add(local_name)
 
@@ -91,8 +254,7 @@ class LLMOnlyBaseline:
                 local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
                 existing_properties.add(local_name)
 
-        # Format competency questions
-        cq_text = "\n".join(f"- {cq}" for cq in self.cqs)
+        cq_text = "\n".join(f"- {cq['question']}" for cq in self.cqs)
 
         prompt = f"""You are an ontology engineer. I need you to extend an existing ontology for AI planning domains.
 
@@ -105,11 +267,7 @@ COMPETENCY QUESTIONS TO ANSWER:
 
 TASK: Extend the ontology by adding new classes and properties that would help answer these competency questions. Focus on the nuclear decommissioning domain.
 
-REQUIREMENTS:
-1. Add 5-15 new classes that represent concepts needed for nuclear decommissioning
-2. Add properties that connect these classes appropriately
-3. Create a logical hierarchy (subclass relationships)
-4. Ensure the extensions are relevant to answering the competency questions
+Add as many classes and properties as needed - let the competency questions guide you.
 
 OUTPUT FORMAT: Provide your answer in this exact JSON format:
 {{
@@ -132,18 +290,358 @@ OUTPUT FORMAT: Provide your answer in this exact JSON format:
   ]
 }}
 
-Be comprehensive but focused. Only add classes and properties that are clearly needed for the nuclear decommissioning domain and competency questions."""
+Be comprehensive and add everything that would be useful."""
 
         return prompt
 
-    def call_llm(self, prompt: str) -> str:
+    def generate_modular_prompt(self) -> str:
+        """Generate the improved modular prompt with CQ grouping."""
+        # Extract existing classes and properties
+        existing_classes = set()
+        for s in self.seed_graph.subjects(RDF.type, OWL.Class):
+            if isinstance(s, URIRef):
+                # Get local name
+                local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
+                existing_classes.add(local_name)
+
+        existing_properties = set()
+        for s in self.seed_graph.subjects(RDF.type, OWL.ObjectProperty):
+            if isinstance(s, URIRef):
+                local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
+                existing_properties.add(local_name)
+        for s in self.seed_graph.subjects(RDF.type, OWL.DatatypeProperty):
+            if isinstance(s, URIRef):
+                local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
+                existing_properties.add(local_name)
+
+        # Group competency questions by theme
+        cq_groups = self._group_competency_questions()
+        
+        # Create focused prompt
+        prompt = f"""You are an expert ontology engineer specializing in nuclear decommissioning. Your task is to extend an existing ontology to better support competency questions.
+
+EXISTING ONTOLOGY OVERVIEW:
+- Core Classes: {", ".join(sorted(list(existing_classes)[:10]))}
+- Key Properties: {", ".join(sorted(list(existing_properties)[:10]))}
+- Total Classes: {len(existing_classes)}, Total Properties: {len(existing_properties)}
+
+COMPETENCY QUESTIONS GROUPED BY THEME:
+"""
+        
+        for theme, questions in cq_groups.items():
+            prompt += f"\n{theme.upper()}:\n"
+            for cq in questions[:3]:  # Limit questions per group
+                prompt += f"- {cq}\n"
+
+        prompt += f"""
+
+APPROACH (Step-by-step reasoning):
+1. ANALYZE: Identify missing concepts from the competency questions
+2. DESIGN: Create focused classes that fill these gaps
+3. CONNECT: Add properties to link new classes to existing ones
+4. VALIDATE: Ensure extensions directly help answer the questions
+
+Add as many classes and properties as needed for comprehensive coverage.
+
+OUTPUT FORMAT: Provide your answer in this exact JSON format:
+{{
+  "reasoning": "Brief explanation of your approach",
+  "new_classes": [
+    {{
+      "name": "ClassName",
+      "description": "What this class represents",
+      "parent_class": "ExistingClassName",
+      "domain_focus": "which competency question theme this supports"
+    }}
+  ],
+  "new_properties": [
+    {{
+      "name": "propertyName",
+      "type": "object|datatype",
+      "domain": "ClassName",
+      "range": "ClassName or xsd:string",
+      "description": "What this property represents"
+    }}
+  ]
+}}
+
+Be precise and comprehensive. Cover all important concepts."""
+
+        return prompt
+
+    def generate_iterative_prompts(self) -> List[str]:
+        """Generate multiple focused prompts for iterative extension."""
+        cq_groups = self._group_competency_questions()
+        
+        prompts = []
+        for theme, questions in cq_groups.items():
+            if not questions:
+                continue
+                
+            # Create theme-specific prompt
+            prompt = f"""Focus EXTENSIVELY on extending the ontology for: {theme}
+
+Competency Questions:
+{chr(10).join(f"- {cq}" for cq in questions)}
+
+EXISTING CLASSES: {", ".join(sorted([str(s).split("#")[-1] for s in self.seed_graph.subjects(RDF.type, OWL.Class) if isinstance(s, URIRef)])[:15])}
+
+Add as many classes and properties as needed for this specific theme. Be thorough and comprehensive.
+
+OUTPUT FORMAT: Same JSON format as before.
+"""
+            prompts.append(prompt)
+        
+        return prompts
+
+    def generate_adaptive_prompt(self) -> str:
+        """Generate adaptive prompt that lets LLM decide class count."""
+        existing_classes = set()
+        for s in self.seed_graph.subjects(RDF.type, OWL.Class):
+            if isinstance(s, URIRef):
+                local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
+                existing_classes.add(local_name)
+
+        cq_text = "\n".join(f"- {cq['question']}" for cq in self.cqs)
+
+        prompt = f"""You are an ontology engineer. Analyze these competency questions and decide how many classes and properties are needed to adequately support them.
+
+EXISTING ONTOLOGY CLASSES: {", ".join(sorted(existing_classes))}
+
+COMPETENCY QUESTIONS:
+{cq_text}
+
+INSTRUCTIONS:
+1. Analyze the competency questions carefully
+2. Determine how many new classes are truly needed (don't add unnecessary ones)
+3. Decide on the appropriate number of properties
+4. Focus on quality over quantity
+
+Your response should include:
+- "analysis": Your assessment of what's missing
+- "estimated_classes_needed": How many classes you think are needed
+- "estimated_properties_needed": How many properties you think are needed
+- Then the usual "new_classes" and "new_properties" arrays
+
+Be thoughtful and economical in your extensions."""
+
+        return prompt
+
+    def call_llm(self, prompt: str, verbose: bool = False) -> str:
+        """Call Ollama LLM with the extension prompt."""
+        import time
+        
+        url = f"{self.ollama_url}/api/generate"
+
+        payload = {
+            "model": self.model,
+            "prompt": prompt,
+            "stream": True,  # Enable streaming to see progress
+            "format": OntologyExtension.model_json_schema(),  # Force structured JSON output
+            "options": {
+                "temperature": 0.5,
+                "num_predict": 2048,
+            }
+        }
+
+        logger.info("calling_llm", model=self.model, prompt_length=len(prompt))
+        if verbose:
+            print(f"\n🤖 {self.model} is thinking...")
+            print("=" * 60)
+        else:
+            print(f"\n🚀 Preparing to call {self.model}...")
+            print(f"   📝 Prompt length: {len(prompt)} characters")
+            print(f"   ⏱️  Timeout: {self.timeout}s")
+            print(f"   🌐 API URL: {url}")
+            print(f"   🔄 Starting LLM call (skipping warmup)...")
+
+        if not verbose:
+            print(f"\n🤖 Starting LLM generation...")
+        start_time = time.time()
+        
+        try:
+            with httpx.stream("POST", url, json=payload, timeout=self.timeout) as resp:
+                print(f"   📡 HTTP status: {resp.status_code}")
+                if resp.status_code != 200:
+                    error_text = resp.text
+                    print(f"   ❌ HTTP error: {error_text}")
+                    raise Exception(f"HTTP {resp.status_code}: {error_text}")
+                    
+                resp.raise_for_status()
+                full_response = ""
+                tokens_received = 0
+                last_update = start_time
+                
+                for line in resp.iter_lines():
+                    if line:
+                        try:
+                            # Handle both bytes and str (httpx version differences)
+                            if isinstance(line, bytes):
+                                line = line.decode('utf-8')
+                            data = json.loads(line)
+                            
+                            # Handle both 'response' (llama-style) and 'thinking' (qwen-style) streaming
+                            chunk = ""
+                            if 'response' in data and data['response']:
+                                chunk = data['response']
+                            elif 'thinking' in data and data['thinking']:
+                                chunk = data['thinking']
+                            
+                            if chunk:
+                                full_response += chunk
+                                tokens_received += 1
+                                
+                                # Verbose output: stream tokens continuously with visual indicators
+                                if verbose:
+                                    if chunk == '\n':
+                                        print('↵', end='', flush=True)
+                                    elif chunk == '\t':
+                                        print('→', end='', flush=True)
+                                    elif chunk == ' ':
+                                        print('·', end='', flush=True)  # Show spaces as dots
+                                    else:
+                                        print(chunk, end='', flush=True)
+                                
+                                # Minimal progress indicator (only for non-verbose mode)
+                                current_time = time.time()
+                                if not verbose and (tokens_received % 10 == 0 or current_time - last_update > 2):
+                                    elapsed = current_time - start_time
+                                    print(f"\r📝 Generating... {tokens_received} tokens in {elapsed:.1f}s", end='', flush=True)
+                                    last_update = current_time
+                            
+                            # Check if generation is done
+                            if data.get('done', False):
+                                total_time = time.time() - start_time
+                                if verbose:
+                                    print(f"\n{'=' * 60}")
+                                    print(f"✅ Generation complete! | {tokens_received} tokens | {total_time:.1f}s | {tokens_received/total_time:.1f} t/s")
+                                else:
+                                    print(f"\n✅ LLM generation completed in {total_time:.1f}s")
+                                    print(f"   📊 Total tokens: {data.get('eval_count', tokens_received)}")
+                                    print(f"   🚀 Tokens/second: {tokens_received/total_time:.1f}")
+                                break
+                                
+                        except json.JSONDecodeError as e:
+                            print(f"\n⚠️  JSON decode error: {e}")
+                            print(f"   Raw line: {line[:200]}...")
+                            continue
+                
+                if not full_response:
+                    raise Exception("No response received from LLM")
+                    
+                return full_response
+                
+        except Exception as e:
+            print(f"\n❌ LLM call failed: {e}")
+            logger.error("llm_call_failed", error=str(e))
+            raise
+        """Generate the comprehensive prompt for LLM-only extension."""
+
+        # Extract existing classes and properties
+        existing_classes = set()
+        for s in self.seed_graph.subjects(RDF.type, OWL.Class):
+            if isinstance(s, URIRef):
+                # Get local name
+                local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
+                existing_classes.add(local_name)
+
+        existing_properties = set()
+        for s in self.seed_graph.subjects(RDF.type, OWL.ObjectProperty):
+            if isinstance(s, URIRef):
+                local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
+                existing_properties.add(local_name)
+        for s in self.seed_graph.subjects(RDF.type, OWL.DatatypeProperty):
+            if isinstance(s, URIRef):
+                local_name = str(s).split("#")[-1] if "#" in str(s) else str(s).split("/")[-1]
+                existing_properties.add(local_name)
+
+        # Group competency questions by theme (literature approach: modular extension)
+        cq_groups = self._group_competency_questions()
+        
+        # Create a more focused, step-by-step prompt (literature approach: chain-of-thought)
+        prompt = f"""You are an expert ontology engineer specializing in nuclear decommissioning. Your task is to extend an existing ontology to better support competency questions.
+
+EXISTING ONTOLOGY OVERVIEW:
+- Core Classes: {", ".join(sorted(list(existing_classes)[:10]))}  # Limit to avoid overwhelming
+- Key Properties: {", ".join(sorted(list(existing_properties)[:10]))}
+- Total Classes: {len(existing_classes)}, Total Properties: {len(existing_properties)}
+
+COMPETENCY QUESTIONS GROUPED BY THEME:
+"""
+        
+        for theme, questions in cq_groups.items():
+            prompt += f"\n{theme.upper()}:\n"
+            for cq in questions[:3]:  # Limit questions per group
+                prompt += f"- {cq}\n"
+
+        prompt += f"""
+
+APPROACH (Step-by-step reasoning):
+1. ANALYZE: Identify missing concepts from the competency questions
+2. DESIGN: Create 3-8 focused classes that fill these gaps
+3. CONNECT: Add properties to link new classes to existing ones
+4. VALIDATE: Ensure extensions directly help answer the questions
+
+REQUIREMENTS:
+- Focus on nuclear decommissioning domain concepts
+- Create logical class hierarchies
+- Add only essential properties
+- Keep extensions minimal but complete
+
+OUTPUT FORMAT: Provide your answer in this exact JSON format:
+{{
+  "reasoning": "Brief explanation of your approach",
+  "new_classes": [
+    {{
+      "name": "ClassName",
+      "description": "What this class represents",
+      "parent_class": "ExistingClassName",
+      "domain_focus": "which competency question theme this supports"
+    }}
+  ],
+  "new_properties": [
+    {{
+      "name": "propertyName",
+      "type": "object|datatype",
+      "domain": "ClassName",
+      "range": "ClassName or xsd:string",
+      "description": "What this property represents"
+    }}
+  ]
+}}
+
+Be precise and focused. Quality over quantity."""
+
+    def generate_iterative_extension_prompts(self) -> List[str]:
+        """Generate multiple focused prompts for iterative extension (literature approach)."""
+        cq_groups = self._group_competency_questions()
+        
+        prompts = []
+        for theme, questions in cq_groups.items():
+            if not questions:
+                continue
+                
+            # Create theme-specific prompt
+            prompt = f"""Focus on extending the ontology for: {theme}
+
+Competency Questions:
+{chr(10).join(f"- {cq}" for cq in questions[:2])}
+
+Add 2-4 classes and 3-6 properties specifically for this theme.
+Be very focused and avoid generic additions.
+
+[Same JSON format as before]
+"""
+            prompts.append(prompt)
+        
+        return prompts
         """Call Ollama LLM with the extension prompt."""
         url = f"{self.ollama_url}/api/generate"
 
         payload = {
             "model": self.model,
             "prompt": prompt,
-            "stream": False,
+            "stream": True,  # Enable streaming to see progress
             "options": {
                 "temperature": 0.5,
                 "num_predict": 2048,
@@ -153,29 +651,65 @@ Be comprehensive but focused. Only add classes and properties that are clearly n
         logger.info("calling_llm", model=self.model, prompt_length=len(prompt))
 
         try:
-            resp = httpx.post(url, json=payload, timeout=300.0)
+            with httpx.stream("POST", url, json=payload, timeout=self.timeout) as resp:
+                resp.raise_for_status()
+                full_response = ""
+                print(f"\n🤖 Starting LLM generation with {self.model}...")
+                
+                for line in resp.iter_lines():
+                    if line:
+                        try:
+                            data = json.loads(line.decode('utf-8'))
+                            if 'response' in data:
+                                chunk = data['response']
+                                full_response += chunk
+                                print(chunk, end='', flush=True)
+                            
+                            # Check if generation is done
+                            if data.get('done', False):
+                                print(f"\n✅ LLM generation completed. Total tokens: {data.get('eval_count', 'unknown')}")
+                                break
+                                
+                        except json.JSONDecodeError:
+                            continue
+                
+                return full_response
+                
+        except Exception as e:
+            print(f"\n❌ Streaming failed: {e}")
+            print("Falling back to non-streaming mode...")
+            logger.warning("streaming_failed", error=str(e))
+            
+            # Fall back to non-streaming
+            payload["stream"] = False
+            resp = httpx.post(url, json=payload, timeout=self.timeout)
             resp.raise_for_status()
             result = resp.json()
             return result["response"]
-        except Exception as e:
-            logger.error("llm_call_failed", error=str(e))
-            raise
 
     def parse_llm_response(self, response: str) -> Dict:
-        """Parse the LLM's JSON response into structured data."""
+        """Parse the LLM's JSON response into structured data using Pydantic validation."""
 
-        # Extract JSON from response (LLM might add extra text)
-        json_match = re.search(r'\{.*\}', response, re.DOTALL)
-        if not json_match:
-            raise ValueError(f"No JSON found in LLM response: {response[:500]}...")
-
-        json_str = json_match.group()
         try:
-            data = json.loads(json_str)
-            return data
-        except json.JSONDecodeError as e:
-            logger.error("json_parse_failed", error=str(e), response=response[:1000])
-            raise
+            # With structured outputs, the response should be pure JSON
+            extension = OntologyExtension.model_validate_json(response)
+            return extension.model_dump()
+        except Exception as e:
+            # Fallback to manual parsing if structured output fails
+            logger.warning("structured_parse_failed", error=str(e), response=response[:500])
+
+            # Extract JSON from response (LLM might add extra text)
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if not json_match:
+                raise ValueError(f"No JSON found in LLM response: {response[:500]}...")
+
+            json_str = json_match.group()
+            try:
+                data = json.loads(json_str)
+                return data
+            except json.JSONDecodeError as e:
+                logger.error("json_parse_failed", error=str(e), response=response[:1000])
+                raise
 
     def generate_owl_extensions(self, parsed_data: Dict) -> Graph:
         """Convert parsed LLM response into OWL RDF graph."""
@@ -258,29 +792,8 @@ Be comprehensive but focused. Only add classes and properties that are clearly n
         return extension_graph
 
     def extend_ontology(self) -> Graph:
-        """Run the complete LLM-only extension process."""
-
-        # Generate prompt
-        prompt = self.generate_extension_prompt()
-
-        # Call LLM
-        response = self.call_llm(prompt)
-
-        # Parse response
-        parsed_data = self.parse_llm_response(response)
-
-        # Generate OWL
-        extension_graph = self.generate_owl_extensions(parsed_data)
-
-        # Combine with seed ontology
-        final_graph = self.seed_graph + extension_graph
-
-        logger.info("ontology_extended",
-                   original_triples=len(self.seed_graph),
-                   extension_triples=len(extension_graph),
-                   final_triples=len(final_graph))
-
-        return final_graph
+        """Delegate to the strategy's extend_ontology method."""
+        return self.strategy.extend_ontology()
 
     def save_results(self, graph: Graph, output_dir: Path, experiment_name: str):
         """Save the extended ontology and metadata."""
@@ -313,32 +826,79 @@ Be comprehensive but focused. Only add classes and properties that are clearly n
 def main():
     """CLI entry point for LLM-only baseline."""
     import argparse
+    import time
 
     parser = argparse.ArgumentParser(description="LLM-only ontology extension baseline")
     parser.add_argument("--model", default="llama3.2:3b", help="Ollama model to use")
+    parser.add_argument("--strategy", default="naive", 
+                       choices=["naive", "modular", "iterative", "adaptive"],
+                       help="Baseline strategy to use")
     parser.add_argument("--output", required=True, help="Output directory")
     parser.add_argument("--experiment-name", required=True, help="Experiment identifier")
     parser.add_argument("--seed", default="data/seed_ontology/plan-ontology-v1.0.owl", help="Seed ontology path")
     parser.add_argument("--cqs", default="data/evaluation/competency_questions.json", help="Competency questions path")
+    parser.add_argument("--verbose", action="store_true", help="Show verbose token output during generation")
 
     args = parser.parse_args()
 
-    # Initialize baseline
-    baseline = LLMOnlyBaseline(
-        seed_ontology_path=Path(args.seed),
-        cq_path=Path(args.cqs),
-        model=args.model
+    # Initialize W&B
+    run_name = f"llm_only_{args.strategy}_{args.model.replace(':', '_').replace('.', '_')}_{args.experiment_name}"
+    wandb.init(
+        project="ontology-hitl",
+        name=run_name,
+        config={
+            "model": args.model,
+            "strategy": args.strategy,
+            "experiment_name": args.experiment_name,
+            "method": f"llm_only_{args.strategy}",
+            "seed_ontology": args.seed,
+            "competency_questions": args.cqs,
+        }
     )
 
-    # Run extension
-    extended_graph = baseline.extend_ontology()
+    start_time = time.time()
 
-    # Save results
-    output_dir = Path(args.output)
-    baseline.save_results(extended_graph, output_dir, args.experiment_name)
+    try:
+        # Initialize baseline
+        baseline = LLMOnlyBaseline(
+            seed_ontology_path=Path(args.seed),
+            cq_path=Path(args.cqs),
+            strategy=args.strategy,
+            model=args.model,
+            verbose=args.verbose
+        )
 
-    print(f"LLM-only baseline completed for {args.experiment_name}")
-    print(f"Results saved to {output_dir}")
+        # Run extension
+        extended_graph = baseline.extend_ontology()
+
+        # Save results
+        output_dir = Path(args.output)
+        baseline.save_results(extended_graph, output_dir, args.experiment_name)
+
+        # Log metrics to W&B
+        execution_time = time.time() - start_time
+        metadata = {
+            "experiment_name": args.experiment_name,
+            "method": "llm_only_baseline",
+            "model": args.model,
+            "seed_ontology": str(baseline.seed_path),
+            "competency_questions": len(baseline.cqs),
+            "final_triples": len(extended_graph),
+            "seed_triples": len(baseline.seed_graph),
+            "extension_triples": len(extended_graph) - len(baseline.seed_graph),
+            "execution_time_seconds": execution_time,
+        }
+        
+        wandb.log(metadata)
+        wandb.finish()
+
+        print(f"LLM-only baseline completed for {args.experiment_name}")
+        print(f"Results saved to {output_dir}")
+        print(f"W&B run: {run_name}")
+
+    except Exception as e:
+        wandb.finish()
+        raise
 
 
 if __name__ == "__main__":

@@ -126,6 +126,7 @@ class ModelExperimentConfig(BaseModel):
 
     name: str
     model: str
+    strategy: str = "naive"  # For llm_only method: naive, modular, iterative, adaptive
     strategy_overrides: Dict[str, str] = {}
     description: str = ""
     timeout_seconds: int = 300
@@ -810,6 +811,7 @@ class ModelExperimentRunner:
                 sys.executable,
                 "scripts/llm_only_baseline.py",
                 "--model", config.model,
+                "--strategy", config.strategy,
                 "--output", str(output_dir / "ontology_latest.owl"),
                 "--timeout", str(config.timeout_seconds),
                 "--temperature", str(config.temperature)

@@ -43,6 +43,17 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.5
     llm_timeout_seconds: int = 300  # Reduced for smaller model
 
+    @property
+    def effective_llm_timeout_seconds(self) -> int:
+        """Get timeout based on model size - large models need more time."""
+        model = self.ollama_model.lower()
+        if "qwen" in model or "79b" in model or "72b" in model or "70b" in model:
+            return 1200  # 20 minutes for large models
+        elif "3b" in model or "1.5b" in model:
+            return 600   # 10 minutes for small models
+        else:
+            return 900   # 15 minutes for medium models
+
     # Gap Analysis
     min_entity_frequency: int = 3
     semantic_similarity_threshold: float = 0.65

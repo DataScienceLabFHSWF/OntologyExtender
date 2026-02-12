@@ -200,12 +200,24 @@ class BaseAgent:
         self.system_prompt = system_prompt
         self._response_cache: dict[str, dict[str, Any]] = {}  # Simple in-memory cache
 
+    @property
+    def effective_llm_timeout_seconds(self) -> float:
+        """Get timeout based on model size - large models need more time."""
+        model = self.settings.ollama_model.lower()
+        if "qwen" in model or "79b" in model or "72b" in model or "70b" in model:
+            return 2400.0  # 40 minutes for large models
+        elif "3b" in model or "1.5b" in model:
+            return 600.0   # 10 minutes for small models
+        else:
+            return 900.0   # 15 minutes for medium models
+
     def call_llm(
         self,
         user_prompt: str,
         system_prompt: str | None = None,
         temperature: float | None = None,
         use_cache: bool = True,
+        stream_progress: bool = True,
     ) -> dict[str, Any] | None:
         """Call Ollama chat API and parse JSON from the response.
 
@@ -217,6 +229,7 @@ class BaseAgent:
             system_prompt: Override the default system prompt.
             temperature: LLM temperature (default from settings).
             use_cache: Whether to cache and reuse responses for identical prompts.
+            stream_progress: Whether to stream and show progress.
 
         Returns:
             Parsed JSON dict, or None if the call fails.
@@ -232,25 +245,76 @@ class BaseAgent:
                 return self._response_cache[cache_key]
 
         try:
-            logger.debug("llm_call_start", agent=self.role.value, timeout=self.settings.llm_timeout_seconds)
-            resp = httpx.post(
-                f"{self.settings.ollama_url}/api/chat",
-                json={
-                    "model": self.settings.ollama_model,
-                    "messages": [
-                        {"role": "system", "content": sys_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "stream": False,
-                    "options": {
-                        "temperature": temp,
-                        "num_predict": 4096,
+            logger.debug("llm_call_start", agent=self.role.value, timeout=self.effective_llm_timeout_seconds, stream=stream_progress)
+            
+            if stream_progress:
+                # Use streaming API to show progress
+                with httpx.stream(
+                    "POST",
+                    f"{self.settings.ollama_url}/api/chat",
+                    json={
+                        "model": self.settings.ollama_model,
+                        "messages": [
+                            {"role": "system", "content": sys_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        "stream": True,
+                        "options": {
+                            "temperature": temp,
+                            "num_predict": 4096,
+                        },
                     },
-                },
-                timeout=self.settings.llm_timeout_seconds,
-            )
-            resp.raise_for_status()
-            content = resp.json()["message"]["content"]
+                    timeout=self.effective_llm_timeout_seconds,
+                ) as resp:
+                    resp.raise_for_status()
+                    content = ""
+                    thinking_started = False
+                    chars_received = 0
+                    
+                    for line in resp.iter_lines():
+                        if line.strip():
+                            try:
+                                data = json.loads(line)
+                                if "message" in data and "content" in data["message"]:
+                                    chunk = data["message"]["content"]
+                                    content += chunk
+                                    chars_received += len(chunk)
+                                    
+                                    # Show progress indicators
+                                    if "</think>" in content and not thinking_started:
+                                        thinking_started = True
+                                        print(f"🤔 {self.role.value}: LLM is thinking...", end="", flush=True)
+                                    elif thinking_started and chars_received % 100 == 0:
+                                        print(".", end="", flush=True)
+                                        
+                                if data.get("done", False):
+                                    break
+                            except json.JSONDecodeError:
+                                continue
+                    
+                    if thinking_started:
+                        print(" ✓", flush=True)
+                        
+            else:
+                # Non-streaming fallback
+                resp = httpx.post(
+                    f"{self.settings.ollama_url}/api/chat",
+                    json={
+                        "model": self.settings.ollama_model,
+                        "messages": [
+                            {"role": "system", "content": sys_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        "stream": False,
+                        "options": {
+                            "temperature": temp,
+                            "num_predict": 4096,
+                        },
+                    },
+                    timeout=self.effective_llm_timeout_seconds,
+                )
+                resp.raise_for_status()
+                content = resp.json()["message"]["content"]
 
             # Strip qwen3-next thinking tags
             if "</think>" in content:
@@ -352,7 +416,7 @@ class BaseAgent:
                         "num_predict": 4096,
                     },
                 },
-                timeout=self.settings.llm_timeout_seconds,
+                timeout=self.effective_llm_timeout_seconds,
             )
             resp.raise_for_status()
             content = resp.json()["message"]["content"]
