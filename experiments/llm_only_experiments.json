@@ -1,0 +1,21 @@
+[
+  {
+    "name": "small_llm_only",
+    "model": "llama3.2:3b",
+    "strategy_overrides": {},
+    "description": "LLM-only baseline with small model. Direct single-shot prompting without multi-agent debate.",
+    "method": "llm_only",
+    "timeout_seconds": 300,
+    "temperature": 0.5
+  },
+  {
+    "name": "large_llm_only",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {},
+    "description": "LLM-only baseline with large model. Direct single-shot prompting without multi-agent debate.",
+    "method": "llm_only",
+    "timeout_seconds": 600,
+    "temperature": 0.5
+  }
+]</content>
+<parameter name="filePath">/home/fneubuerger/OntologyExtender/experiments/llm_only_experiments.json

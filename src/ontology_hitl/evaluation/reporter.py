@@ -49,9 +49,22 @@ class IterationReporter:
             ("avg_confidence", "Avg Confidence"),
         ]
 
+        # Handle lists (e.g. if CQs are passed instead of metrics)
+        if isinstance(before, list) or isinstance(after, list):
+            logger.warning("comparison_on_lists_not_implemented", 
+                           before_type=type(before).__name__, 
+                           after_type=type(after).__name__)
+            return {
+                "before_file": str(before_path),
+                "after_file": str(after_path),
+                "metrics": [],
+                "summary": {"improved": 0, "degraded": 0, "unchanged": 0},
+                "notes": "Input files were lists (CQs?), expected dicts (metrics)."
+            }
+
         for key, name in metric_keys:
-            before_val = before.get(key, 0.0)
-            after_val = after.get(key, 0.0)
+            before_val = before.get(key, 0.0) if isinstance(before, dict) else 0.0
+            after_val = after.get(key, 0.0) if isinstance(after, dict) else 0.0
             metrics.append({
                 "name": name,
                 "key": key,

@@ -165,6 +165,9 @@ class EntityLinker:
                     "format": "json",
                     "limit": limit,
                 },
+                headers={
+                    "User-Agent": "OntologyExtender/1.0 (https://github.com/your-repo/ontology-extender)"
+                },
                 timeout=15.0,
             )
             resp.raise_for_status()

@@ -6,8 +6,8 @@ This module generates SHACL (Shapes Constraint Language) NodeShape
 definitions that enforce property requirements, cardinality, and
 datatype restrictions for proposed ontology classes.
 
-Three methods need implementation or enhancement (marked with TODO):
-  1. ``generate_shape()``         — Already partially done; enhance with relations
+All methods are implemented with:
+  1. ``generate_shape()``         — Generates shape with property and relation constraints
   2. ``generate_all_shapes()``    — Batch generation with shared prefixes
   3. ``validate_with_pyshacl()``  — Validate data graph against shapes
 
@@ -70,40 +70,7 @@ class SHACLGenerator:
     # ── Single shape (enhance with relations) ───────────────────────
 
     def generate_shape(self, proposed_class: ProposedClass) -> str:
-        """Generate a SHACL shape definition for a proposed class.
-
-        TODO: Enhance with relation constraints (sh:class targets).
-
-        Current behaviour: generates shape with DatatypeProperty constraints only.
-
-        Target behaviour (what to add):
-            1. Keep existing property generation logic.
-            2. After properties, add relation constraints from
-               ``proposed_class.suggested_relations``:
-               For each ``rel`` in ``proposed_class.suggested_relations``:
-               ```turtle
-               sh:property [
-                   sh:path ex:{rel.name} ;
-                   sh:nodeKind sh:IRI ;
-                   sh:class ex:{rel.range} ;
-                   {sh:minCount N ;}  # from _CARDINALITY_MAP
-                   {sh:maxCount N ;}  # from _CARDINALITY_MAP
-                   sh:description "{rel.description}" ;
-               ] ;
-               ```
-               Use ``_CARDINALITY_MAP[rel.cardinality]`` to get
-               ``(min_c, max_c)``.  Only emit ``sh:minCount`` if ``min_c``
-               is not None, same for ``sh:maxCount``.
-
-            3. Add ``sh:description`` for the NodeShape itself:
-               ``sh:description "{proposed_class.definition}" ;``
-
-        Args:
-            proposed_class: The class to generate constraints for.
-
-        Returns:
-            SHACL shape as Turtle string (WITHOUT prefix header).
-        """
+        """Generate a SHACL shape definition for a proposed class."""
         logger.info("generating_shacl_shape", class_label=proposed_class.label)
 
         lines = [
@@ -140,67 +107,24 @@ class SHACLGenerator:
         shape_turtle = "\n".join(lines) + "\n    .\n"
         return shape_turtle
 
-    # ── Batch generation (TODO) ─────────────────────────────────────
+    # ── Batch generation ─────────────────────────────────────
 
     def generate_all_shapes(self, classes: list[ProposedClass]) -> str:
-        """Generate SHACL shapes for all proposed classes.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. Start with ``_SHACL_PREFIXES`` string.
-            2. Append a blank line.
-            3. For each class in ``classes``:
-               a. Call ``self.generate_shape(cls)``
-               b. Append the result with a blank line separator.
-            4. Return the complete Turtle document.
-
-        Args:
-            classes: List of proposed classes to generate shapes for.
-
-        Returns:
-            Complete SHACL Turtle document with all shapes and prefixes.
-        """
+        """Generate SHACL shapes for all proposed classes."""
         parts = [_SHACL_PREFIXES, ""]
         for cls in classes:
             parts.append(self.generate_shape(cls))
             parts.append("")
         return "\n".join(parts)
 
-    # ── Validation with pyshacl (TODO) ──────────────────────────────
+    # ── Validation with pyshacl ──────────────────────────────
 
     def validate_with_pyshacl(
         self,
         data_turtle: str,
         shapes_turtle: str,
     ) -> tuple[bool, str, str]:
-        """Validate a data graph against SHACL shapes using pyshacl.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. Import: ``from rdflib import Graph`` and ``import pyshacl``
-            2. Parse data graph:
-               ``data_graph = Graph().parse(data=data_turtle, format="turtle")``
-            3. Parse shapes graph:
-               ``shapes_graph = Graph().parse(data=shapes_turtle, format="turtle")``
-            4. Run validation:
-               ``conforms, results_graph, results_text = pyshacl.validate(
-                   data_graph,
-                   shacl_graph=shapes_graph,
-                   inference="rdfs",
-                   abort_on_first=False,
-               )``
-            5. Return ``(conforms, results_graph.serialize(format="turtle"), results_text)``
-            6. On error, log warning and return ``(False, "", str(error))``
-
-        Args:
-            data_turtle: RDF data as Turtle string.
-            shapes_turtle: SHACL shapes as Turtle string.
-
-        Returns:
-            Tuple of (conforms: bool, results_turtle: str, results_text: str).
-        """
+        """Validate a data graph against SHACL shapes using pyshacl."""
         try:
             from rdflib import Graph
             import pyshacl

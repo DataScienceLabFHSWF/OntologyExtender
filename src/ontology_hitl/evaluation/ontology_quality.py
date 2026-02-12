@@ -87,56 +87,78 @@ class OntologyQualityAnalyzer:
             return {"results": {"bindings": []}}
 
     def analyze_consistency(self, ontology_path: str | None = None) -> Dict[str, Any]:
-        """Check ontology for logical consistency.
+        """Check ontology for logical consistency using HermiT reasoner.
 
-        Uses HermiT reasoner via OWL API to detect:
+        Uses HermiT reasoner via owlready2 to detect:
         - Unsatisfiable classes
         - Inconsistent ontology
         - Circular dependencies
         """
-        # For now, implement basic structural checks
-        # TODO: Integrate with OWL reasoner for full consistency checking
+        if not ontology_path:
+            return {"consistency_score": 0.0, "issues": []}
 
-        if ontology_path:
-            g = Graph()
-            g.parse(ontology_path)
+        # Structural checks (existing code — keep)
+        g = Graph()
+        g.parse(ontology_path)
 
-            # Check for basic structural issues
-            classes = list(g.subjects(RDF.type, OWL.Class))
-            properties = list(g.subjects(RDF.type, OWL.ObjectProperty)) + list(
-                g.subjects(RDF.type, OWL.DatatypeProperty)
-            )
+        # Check for basic structural issues
+        classes = list(g.subjects(RDF.type, OWL.Class))
+        properties = list(g.subjects(RDF.type, OWL.ObjectProperty)) + list(
+            g.subjects(RDF.type, OWL.DatatypeProperty)
+        )
 
-            # Check for classes with no labels
-            unlabeled_classes = []
-            for cls in classes:
-                labels = list(g.objects(cls, RDFS.label))
-                if not labels:
-                    unlabeled_classes.append(str(cls))
+        # Check for classes with no labels
+        unlabeled_classes = []
+        for cls in classes:
+            labels = list(g.objects(cls, RDFS.label))
+            if not labels:
+                unlabeled_classes.append(str(cls))
 
-            # Check for orphan properties (not connected to any class)
-            orphan_properties = []
-            for prop in properties:
-                domains = list(g.objects(prop, RDFS.domain))
-                ranges = list(g.objects(prop, RDFS.range))
-                if not domains or not ranges:
-                    orphan_properties.append(str(prop))
+        # Check for orphan properties (not connected to any class)
+        orphan_properties = []
+        for prop in properties:
+            domains = list(g.objects(prop, RDFS.domain))
+            ranges = list(g.objects(prop, RDFS.range))
+            if not domains or not ranges:
+                orphan_properties.append(str(prop))
 
-            return {
-                "total_classes": len(classes),
-                "total_properties": len(properties),
-                "unlabeled_classes": len(unlabeled_classes),
-                "orphan_properties": len(orphan_properties),
-                "consistency_score": 1.0 - (len(unlabeled_classes) + len(orphan_properties)) / max(
-                    len(classes) + len(properties), 1
-                ),
-                "issues": {
-                    "unlabeled_classes": unlabeled_classes[:10],  # First 10
-                    "orphan_properties": orphan_properties[:10],
-                },
-            }
+        structural = {
+            "total_classes": len(classes),
+            "total_properties": len(properties),
+            "unlabeled_classes": len(unlabeled_classes),
+            "orphan_properties": len(orphan_properties),
+            "consistency_score": 1.0 - (len(unlabeled_classes) + len(orphan_properties)) / max(
+                len(classes) + len(properties), 1
+            ),
+            "issues": {
+                "unlabeled_classes": unlabeled_classes[:10],  # First 10
+                "orphan_properties": orphan_properties[:10],
+            },
+        }
 
-        return {"consistency_score": 0.0, "issues": []}
+        # OWL reasoning (new)
+        try:
+            import owlready2
+            onto = owlready2.get_ontology(f"file://{ontology_path}").load()
+            with onto:
+                owlready2.sync_reasoner_hermit(infer_property_values=True)
+            unsatisfiable = list(onto.inconsistent_classes())
+            structural["unsatisfiable_classes"] = [str(c) for c in unsatisfiable]
+            structural["reasoner_used"] = "HermiT (via owlready2)"
+            structural["logically_consistent"] = len(unsatisfiable) == 0
+            # Adjust score for logical inconsistencies
+            if unsatisfiable:
+                structural["consistency_score"] *= 0.5
+                structural["issues"]["unsatisfiable_classes"] = [str(c) for c in unsatisfiable[:10]]
+        except ImportError:
+            structural["reasoner_used"] = "none (owlready2 not installed)"
+            logger.warning("owlready2_not_available", message="Install owlready2 for full OWL reasoning")
+        except Exception as e:
+            structural["reasoner_used"] = "error"
+            structural["reasoner_error"] = str(e)
+            logger.warning("reasoner_failed", error=str(e))
+
+        return structural
 
     def analyze_coherence(self, ontology_path: str | None = None) -> Dict[str, Any]:
         """Measure semantic coherence between ontology concepts.

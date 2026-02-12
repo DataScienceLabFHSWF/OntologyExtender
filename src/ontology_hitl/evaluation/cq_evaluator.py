@@ -10,7 +10,7 @@ by the current ontology/graph.  Two strategies are used:
   B. **LLM-to-SPARQL** — ask the LLM to translate a CQ into SPARQL,
      then execute the SPARQL and check if results are non-empty.
 
-Three methods need implementation (marked with TODO):
+All methods are implemented with:
   1. ``evaluate_coverage()``    — Main entry, iterates over CQ list
   2. ``_structural_check()``    — Check class/property existence via SPARQL
   3. ``_llm_to_sparql()``       — Translate CQ to SPARQL via Ollama, then execute
@@ -95,17 +95,7 @@ class CQEvaluator:
     # ── Helpers ──────────────────────────────────────────────────────
 
     def _sparql_query(self, query: str) -> list[dict[str, Any]]:
-        """Execute SPARQL SELECT and return bindings.
-
-        TODO: Implement (same pattern as VersionManager._sparql_query).
-
-        Steps:
-            1. ``url = f"{self.fuseki_url}/{self.dataset}/sparql"``
-            2. POST with ``Content-Type: application/sparql-query``,
-               ``Accept: application/sparql-results+json``
-            3. Parse ``resp.json()["results"]["bindings"]``
-            4. Return list of dicts mapping var names → values
-        """
+        """Execute SPARQL SELECT and return bindings."""
         url = f"{self.fuseki_url}/{self.dataset}/sparql"
         try:
             resp = httpx.post(url, content=query,
@@ -122,17 +112,7 @@ class CQEvaluator:
             return []
 
     def _sparql_ask(self, query: str) -> bool:
-        """Execute SPARQL ASK and return boolean.
-
-        TODO: Implement.
-
-        Steps:
-            1. ``url = f"{self.fuseki_url}/{self.dataset}/sparql"``
-            2. POST with ``Content-Type: application/sparql-query``,
-               ``Accept: application/sparql-results+json``
-            3. Return ``resp.json()["boolean"]``
-            4. On error, log warning and return ``False``
-        """
+        """Execute SPARQL ASK and return boolean."""
         url = f"{self.fuseki_url}/{self.dataset}/sparql"
         try:
             resp = httpx.post(url, content=query,
@@ -145,16 +125,7 @@ class CQEvaluator:
             return False
 
     def _call_llm(self, prompt: str) -> str:
-        """Call Ollama /api/generate and return the response text.
-
-        TODO: Implement (same pattern as ClassGenerator._call_llm).
-
-        Steps:
-            1. ``url = f"{self.ollama_url}/api/generate"``
-            2. POST JSON: ``{"model": self.model, "prompt": prompt, "stream": False}``
-            3. Strip ``<think>...</think>`` blocks: ``re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)``
-            4. Return stripped text
-        """
+        """Call Ollama /api/generate and return the response text."""
         url = f"{self.ollama_url}/api/generate"
         payload = {"model": self.model, "prompt": prompt, "stream": False}
         try:
@@ -173,36 +144,7 @@ class CQEvaluator:
         self,
         cq_path: str,
     ) -> dict:
-        """Evaluate CQ answerability against the current graph.
-
-        TODO: Implement full evaluation loop.
-
-        Steps:
-            1. Load CQ file: ``cqs = json.loads(Path(cq_path).read_text())``
-               Expected format: list of dicts with at minimum a ``"question"`` key.
-               May also have ``"id"``, ``"expected_classes"`` keys.
-            2. Get all class labels from graph:
-               ``labels_result = self._sparql_query(_SPARQL_ALL_CLASS_LABELS)``
-               ``class_labels = [r["label"] for r in labels_result]``
-            3. For each CQ:
-               a. Try structural check first via ``_structural_check(cq, class_labels)``
-               b. If structural check is inconclusive (returns None), try LLM:
-                  ``sparql = self._llm_to_sparql(cq["question"], class_labels)``
-                  ``answerable = self._sparql_ask(sparql) if sparql else False``
-               c. Record result: ``{"cq": cq["question"], "answerable": bool, "method": "structural"|"llm"}``
-            4. Compute aggregate:
-               ``answerable_count = sum(1 for r in results if r["answerable"])``
-               ``coverage_pct = answerable_count / len(cqs) * 100 if cqs else 0.0``
-            5. Return dict:
-               ``{"total_cqs": len(cqs), "answerable": answerable_count,
-                 "coverage_pct": coverage_pct, "results": results}``
-
-        Args:
-            cq_path: Path to competency questions JSON.
-
-        Returns:
-            Dict with per-CQ results and aggregate coverage.
-        """
+        """Evaluate CQ answerability against the current graph."""
         logger.info("evaluating_cq_coverage", cq_path=cq_path)
 
         cqs = json.loads(Path(cq_path).read_text())
@@ -235,25 +177,7 @@ class CQEvaluator:
         cq: dict[str, Any],
         class_labels: list[str],
     ) -> bool | None:
-        """Check if a CQ's expected classes exist in the ontology.
-
-        TODO: Implement structural matching.
-
-        Steps:
-            1. If ``"expected_classes"`` key not in ``cq``, return ``None`` (inconclusive).
-            2. For each expected class label in ``cq["expected_classes"]``:
-               a. Check if label (case-insensitive) is in ``class_labels``.
-            3. If ALL expected classes found, return ``True``.
-            4. If ANY expected class missing, return ``False``.
-
-        Args:
-            cq: Single CQ dict with ``"question"`` and optionally ``"expected_classes"``.
-            class_labels: All class labels currently in the ontology graph.
-
-        Returns:
-            True if all expected classes found, False if any missing,
-            None if no expected_classes defined (inconclusive).
-        """
+        """Check if a CQ's expected classes exist in the ontology."""
         if "expected_classes" not in cq:
             return None
         expected = cq["expected_classes"]
@@ -270,26 +194,7 @@ class CQEvaluator:
         cq_text: str,
         class_labels: list[str],
     ) -> str | None:
-        """Translate a competency question to a SPARQL ASK query via LLM.
-
-        TODO: Implement LLM-based CQ→SPARQL translation.
-
-        Steps:
-            1. Format prompt: ``_CQ_TO_SPARQL_PROMPT.format(
-                   class_labels=", ".join(class_labels), cq_text=cq_text)``
-            2. Call LLM: ``response = self._call_llm(prompt)``
-            3. Extract SPARQL from response:
-               Try ``re.search(r"(ASK\\s*\\{.*?\\})", response, re.DOTALL)``
-               If no match, check if entire response looks like SPARQL (starts with ASK or PREFIX).
-            4. Return extracted SPARQL string, or ``None`` if extraction fails.
-
-        Args:
-            cq_text: Natural language competency question.
-            class_labels: All class labels in the ontology.
-
-        Returns:
-            SPARQL ASK query string, or None if translation fails.
-        """
+        """Translate a competency question to a SPARQL ASK query via LLM."""
         prompt = _CQ_TO_SPARQL_PROMPT.format(
             class_labels=", ".join(class_labels),
             cq_text=cq_text

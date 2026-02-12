@@ -12,7 +12,7 @@ All Fuseki graph operations use HTTP:
   - **SPARQL Query**: ``{fuseki_url}/{dataset}/sparql`` (POST, ``application/sparql-query``)
   - **SPARQL Update**: ``{fuseki_url}/{dataset}/update`` (POST, ``application/sparql-update``)
 
-Four methods need implementation (marked with TODO):
+All methods are implemented with:
   1. ``create_version()``             — Create named graph; copy main → staging
   2. ``compute_diff()``               — SPARQL MINUS queries to find diffs
   3. ``promote_staging_to_main()``    — SPARQL COPY graph into main
@@ -108,19 +108,7 @@ class OntologyVersionManager:
         return f"urn:ontology:{name}"
 
     def _sparql_query(self, query: str) -> list[dict[str, Any]]:
-        """Execute a SPARQL SELECT query and return bindings.
-
-        TODO: Implement this helper.
-
-        Steps:
-            1. Build URL: ``f"{self.fuseki_url}/{self.main_dataset}/sparql"``
-            2. POST with ``httpx.post(url, content=query,
-               headers={"Content-Type": "application/sparql-query",
-                         "Accept": "application/sparql-results+json"})``
-            3. ``resp.raise_for_status()``
-            4. Parse ``resp.json()["results"]["bindings"]``
-            5. Return list of dicts: ``[{var: b[var]["value"]} for b in bindings for var in b]``
-        """
+        """Execute a SPARQL SELECT query and return bindings."""
         url = f"{self.fuseki_url}/{self.main_dataset}/sparql"
         try:
             resp = httpx.post(url, content=query,
@@ -137,16 +125,7 @@ class OntologyVersionManager:
             return []
 
     def _sparql_update(self, update: str) -> None:
-        """Execute a SPARQL UPDATE command.
-
-        TODO: Implement this helper.
-
-        Steps:
-            1. Build URL: ``f"{self.fuseki_url}/{self.main_dataset}/update"``
-            2. POST with ``httpx.post(url, content=update,
-               headers={"Content-Type": "application/sparql-update"})``
-            3. ``resp.raise_for_status()``
-        """
+        """Execute a SPARQL UPDATE command."""
         url = f"{self.fuseki_url}/{self.main_dataset}/update"
         try:
             resp = httpx.post(url, content=update,
@@ -163,23 +142,7 @@ class OntologyVersionManager:
         parent_version: str | None = None,
         notes: str = "",
     ) -> OntologyVersion:
-        """Create a new ontology version record and staging graph.
-
-        TODO: Implement Fuseki graph creation.
-
-        Steps:
-            1. Create ``OntologyVersion(version_id=..., parent_version=..., notes=...)``
-            2. Determine staging graph name: ``f"{self.staging_prefix}-{version_id}"``
-            3. Determine staging graph URI via ``self._graph_uri(staging_name)``
-            4. Determine main graph URI via ``self._graph_uri(self.main_dataset)``
-            5. Copy main graph → staging graph to create baseline:
-               ``self._sparql_update(_SPARQL_COPY_GRAPH.format(
-                   source=main_uri, target=staging_uri))``
-               Wrap in try/except; if main graph does not exist yet, log warning and continue.
-            6. Append version to ``self._versions``
-            7. Log event ``"version_created"``
-            8. Return the ``OntologyVersion`` object
-        """
+        """Create a new ontology version record and staging graph."""
         version = OntologyVersion(
             version_id=version_id,
             parent_version=parent_version,
@@ -201,29 +164,7 @@ class OntologyVersionManager:
         from_version: str,
         to_version: str,
     ) -> OntologyDiff:
-        """Compute differences between two ontology versions.
-
-        TODO: Implement SPARQL-based diff.
-
-        Steps:
-            1. Build graph URIs for both versions:
-               ``from_uri = self._graph_uri(f"{self.staging_prefix}-{from_version}")``
-               ``to_uri = self._graph_uri(f"{self.staging_prefix}-{to_version}")``
-               If a version equals ``"main"``, use ``self._graph_uri(self.main_dataset)``.
-            2. Find added classes (in to but NOT in from):
-               ``added = self._sparql_query(_SPARQL_DIFF_CLASSES.format(
-                   graph_a=to_uri, graph_b=from_uri))``
-               Extract: ``added_classes = [r["class"] for r in added]``
-            3. Find removed classes (in from but NOT in to):
-               ``removed = self._sparql_query(_SPARQL_DIFF_CLASSES.format(
-                   graph_a=from_uri, graph_b=to_uri))``
-            4. Build and return ``OntologyDiff(
-                   from_version=from_version,
-                   to_version=to_version,
-                   added_classes=added_classes,
-                   removed_classes=removed_classes,
-               )``
-        """
+        """Compute differences between two ontology versions."""
         logger.info("computing_diff", from_v=from_version, to_v=to_version)
         from_uri = self._graph_uri(f"{self.staging_prefix}-{from_version}") if from_version != "main" else self._graph_uri(self.main_dataset)
         to_uri = self._graph_uri(f"{self.staging_prefix}-{to_version}") if to_version != "main" else self._graph_uri(self.main_dataset)
@@ -239,22 +180,7 @@ class OntologyVersionManager:
         )
 
     def promote_staging_to_main(self, version_id: str) -> None:
-        """Move a staging graph into the main dataset.
-
-        TODO: Implement graph copy in Fuseki.
-
-        Steps:
-            1. Build staging graph URI:
-               ``staging_uri = self._graph_uri(f"{self.staging_prefix}-{version_id}")``
-            2. Build main graph URI:
-               ``main_uri = self._graph_uri(self.main_dataset)``
-            3. Create snapshot of current main **before** overwriting:
-               ``self.create_snapshot(label=f"pre-promote-{version_id}")``
-            4. Execute SPARQL COPY:
-               ``self._sparql_update(_SPARQL_COPY_GRAPH.format(
-                   source=staging_uri, target=main_uri))``
-            5. Log event ``"staging_promoted"``
-        """
+        """Move a staging graph into the main dataset."""
         logger.info("promoting_to_main", version=version_id)
         staging_uri = self._graph_uri(f"{self.staging_prefix}-{version_id}")
         main_uri = self._graph_uri(self.main_dataset)
@@ -263,21 +189,7 @@ class OntologyVersionManager:
         logger.info("staging_promoted", version=version_id)
 
     def create_snapshot(self, label: str | None = None) -> str:
-        """Create a point-in-time snapshot of the main graph.
-
-        TODO: Implement Fuseki graph snapshot.
-
-        Steps:
-            1. Generate snapshot name:
-               ``name = label or f"snapshot-{datetime.now().strftime('%Y%m%d-%H%M%S')}"``
-            2. Build snapshot URI: ``snap_uri = self._graph_uri(name)``
-            3. Build main URI: ``main_uri = self._graph_uri(self.main_dataset)``
-            4. Execute SPARQL COPY:
-               ``self._sparql_update(_SPARQL_COPY_GRAPH.format(
-                   source=main_uri, target=snap_uri))``
-            5. Log event ``"snapshot_created"``
-            6. Return ``name``
-        """
+        """Create a point-in-time snapshot of the main graph."""
         snapshot_name = label or f"snapshot-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
         snap_uri = self._graph_uri(snapshot_name)
         main_uri = self._graph_uri(self.main_dataset)

@@ -17,6 +17,7 @@ Escalated outcomes become ``AgentQuestion`` items for HITL review.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -197,12 +198,14 @@ class BaseAgent:
     ) -> None:
         self.settings = settings or Settings()
         self.system_prompt = system_prompt
+        self._response_cache: dict[str, dict[str, Any]] = {}  # Simple in-memory cache
 
     def call_llm(
         self,
         user_prompt: str,
         system_prompt: str | None = None,
         temperature: float | None = None,
+        use_cache: bool = True,
     ) -> dict[str, Any] | None:
         """Call Ollama chat API and parse JSON from the response.
 
@@ -213,6 +216,7 @@ class BaseAgent:
             user_prompt: The user message.
             system_prompt: Override the default system prompt.
             temperature: LLM temperature (default from settings).
+            use_cache: Whether to cache and reuse responses for identical prompts.
 
         Returns:
             Parsed JSON dict, or None if the call fails.
@@ -220,7 +224,15 @@ class BaseAgent:
         sys_prompt = system_prompt or self.system_prompt
         temp = temperature if temperature is not None else self.settings.llm_temperature
 
+        # Create cache key from prompt and parameters
+        if use_cache:
+            cache_key = f"{hash(sys_prompt)}:{hash(user_prompt)}:{temp}"
+            if cache_key in self._response_cache:
+                logger.debug("llm_cache_hit", agent=self.role.value, cache_key=cache_key[:16])
+                return self._response_cache[cache_key]
+
         try:
+            logger.debug("llm_call_start", agent=self.role.value, timeout=self.settings.llm_timeout_seconds)
             resp = httpx.post(
                 f"{self.settings.ollama_url}/api/chat",
                 json={
@@ -235,7 +247,7 @@ class BaseAgent:
                         "num_predict": 4096,
                     },
                 },
-                timeout=300.0,
+                timeout=self.settings.llm_timeout_seconds,
             )
             resp.raise_for_status()
             content = resp.json()["message"]["content"]
@@ -248,15 +260,66 @@ class BaseAgent:
             if "```json" in content:
                 content = content.split("```json", 1)[1].split("```", 1)[0]
             elif "```" in content:
-                content = content.split("```", 1)[1].split("```", 1)[0]
+                md_parts = content.split("```")
+                if len(md_parts) >= 3:
+                    content = md_parts[1]
 
-            return json.loads(content)
+            # More robust JSON extraction using balanced brackets
+            def find_json_objects(text):
+                results = []
+                # Remove control characters that definitely break JSON
+                text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text)
+                
+                start_indices = [i for i, char in enumerate(text) if char in '{[']
+                for start in start_indices:
+                    stack = []
+                    for i in range(start, len(text)):
+                        char = text[i]
+                        if char in '{[':
+                            stack.append(text[start] if not stack else char)
+                        elif char in '}]':
+                            if not stack: break
+                            opening = stack.pop()
+                            if (opening == '{' and char == '}') or (opening == '[' and char == ']'):
+                                if not stack:
+                                    candidate = text[start:i+1]
+                                    try:
+                                        results.append(json.loads(candidate))
+                                    except json.JSONDecodeError:
+                                        # Handle common trailing comma issue
+                                        try:
+                                            results.append(json.loads(re.sub(r',(\s*[}\]])', r'\1', candidate)))
+                                        except json.JSONDecodeError:
+                                            pass
+                                    break
+                            else:
+                                break
+                return results
+
+            json_objects = find_json_objects(content)
+            if json_objects:
+                # Most ontology agents return a single dict or a list. 
+                # If we have multiple, the first one is usually the main response.
+                result = json_objects[0]
+            else:
+                # Last resort fallback
+                result = json.loads(content)
+
+            # Cache the result
+            if use_cache:
+                self._response_cache[cache_key] = result
+                logger.debug("llm_cache_stored", agent=self.role.value, cache_key=cache_key[:16])
+
+            return result
 
         except httpx.HTTPError as e:
             logger.warning("llm_call_failed", agent=self.role.value, error=str(e))
             return None
         except (json.JSONDecodeError, KeyError, IndexError) as e:
-            logger.warning("llm_parse_failed", agent=self.role.value, error=str(e))
+            logger.warning("llm_parse_failed",
+                          agent=self.role.value,
+                          error=str(e),
+                          raw_content=content[:500] if 'content' in locals() else "No content received")
             return None
 
     def call_llm_multi_turn(
@@ -289,7 +352,7 @@ class BaseAgent:
                         "num_predict": 4096,
                     },
                 },
-                timeout=300.0,
+                timeout=self.settings.llm_timeout_seconds,
             )
             resp.raise_for_status()
             content = resp.json()["message"]["content"]
@@ -302,6 +365,10 @@ class BaseAgent:
             elif "```" in content:
                 content = content.split("```", 1)[1].split("```", 1)[0]
 
+            # Sanitize JSON content - remove control characters that break parsing
+            import re
+            content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)
+
             return json.loads(content)
 
         except httpx.HTTPError as e:
@@ -310,3 +377,8 @@ class BaseAgent:
         except (json.JSONDecodeError, KeyError, IndexError) as e:
             logger.warning("llm_multi_turn_parse_failed", agent=self.role.value, error=str(e))
             return None
+    def clear_response_cache(self) -> None:
+        """Clear the LLM response cache."""
+        cache_size = len(self._response_cache)
+        self._response_cache.clear()
+        logger.info("llm_cache_cleared", agent=self.role.value, cleared_entries=cache_size)

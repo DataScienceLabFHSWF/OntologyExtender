@@ -1,0 +1,51 @@
+[
+  {
+    "name": "baseline_consensus",
+    "strategy_overrides": {},
+    "description": "Default consensus-building strategy for all phases"
+  },
+  {
+    "name": "dialectical_focused",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "description": "Use dialectical strategy for structural phases"
+  },
+  {
+    "name": "socratic_focused",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "description": "Use Socratic strategy for conceptual phases"
+  },
+  {
+    "name": "delphi_consensus",
+    "strategy_overrides": {
+      "facets": "delphi",
+      "instances": "delphi"
+    },
+    "description": "Use Delphi method for detailed specification phases"
+  },
+  {
+    "name": "abductive_instances",
+    "strategy_overrides": {
+      "instances": "abductive"
+    },
+    "description": "Use abductive reasoning for instance generation"
+  },
+  {
+    "name": "mixed_strategy",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "description": "Use different strategies optimized for each phase"
+  }
+]

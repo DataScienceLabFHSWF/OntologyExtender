@@ -6,7 +6,7 @@ This module takes gap candidates (entity types not in the ontology) and
 generates fully specified ``ProposedClass`` objects with definitions,
 parent classes, and suggested properties via LLM calls.
 
-Three methods need real implementation (marked with TODO):
+All methods are implemented with LLM integration for:
   1. ``_generate_single()``          — Call Ollama to produce a class definition
   2. ``_suggest_default_properties()``— Call Ollama to propose properties
   3. ``_get_parent_candidates()``     — SPARQL query for potential parent classes
@@ -191,8 +191,6 @@ class ClassDefinitionGenerator:
         logger.info("proposals_generated", count=len(proposals))
         return proposals
 
-    # ── LLM call (TODO) ────────────────────────────────────────────
-
     def _generate_single(
         self,
         proposal_id: str,
@@ -203,49 +201,6 @@ class ClassDefinitionGenerator:
         parent_candidates: list[dict[str, str]] | None = None,
     ) -> ProposedClass:
         """Generate a single class proposal via LLM.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. Format ``_CLASS_DEFINITION_PROMPT`` with:
-               - ``entity_type``, ``examples`` (comma-joined, max 5),
-               - ``frequency``, ``avg_confidence``
-               - ``parent_candidates``: format as bullet list
-                 ``"- {label} ({uri})"`` for each candidate.
-                 If ``parent_candidates`` is None or empty, use
-                 ``"- Thing (owl:Thing)"`` as the only option.
-
-            2. Call ``self._call_llm(prompt)`` to get the LLM response string.
-
-            3. Parse the JSON response:
-               a. Try ``json.loads(response)``
-               b. On failure: extract JSON with regex:
-                  ``re.search(r'\\{.*\\}', response, re.DOTALL)``
-               c. On failure: log warning, return fallback proposal.
-
-            4. Extract fields from parsed JSON dict:
-               - ``label = parsed.get("label", entity_type)``
-               - ``definition = parsed.get("definition", "")``
-               - ``parent_label = parsed.get("parent_class", "Thing")``
-               - ``properties_raw = parsed.get("properties", [])``
-
-            5. Resolve ``parent_uri``:
-               - Search ``parent_candidates`` for matching label.
-               - If found, use its URI.  Otherwise use ``"owl:Thing"``.
-
-            6. Convert ``properties_raw`` to ``list[PropertyDef]``:
-               ```python
-               props = []
-               for p in properties_raw:
-                   props.append(PropertyDef(
-                       name=p.get("name", "unknown"),
-                       datatype=p.get("datatype", "xsd:string"),
-                       description=p.get("description", ""),
-                       required=p.get("required", False),
-                   ))
-               ```
-
-            7. Return ``ProposedClass(id=proposal_id, label=label, ...)``
 
         Args:
             proposal_id: Unique ID like "prop_001".
@@ -356,19 +311,8 @@ class ClassDefinitionGenerator:
             source_gap_candidates=[entity_type],
         )
 
-    # ── Property generation (TODO) ──────────────────────────────────
-
     def _suggest_default_properties(self, entity_type: str) -> list[PropertyDef]:
-        """Generate properties for a class.
-
-        TODO: Replace with LLM-generated properties.
-
-        Steps:
-            1. Format ``_PROPERTY_SUGGESTION_PROMPT`` with ``entity_type``.
-            2. Call ``self._call_llm(prompt)``.
-            3. Parse JSON array response (same fallback pattern as above).
-            4. Convert each item to ``PropertyDef``.
-            5. On failure, return the two default properties below.
+        """Generate properties for a class via LLM.
 
         Args:
             entity_type: Class label to generate properties for.
@@ -441,21 +385,8 @@ class ClassDefinitionGenerator:
                 ),
             ]
 
-    # ── Fuseki parent lookup (TODO) ─────────────────────────────────
-
     def _get_parent_candidates(self) -> list[dict[str, str]]:
         """Get potential parent classes from Fuseki for the LLM to choose from.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. Build SPARQL endpoint: ``f"{self.fuseki_url}/{self.dataset}/sparql"``
-            2. POST ``_SPARQL_CLASS_HIERARCHY`` query using httpx.
-            3. Parse JSON response bindings.
-            4. Build list of dicts: ``[{"uri": "...", "label": "...", "parent": "..."}]``
-               - Use label if present, otherwise extract from URI.
-            5. Return the list.  On error, return
-               ``[{"uri": "owl:Thing", "label": "Thing", "parent": ""}]``.
 
         Returns:
             List of dicts with keys ``uri``, ``label``, ``parent``.
@@ -483,28 +414,8 @@ class ClassDefinitionGenerator:
             logger.error("sparql_query_failed", error=str(e))
             return [{"uri": "owl:Thing", "label": "Thing", "parent": ""}]
 
-    # ── Shared LLM call (TODO) ──────────────────────────────────────
-
     def _call_llm(self, prompt: str) -> str:
         """Call Ollama /api/generate and return the response text.
-
-        TODO: Implement this method.
-
-        Steps:
-            1. POST to ``f"{self.ollama_url}/api/generate"`` with JSON:
-               ``{
-                   "model": self.model,
-                   "prompt": prompt,
-                   "stream": False,
-                   "options": {"temperature": self.temperature}
-               }``
-            2. Set timeout to 300 seconds (large model, complex prompts).
-            3. Parse response: ``response.json()["response"]``
-            4. Strip leading/trailing whitespace.
-            5. If response contains ``<think>...</think>`` tags (qwen3 reasoning),
-               extract only the content after the closing ``</think>`` tag.
-            6. On ``httpx.HTTPError``: log error, return empty string.
-            7. On timeout: log error, return empty string.
 
         Args:
             prompt: The full prompt string.

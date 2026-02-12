@@ -33,6 +33,8 @@ from ontology_hitl.agents.domain_expert import DomainExpertAgent
 from ontology_hitl.agents.critic import CriticAgent
 from ontology_hitl.core.config import Settings
 from ontology_hitl.methodology.ontology101 import AgentQuestion, Phase
+from ontology_hitl.sources.law_collection_source import LawCollectionSource
+from ontology_hitl.sources.law_graph_source import LawGraphSource
 
 logger = structlog.get_logger(__name__)
 
@@ -88,10 +90,22 @@ class AgentTeam:
         }
 
         # Create agents
+        law_collection = LawCollectionSource(
+            qdrant_url=self.settings.qdrant_url,
+            law_collection="lawgraph",  # Dedicated legal documents collection
+        )
+        law_graph = LawGraphSource(
+            graph_url=self.settings.neo4j_http_url,
+            graph_user=self.settings.neo4j_username,
+            graph_password=self.settings.neo4j_password,
+        )
+        
         self.engineer = OntologyEngineerAgent(settings=self.settings)
         self.domain_expert = DomainExpertAgent(
             settings=self.settings,
             document_context=document_context,
+            law_collection=law_collection,
+            law_graph=law_graph,
         )
         self.critic = CriticAgent(settings=self.settings)
 
@@ -193,7 +207,7 @@ class AgentTeam:
             )
 
         logger.info("engineer_proposed", phase=phase.value,
-                     keys=list(proposal_msg.content.keys()) if proposal_msg.content else [])
+                     keys=list(proposal_msg.content.keys()) if isinstance(proposal_msg.content, dict) and proposal_msg.content else [])
 
         # Review rounds
         for round_num in range(1, self.max_debate_rounds + 1):

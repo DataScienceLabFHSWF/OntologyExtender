@@ -1,0 +1,240 @@
+[
+  {
+    "id": "CQ_001",
+    "question": "Was ist der Unterschied zwischen Freigabe und Freisetzung?",
+    "expected_entity_types": [
+      "Action",
+      "Regulation"
+    ],
+    "expected_relations": [
+      "regulatedBy",
+      "appliesTo"
+    ],
+    "difficulty": 3,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Seed ontology baseline CQ"
+  },
+  {
+    "id": "CQ_002",
+    "question": "Welche Anlagen werden in den Dokumenten erw\u00e4hnt?",
+    "expected_entity_types": [
+      "Facility"
+    ],
+    "expected_relations": [],
+    "difficulty": 1,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Basic entity retrieval"
+  },
+  {
+    "id": "CQ_003",
+    "question": "Welche Genehmigungen sind f\u00fcr den R\u00fcckbau einer Anlage erforderlich?",
+    "expected_entity_types": [
+      "Facility",
+      "Permit",
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "requiresPermit",
+      "hasStrategy"
+    ],
+    "difficulty": 4,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Facility and Permit classes (likely v1 additions)"
+  },
+  {
+    "id": "CQ_004",
+    "question": "Welche Voraussetzungen m\u00fcssen f\u00fcr die Stilllegung einer Anlage erf\u00fcllt sein?",
+    "expected_entity_types": [
+      "Facility",
+      "Prerequisite",
+      "Regulation"
+    ],
+    "expected_relations": [
+      "requiresPrerequisite",
+      "regulatedBy"
+    ],
+    "difficulty": 4,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": ""
+  },
+  {
+    "id": "CQ_005",
+    "question": "Welche Vorschriften regeln den Transport von Plutonium?",
+    "expected_entity_types": [
+      "Regulation",
+      "Material",
+      "Action"
+    ],
+    "expected_relations": [
+      "regulates",
+      "appliesTo"
+    ],
+    "difficulty": 4,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Material and Regulation classes"
+  },
+  {
+    "id": "CQ_006",
+    "question": "Welche R\u00fcckbaustrategien werden in den Dokumenten beschrieben?",
+    "expected_entity_types": [
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "hasPhase",
+      "appliesTo"
+    ],
+    "difficulty": 3,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires DecommissioningStrategy class"
+  },
+  {
+    "id": "CQ_007",
+    "question": "Welche Personen oder Organisationen sind f\u00fcr die Stilllegung verantwortlich?",
+    "expected_entity_types": [
+      "Person",
+      "Organization",
+      "Facility"
+    ],
+    "expected_relations": [
+      "responsibleFor",
+      "manages"
+    ],
+    "difficulty": 3,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": ""
+  },
+  {
+    "id": "CQ_008",
+    "question": "Welche Gefahrstoffe oder Strahlungsrisiken werden erw\u00e4hnt?",
+    "expected_entity_types": [
+      "RadiationHazard",
+      "Material"
+    ],
+    "expected_relations": [
+      "hasHazard",
+      "locatedAt"
+    ],
+    "difficulty": 3,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires RadiationHazard class"
+  },
+  {
+    "id": "CQ_009",
+    "question": "Welche zeitlichen Abl\u00e4ufe und Phasen hat ein R\u00fcckbauprojekt?",
+    "expected_entity_types": [
+      "Phase",
+      "Action",
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "hasPhase",
+      "precedes",
+      "follows"
+    ],
+    "difficulty": 4,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Phase class and temporal relations"
+  },
+  {
+    "id": "cq_actioneffect_properties",
+    "class": "ActionEffect",
+    "question": "What properties does a ActionEffect have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_actioneffect_hierarchy",
+    "class": "ActionEffect",
+    "question": "Which Nade18c540b8248779cd5f40c255a445e instances are also ActionEffect?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioningplan_properties",
+    "class": "DecommissioningPlan",
+    "question": "What properties does a DecommissioningPlan have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioningplan_hierarchy",
+    "class": "DecommissioningPlan",
+    "question": "Which N3085f439f18845f587673a67c2ba0bc6 instances are also DecommissioningPlan?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_renewalplan_properties",
+    "class": "RenewalPlan",
+    "question": "What properties does a RenewalPlan have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_renewalplan_hierarchy",
+    "class": "RenewalPlan",
+    "question": "Which N8b9d21b0d2b9414e8003ffa06c71945c instances are also RenewalPlan?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_removalactioneffect_properties",
+    "class": "RemovalActionEffect",
+    "question": "What properties does a RemovalActionEffect have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_removalactioneffect_hierarchy",
+    "class": "RemovalActionEffect",
+    "question": "Which ActionEffect instances are also RemovalActionEffect?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_abbauplan_properties",
+    "class": "AbbauPlan",
+    "question": "What properties does a AbbauPlan have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_abbauplan_hierarchy",
+    "class": "AbbauPlan",
+    "question": "Which N2861670ddd714c7f96933148fde4479f instances are also AbbauPlan?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_stilllegungactioneffect_properties",
+    "class": "StilllegungActionEffect",
+    "question": "What properties does a StilllegungActionEffect have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_stilllegungactioneffect_hierarchy",
+    "class": "StilllegungActionEffect",
+    "question": "Which N4fdaf617198d43b195254d9d1b2d4d49 instances are also StilllegungActionEffect?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  }
+]

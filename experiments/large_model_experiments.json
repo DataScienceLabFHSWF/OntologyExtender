@@ -1,0 +1,48 @@
+[
+  {
+    "name": "large_baseline",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {},
+    "description": "Baseline with large reasoning model (Qwen3-Next 80B). No debate strategy overrides."
+  },
+  {
+    "name": "large_dialectical",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "description": "Dialectical debate for structural phases with large reasoning model. Tests whether structured disagreement adds value when model can already reason."
+  },
+  {
+    "name": "large_socratic",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "description": "Socratic questioning for conceptual phases with large model. Tests whether explicit probing helps a model that can already self-reflect."
+  },
+  {
+    "name": "large_mixed",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "description": "Best-of-each strategy per phase with large reasoning model. Tests whether per-phase optimization stacks with reasoning ability."
+  {
+    "name": "large_llm_only",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {},
+    "description": "LLM-only baseline with large model. Direct single-shot prompting without multi-agent debate. Matches naive approaches in related work.",
+    "method": "llm_only",
+    "timeout_seconds": 600,
+    "temperature": 0.5
+  }
+]

@@ -313,6 +313,79 @@ HITL_ENTITY_COVERAGE_TARGET=0.80
 python -m pytest tests/ -v     # ~144 passing
 ```
 
+---
+
+## Experiments
+
+The project includes an experiment framework for systematically comparing
+debate strategies and LLM models.
+
+### Strategy Experiments
+
+Compare how different debate strategies perform on the same seed ontology
+and competency questions:
+
+```bash
+# Run all 6 strategy experiments (baseline, dialectical, socratic, delphi, abductive, mixed)
+python scripts/run_experiments.py all_experiments.json \
+    --results-dir results/strategies
+
+# Run a single experiment
+python scripts/run_experiments.py all_experiments.json \
+    --experiment baseline_consensus --results-dir results/strategies
+```
+
+Each experiment runs a full feedback loop with the specified debate strategy
+and logs metrics to Weights & Biases.
+
+### Model Comparison Experiments
+
+Compare small (non-reasoning) vs large (reasoning-capable) LLMs:
+
+| Model | Params | Size | Reasoning | Config |
+|-------|--------|------|-----------|--------|
+| `llama3.2:3b` | 3.2B | 2.0 GB | No | `experiments/small_model_experiments.json` |
+| `qwen3-next:latest` | 79.7B | 50.4 GB | Yes | `experiments/large_model_experiments.json` |
+
+```bash
+# Run small-model experiments (4 strategies × llama3.2:3b)
+python scripts/run_model_comparison.py --config experiments/small_model_experiments.json
+
+# Run large-model experiments (4 strategies × qwen3-next)
+python scripts/run_model_comparison.py --config experiments/large_model_experiments.json
+
+# Run all and generate comparison report
+python scripts/run_model_comparison.py --run-all --output results/full_comparison.json
+
+# For long runs, use nohup
+nohup bash -c 'source .venv/bin/activate && python scripts/run_model_comparison.py --run-all --output results/full_comparison.json' > logs/model_comparison.log 2>&1 &
+```
+
+**Research Questions** (see [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md)):
+1. Does a reasoning-capable LLM produce deeper class hierarchies?
+2. Does it achieve higher CQ answerability with fewer iterations?
+3. Which debate strategies benefit most from reasoning capabilities?
+4. What is the time/quality trade-off between small and large models?
+
+### Experiment Output Structure
+
+```
+results/
+├── strategies/              # Strategy comparison results
+│   └── experiment_results.json
+├── full_comparison.json     # Model comparison results
+data/
+├── iterations/{experiment_name}/   # Per-experiment iteration data
+└── exports/{experiment_name}/      # Per-experiment OWL/SHACL/CQ exports
+```
+
+### Known Issues
+
+See [docs/BUGS_AND_FIXES.md](docs/BUGS_AND_FIXES.md) for documented bugs
+and their fixes (e.g., the experiment data overwrite issue).
+
+---
+
 ## Documentation
 
 | Document | Audience | Content |
@@ -323,6 +396,8 @@ python -m pytest tests/ -v     # ~144 passing
 | [docs/IMPLEMENTATION_GUIDE.md](docs/IMPLEMENTATION_GUIDE.md) | Developers | Module reference, API examples, testing |
 | [docs/EXPERT_GUIDE.md](docs/EXPERT_GUIDE.md) | Domain experts | How to review proposals |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | Operators | Step-by-step operational workflow |
+| [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md) | Researchers | Model comparison design, metrics, expected outcomes |
+| [docs/BUGS_AND_FIXES.md](docs/BUGS_AND_FIXES.md) | Developers | Known bugs and applied fixes |
 
 ## License
 

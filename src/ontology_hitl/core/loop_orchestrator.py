@@ -77,12 +77,14 @@ class FeedbackLoopOrchestrator:
         max_iterations: int = 6,
         convergence_threshold: float = 0.02,
         max_debate_rounds: int = 2,
+        experiment_name: str = "",
     ) -> None:
         self.settings = settings or Settings()
         self.mode = mode
         self.max_iterations = max_iterations
         self.convergence_threshold = convergence_threshold
         self.max_debate_rounds = max_debate_rounds
+        self.experiment_name = experiment_name
         self.metrics_history: list[FeedbackMetrics] = []
         self._iteration = 0
 
@@ -192,7 +194,7 @@ class FeedbackLoopOrchestrator:
                 output_dir = Path(self.settings.exports_dir)
                 output_dir.mkdir(parents=True, exist_ok=True)
                 prov_path = output_dir / "provenance.json"
-                prov_data = self.provenance.to_json()
+                prov_data = self.provenance.to_dict()
                 import json as _json
                 with open(prov_path, "w") as f:
                     _json.dump(prov_data, f, indent=2, default=str)
@@ -228,7 +230,7 @@ class FeedbackLoopOrchestrator:
         """
         from ontology_hitl.methodology.pipeline import Ont101Pipeline
 
-        iter_dir = Path(self.settings.iterations_dir) / f"v{plan.iteration}"
+        iter_dir = Path(self.settings.iterations_dir) / f"{'v' + str(plan.iteration) if not self.experiment_name else self.experiment_name}"
 
         # Gather input context
         doc_excerpts = self._fetch_document_excerpts()
@@ -368,7 +370,7 @@ class FeedbackLoopOrchestrator:
                 ollama_url=self.settings.ollama_url,
                 ollama_model=self.settings.ollama_model,
             )
-            chunks = source.fetch_chunks(limit=max_chunks)
+            chunks = source.fetch_chunks(limit=max_chunks, prioritize_legal=True)
             return [c.text for c in chunks]
         except Exception as e:
             logger.warning("qdrant_fetch_failed", error=str(e))
@@ -460,9 +462,19 @@ class FeedbackLoopOrchestrator:
             return
         try:
             import wandb
+            from datetime import datetime
+            
+            # Create meaningful run name: mode_model_iters_timestamp[_experiment]
+            timestamp = datetime.now().strftime("%H%M")
+            model_short = self.settings.ollama_model.split(":")[0]  # Just the model name, not version
+            run_name = f"{self.mode.value}_{model_short}_{self.max_iterations}iter_{timestamp}"
+            if self.experiment_name:
+                run_name += f"_{self.experiment_name}"
+            
             wandb.init(
                 project=self.settings.wandb_project,
                 entity=self.settings.wandb_entity,
+                name=run_name,
                 config={
                     "mode": self.mode.value,
                     "max_iterations": self.max_iterations,
@@ -471,7 +483,7 @@ class FeedbackLoopOrchestrator:
                     "min_frequency": self.settings.min_entity_frequency,
                     "similarity_threshold": self.settings.semantic_similarity_threshold,
                 },
-                tags=["feedback-loop", self.mode.value],
+                tags=["feedback-loop", self.mode.value, self.settings.ollama_model.split(":")[0]],
             )
         except Exception as e:
             logger.warning("wandb_init_failed", error=str(e))
@@ -510,6 +522,8 @@ class FeedbackLoopOrchestrator:
     def _save_report(self, report: ConvergenceReport, summary: dict) -> None:
         """Save convergence report to disk."""
         output_dir = Path(self.settings.exports_dir)
+        if self.experiment_name:
+            output_dir = output_dir / self.experiment_name
         output_dir.mkdir(parents=True, exist_ok=True)
 
         report_data = {

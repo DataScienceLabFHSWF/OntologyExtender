@@ -214,20 +214,20 @@ class Ont101Pipeline:
                 if link_labels:
                     link_report = self.entity_linker.link_classes(link_labels)
                     self._save_phase("2b_entity_links", {
-                        "total_proposed": link_report.total_proposed,
-                        "linked_count": link_report.linked_count,
+                        "total_proposed": len(link_labels),
+                        "linked_count": len(link_report.links),
                         "coverage_pct": link_report.coverage_pct,
                         "links": [
-                            {"label": lk.proposed_label, "match": lk.matched_label,
-                             "uri": lk.matched_uri, "source": lk.source,
-                             "similarity": lk.similarity}
+                            {"label": lk.proposed_label, "match": lk.external_label,
+                             "uri": lk.external_uri, "source": lk.ontology_source,
+                             "similarity": lk.similarity_score}
                             for lk in link_report.links
                         ],
                     })
                     logger.info(
                         "entity_linking_done",
-                        linked=link_report.linked_count,
-                        total=link_report.total_proposed,
+                        linked=len(link_report.links),
+                        total=len(link_labels),
                     )
             except Exception as e:
                 logger.warning("entity_linking_failed", error=str(e))
@@ -315,7 +315,7 @@ class Ont101Pipeline:
                 self._save_phase("provenance", self.provenance.to_json())
                 logger.info(
                     "provenance_exported",
-                    records=prov_report.total_records,
+                    records=len(prov_report.records),
                     elements=prov_report.elements_with_evidence,
                 )
             except Exception as e:
@@ -386,7 +386,7 @@ class Ont101Pipeline:
                         {
                             "label": r.proposed_label,
                             "parent": r.recommended_parent_label,
-                            "similarity": r.similarity_score,
+                            "similarity": r.similarity,
                             "confidence": r.structural_confidence,
                         }
                         for r in advisor_report.recommendations
@@ -400,7 +400,7 @@ class Ont101Pipeline:
                         proposed_label=rec.proposed_label,
                         recommended_parent_uri=rec.recommended_parent_uri,
                         recommended_parent_label=rec.recommended_parent_label,
-                        confidence=rec.similarity_score,
+                        confidence=rec.similarity,
                     ))
 
                 logger.info("embedding_advisor_done",
@@ -483,7 +483,7 @@ class Ont101Pipeline:
 
         response = outcome.final_proposal
         scope = OntologyScope()
-        if response:
+        if isinstance(response, dict):
             scope.domain = response.get("domain", "")
             scope.purpose = response.get("purpose", "")
             scope.intended_users = response.get("intended_users", [])
@@ -517,17 +517,21 @@ class Ont101Pipeline:
 
         response = outcome.final_proposal
         report = ReuseReport()
-        if response:
+        if isinstance(response, dict):
             report.terms_already_covered = response.get("terms_already_covered", [])
             report.terms_still_needed = response.get("terms_still_needed", [])
             for rc in response.get("reuse_candidates", []):
-                report.candidates.append(ReuseCandidate(
-                    ontology_name=rc.get("ontology_name", ""),
-                    uri=rc.get("uri", ""),
-                    overlap_terms=rc.get("overlap_terms", []),
-                    decision=rc.get("decision", "skip"),
-                    rationale=rc.get("rationale", ""),
-                ))
+                if isinstance(rc, dict):
+                    report.candidates.append(ReuseCandidate(
+                        ontology_name=rc.get("ontology_name", ""),
+                        uri=rc.get("uri", ""),
+                        overlap_terms=rc.get("overlap_terms", []),
+                        decision=rc.get("decision", "skip"),
+                        rationale=rc.get("rationale", ""),
+                    ))
+        elif isinstance(response, list):
+            # If LLM returned just a list, assume it's terms_already_covered
+            report.terms_already_covered = [str(x) for x in response]
 
         self._save_phase("2_reuse", {
             "terms_already_covered": report.terms_already_covered,
@@ -554,16 +558,17 @@ class Ont101Pipeline:
 
         response = outcome.final_proposal
         enum = TermEnumeration()
-        if response:
+        if isinstance(response, dict):
             for t in response.get("terms", []):
-                dt = DomainTerm(
-                    term=t.get("term", ""),
-                    category=t.get("category", "unknown"),
-                    frequency=t.get("frequency", 1),
-                    synonyms=t.get("synonyms", []),
-                    evidence_snippets=t.get("evidence", []),
-                )
-                enum.terms.append(dt)
+                if isinstance(t, dict):
+                    dt = DomainTerm(
+                        term=t.get("term", ""),
+                        category=t.get("category", "unknown"),
+                        frequency=t.get("frequency", 1),
+                        synonyms=t.get("synonyms", []),
+                        evidence_snippets=t.get("evidence", []),
+                    )
+                    enum.terms.append(dt)
 
             enum.class_candidates = [t.term for t in enum.terms if t.category == "class"]
             enum.property_candidates = [t.term for t in enum.terms if t.category == "property"]
@@ -598,20 +603,21 @@ class Ont101Pipeline:
 
         response = outcome.final_proposal
         hierarchy = ClassHierarchy()
-        if response:
+        if isinstance(response, dict):
             for n in response.get("nodes", []):
-                node = HierarchyNode(
-                    uri=n.get("uri", ""),
-                    label=n.get("label", ""),
-                    definition=n.get("definition", ""),
-                    parent_uri=n.get("parent_uri"),
-                    parent_label=n.get("parent_label"),
-                    disjoint_with=n.get("disjoint_with", []),
-                    examples=n.get("examples", []),
-                    strategy=n.get("strategy", "middle-out"),
-                    is_from_seed=n.get("is_from_seed", False),
-                )
-                hierarchy.nodes.append(node)
+                if isinstance(n, dict):
+                    node = HierarchyNode(
+                        uri=n.get("uri", ""),
+                        label=n.get("label", ""),
+                        definition=n.get("definition", ""),
+                        parent_uri=n.get("parent_uri"),
+                        parent_label=n.get("parent_label"),
+                        disjoint_with=n.get("disjoint_with", []),
+                        examples=n.get("examples", []),
+                        strategy=n.get("strategy", "middle-out"),
+                        is_from_seed=n.get("is_from_seed", False),
+                    )
+                    hierarchy.nodes.append(node)
 
             hierarchy.new_classes_count = sum(
                 1 for n in hierarchy.nodes if not n.is_from_seed
@@ -674,20 +680,21 @@ class Ont101Pipeline:
 
         response = outcome.final_proposal
         properties: list[PropertyProposal] = []
-        if response:
+        if isinstance(response, dict):
             for p in response.get("properties", []):
-                prop = PropertyProposal(
-                    name=p.get("name", ""),
-                    attached_to_class=p.get("attached_to_class", ""),
-                    property_type=p.get("property_type", "datatype"),
-                    description=p.get("description", ""),
-                    datatype=p.get("datatype", "xsd:string"),
-                    range_class=p.get("range_class"),
-                    inverse_name=p.get("inverse_name"),
-                    inherited_by=p.get("inherited_by", []),
-                    source_evidence=p.get("source_evidence", []),
-                )
-                properties.append(prop)
+                if isinstance(p, dict):
+                    prop = PropertyProposal(
+                        name=p.get("name", ""),
+                        attached_to_class=p.get("attached_to_class", ""),
+                        property_type=p.get("property_type", "datatype"),
+                        description=p.get("description", ""),
+                        datatype=p.get("datatype", "xsd:string"),
+                        range_class=p.get("range_class"),
+                        inverse_name=p.get("inverse_name"),
+                        inherited_by=p.get("inherited_by", []),
+                        source_evidence=p.get("source_evidence", []),
+                    )
+                    properties.append(prop)
 
         self._save_phase("5_properties", {
             "count": len(properties),
@@ -725,19 +732,20 @@ class Ont101Pipeline:
 
         response = outcome.final_proposal
         report = FacetReport()
-        if response:
+        if isinstance(response, dict):
             for f in response.get("facets", []):
-                spec = FacetSpec(
-                    property_name=f.get("property_name", ""),
-                    on_class=f.get("on_class", ""),
-                    min_count=f.get("min_count"),
-                    max_count=f.get("max_count"),
-                    value_type=f.get("value_type", "xsd:string"),
-                    allowed_values=f.get("allowed_values"),
-                    pattern=f.get("pattern"),
-                    rationale=f.get("rationale", ""),
-                )
-                report.facets.append(spec)
+                if isinstance(f, dict):
+                    spec = FacetSpec(
+                        property_name=f.get("property_name", ""),
+                        on_class=f.get("on_class", ""),
+                        min_count=f.get("min_count"),
+                        max_count=f.get("max_count"),
+                        value_type=f.get("value_type", "xsd:string"),
+                        allowed_values=f.get("allowed_values"),
+                        pattern=f.get("pattern"),
+                        rationale=f.get("rationale", ""),
+                    )
+                    report.facets.append(spec)
 
         self._save_phase("6_facets", {
             "count": len(report.facets),
@@ -790,26 +798,28 @@ class Ont101Pipeline:
 
         response = outcome.final_proposal
         report = ValidationReport()
-        if response:
+        if isinstance(response, dict):
             for inst in response.get("test_instances", []):
-                report.instances_tested.append(SampleInstance(
-                    class_uri="",
-                    class_label=inst.get("class_label", ""),
-                    property_values=inst.get("property_values", {}),
-                    expected_valid=inst.get("representable", True),
-                    validation_errors=inst.get("issues", []),
-                ))
+                if isinstance(inst, dict):
+                    report.instances_tested.append(SampleInstance(
+                        class_uri="",
+                        class_label=inst.get("class_label", ""),
+                        property_values=inst.get("property_values", {}),
+                        expected_valid=inst.get("representable", True),
+                        validation_errors=inst.get("issues", []),
+                    ))
 
             for cq in response.get("cq_results", []):
-                report.cq_results.append(CQTestResult(
-                    cq_id=cq.get("cq_id", ""),
-                    question=cq.get("question", ""),
-                    answerable=cq.get("answerable", False),
-                    required_classes=cq.get("required_classes", []),
-                    required_properties=cq.get("required_properties", []),
-                    missing_elements=cq.get("missing_elements", []),
-                    sparql_sketch=cq.get("sparql_sketch", ""),
-                ))
+                if isinstance(cq, dict):
+                    report.cq_results.append(CQTestResult(
+                        cq_id=cq.get("cq_id", ""),
+                        question=cq.get("question", ""),
+                        answerable=cq.get("answerable", False),
+                        required_classes=cq.get("required_classes", []),
+                        required_properties=cq.get("required_properties", []),
+                        missing_elements=cq.get("missing_elements", []),
+                        sparql_sketch=cq.get("sparql_sketch", ""),
+                    ))
 
             if report.cq_results:
                 answerable = sum(1 for c in report.cq_results if c.answerable)

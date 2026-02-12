@@ -1,8 +1,8 @@
 # OntologyExtender — Implementation Guide
 
 > **Audience**: Developers working on the OntologyExtender codebase.
-> **Last updated**: 2026-02-10
-> **Tests**: ~170 passing
+> **Last updated**: 2026-02-11
+> **Tests**: ~144 passing
 
 ---
 
@@ -16,8 +16,9 @@
 6. [Infrastructure & Services](#6-infrastructure--services)
 7. [Module Reference](#7-module-reference)
 8. [Remaining TODOs](#8-remaining-todos)
-9. [W&B Logging Integration](#9-wandb-logging-integration)
-10. [Fuseki SPARQL Reference](#10-fuseki-sparql-reference)
+9. [Model Comparison Framework](#9-model-comparison-framework)
+10. [W&B Logging Integration](#10-wandb-logging-integration)
+11. [Fuseki SPARQL Reference](#11-fuseki-sparql-reference)
 11. [Testing Strategy](#11-testing-strategy)
 
 ---
@@ -516,7 +517,43 @@ Optional web UI for reviewing escalated questions and monitoring convergence.
 
 ---
 
-## 9. W&B Logging Integration
+## 9. Model Comparison Framework
+
+**Status**: ✅ **Fully implemented** (2026-02-11)
+
+The `scripts/run_model_comparison.py` script provides systematic comparison
+of different LLM models and debate strategies for ontology extension.
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `OntologyStructuralMetrics` | Computes 15 OWL quality metrics using rdflib |
+| `ModelExperimentRunner` | Runs experiments with model/env overrides |
+| `ModelComparisonReport` | Aggregates results across model sizes |
+
+### Usage
+
+```bash
+# Run all 8 experiments (4 small + 4 large models)
+python scripts/run_model_comparison.py --run-all --output results/full_comparison.json --report results/report.md
+
+# Run specific config
+python scripts/run_model_comparison.py --experiments experiments/small_model_experiments.json
+```
+
+### Metrics Computed
+
+- **Class metrics**: Count, delta from seed, connectivity
+- **Hierarchy metrics**: Depth distribution, branching factors, orphan classes
+- **Property metrics**: Domain/range completeness, axiom counts
+- **OWL profile**: EL/QL/RL/DL classification
+
+See [docs/EXPERIMENT_PLAN.md](EXPERIMENT_PLAN.md) for research questions and methodology.
+
+---
+
+## 10. W&B Logging Integration
 
 The project logs to the **`ontology-hitl`** W&B project.
 
@@ -542,7 +579,7 @@ HITL_WANDB_PROJECT=ontology-hitl
 
 ---
 
-## 10. Fuseki SPARQL Reference
+## 11. Fuseki SPARQL Reference
 
 ### Get all classes
 

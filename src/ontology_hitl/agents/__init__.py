@@ -20,6 +20,7 @@ from ontology_hitl.agents.base import (
     AgentRole,
     AgentMessage,
     AgentPerformanceMetrics,
+    BaseAgent,
     Debate,
     DebateOutcome,
     DebateStrategy,
