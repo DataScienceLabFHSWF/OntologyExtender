@@ -23,6 +23,7 @@ Strategies:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -55,7 +56,7 @@ class OntologyClass(BaseModel):
 class OntologyProperty(BaseModel):
     """A new ontology property to add."""
     name: str = Field(description="The name of the new property")
-    type: Literal["object", "datatype"] = Field(description="Type of property")
+    type: str = Field(description="Type of property: 'object' or 'datatype'")
     domain: str = Field(description="Class this property belongs to")
     range: str = Field(description="Target class or datatype (e.g., xsd:string, xsd:date)")
     description: str = Field(description="What this property represents")
@@ -177,6 +178,10 @@ class LLMOnlyBaseline:
         with open(cq_path) as f:
             self.cqs = json.load(f)
 
+        # Set up thinking token cache
+        self.cache_dir = Path("data/cache/llm_responses")
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
         # Initialize strategy
         self.strategy = self._create_strategy()
 
@@ -290,7 +295,32 @@ OUTPUT FORMAT: Provide your answer in this exact JSON format:
   ]
 }}
 
-Be comprehensive and add everything that would be useful."""
+Be comprehensive and add everything that would be useful.
+
+IMPORTANT: Your response must be valid JSON only. Do not include any text before or after the JSON. The JSON should match this exact schema:
+- new_classes: array of objects with name, description, parent_class, properties
+- new_properties: array of objects with name, type, domain, range, description
+
+Example valid response:
+{{
+  "new_classes": [
+    {{
+      "name": "NuclearFacility",
+      "description": "A facility for nuclear operations",
+      "parent_class": "ProblemObject",
+      "properties": ["location", "capacity"]
+    }}
+  ],
+  "new_properties": [
+    {{
+      "name": "hasLocation",
+      "type": "datatype",
+      "domain": "NuclearFacility",
+      "range": "xsd:string",
+      "description": "Location of the facility"
+    }}
+  ]
+}}"""
 
         return prompt
 
@@ -428,8 +458,22 @@ Be thoughtful and economical in your extensions."""
         return prompt
 
     def call_llm(self, prompt: str, verbose: bool = False) -> str:
-        """Call Ollama LLM with the extension prompt."""
+        """Call Ollama LLM with the extension prompt (with thinking token caching)."""
         import time
+        
+        # Create cache key from prompt
+        prompt_hash = hashlib.sha256(prompt.encode('utf-8')).hexdigest()[:16]
+        cache_file = self.cache_dir / f"{self.model.replace(':', '_')}_{prompt_hash}.json"
+        
+        # Check cache first
+        if cache_file.exists():
+            print(f"   💾 Cache hit! Loading from {cache_file}")
+            try:
+                with open(cache_file, 'r') as f:
+                    cached_data = json.load(f)
+                    return cached_data['response']
+            except Exception as e:
+                print(f"   ⚠️  Cache read failed: {e}, proceeding with fresh call")
         
         url = f"{self.ollama_url}/api/generate"
 
@@ -437,7 +481,6 @@ Be thoughtful and economical in your extensions."""
             "model": self.model,
             "prompt": prompt,
             "stream": True,  # Enable streaming to see progress
-            "format": OntologyExtension.model_json_schema(),  # Force structured JSON output
             "options": {
                 "temperature": 0.5,
                 "num_predict": 2048,
@@ -453,7 +496,7 @@ Be thoughtful and economical in your extensions."""
             print(f"   📝 Prompt length: {len(prompt)} characters")
             print(f"   ⏱️  Timeout: {self.timeout}s")
             print(f"   🌐 API URL: {url}")
-            print(f"   🔄 Starting LLM call (skipping warmup)...")
+            print(f"   🔄 Starting LLM call (cache miss)...")
 
         if not verbose:
             print(f"\n🤖 Starting LLM generation...")
@@ -528,6 +571,21 @@ Be thoughtful and economical in your extensions."""
                 
                 if not full_response:
                     raise Exception("No response received from LLM")
+                
+                # Cache the response
+                cache_data = {
+                    'model': self.model,
+                    'prompt_hash': prompt_hash,
+                    'timestamp': time.time(),
+                    'response': full_response,
+                    'tokens': tokens_received
+                }
+                try:
+                    with open(cache_file, 'w') as f:
+                        json.dump(cache_data, f, indent=2)
+                    print(f"   💾 Cached response to {cache_file}")
+                except Exception as e:
+                    print(f"   ⚠️  Cache write failed: {e}")
                     
                 return full_response
                 
@@ -841,8 +899,13 @@ def main():
 
     args = parser.parse_args()
 
-    # Initialize W&B
-    run_name = f"llm_only_{args.strategy}_{args.model.replace(':', '_').replace('.', '_')}_{args.experiment_name}"
+    # Initialize W&B with clean naming
+    run_name = args.experiment_name if args.experiment_name else f"llm_only_{args.strategy}"
+    model_short = args.model.split(":")[0]  # Just the model name, not version
+    tags = [model_short]  # Include the clean model name
+    if args.experiment_name:
+        tags.append(args.experiment_name)
+    
     wandb.init(
         project="ontology-hitl",
         name=run_name,
@@ -853,7 +916,8 @@ def main():
             "method": f"llm_only_{args.strategy}",
             "seed_ontology": args.seed,
             "competency_questions": args.cqs,
-        }
+        },
+        tags=tags,
     )
 
     start_time = time.time()

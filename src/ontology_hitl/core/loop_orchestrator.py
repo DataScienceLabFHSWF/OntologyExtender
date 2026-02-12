@@ -464,12 +464,18 @@ class FeedbackLoopOrchestrator:
             import wandb
             from datetime import datetime
             
-            # Create meaningful run name: mode_model_iters_timestamp[_experiment]
-            timestamp = datetime.now().strftime("%H%M")
-            model_short = self.settings.ollama_model.split(":")[0]  # Just the model name, not version
-            run_name = f"{self.mode.value}_{model_short}_{self.max_iterations}iter_{timestamp}"
+            # Create clean run name: just the experiment name
             if self.experiment_name:
-                run_name += f"_{self.experiment_name}"
+                run_name = self.experiment_name
+            else:
+                # Fallback to mode + timestamp if no experiment name
+                timestamp = datetime.now().strftime("%H%M")
+                run_name = f"{self.mode.value}_{timestamp}"
+            
+            # Create minimal clean tags: experiment name and model
+            tags = [model_short]  # Include the clean model name
+            if self.experiment_name:
+                tags.append(self.experiment_name)
             
             wandb.init(
                 project=self.settings.wandb_project,
@@ -483,7 +489,7 @@ class FeedbackLoopOrchestrator:
                     "min_frequency": self.settings.min_entity_frequency,
                     "similarity_threshold": self.settings.semantic_similarity_threshold,
                 },
-                tags=["feedback-loop", self.mode.value, self.settings.ollama_model.split(":")[0]],
+                tags=tags,
             )
         except Exception as e:
             logger.warning("wandb_init_failed", error=str(e))
