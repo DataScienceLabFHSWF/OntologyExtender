@@ -68,7 +68,7 @@ class Settings(BaseSettings):
     entity_coverage_target: float = 0.80
 
     # Weights & Biases
-    wandb_enabled: bool = False
+    wandb_enabled: bool = True  # Enable by default for experiments
     wandb_entity: str = ""
     wandb_project: str = "ontology-hitl"
     wandb_api_key: str = ""

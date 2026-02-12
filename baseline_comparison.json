@@ -1,0 +1,47 @@
+{
+  "naive": {
+    "status": "success",
+    "init_time": 0.02,
+    "timeout": 600.0,
+    "prompt_info": {
+      "count": 1,
+      "length": 2329
+    },
+    "seed_classes": 228,
+    "cq_count": 9
+  },
+  "modular": {
+    "status": "success",
+    "init_time": 0.02,
+    "timeout": 600.0,
+    "prompt_info": {
+      "count": 1,
+      "length": 1796
+    },
+    "seed_classes": 228,
+    "cq_count": 9
+  },
+  "iterative": {
+    "status": "success",
+    "init_time": 0.01,
+    "timeout": 600.0,
+    "prompt_info": {
+      "count": 1,
+      "avg_length": 1032.0,
+      "total_length": 1032
+    },
+    "seed_classes": 228,
+    "cq_count": 9
+  },
+  "adaptive": {
+    "status": "success",
+    "init_time": 0.01,
+    "timeout": 600.0,
+    "prompt_info": {
+      "count": 1,
+      "length": 1580
+    },
+    "seed_classes": 228,
+    "cq_count": 9
+  }
+}

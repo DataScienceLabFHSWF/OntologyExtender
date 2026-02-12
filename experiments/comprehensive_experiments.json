@@ -1,0 +1,260 @@
+[
+  {
+    "name": "small_baseline",
+    "model": "llama3.2:3b",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Baseline with small non-reasoning model (llama3.2 3B). No debate strategy overrides."
+  },
+  {
+    "name": "small_dialectical",
+    "model": "llama3.2:3b",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "description": "Dialectical debate for structural phases with small model. Tests whether structured disagreement helps a weak model.",
+    "structured_output": true
+  },
+  {
+    "name": "small_socratic",
+    "model": "llama3.2:3b",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "description": "Socratic questioning for conceptual phases with small model. Tests whether question-driven probing helps a weak model.",
+    "structured_output": true
+  },
+  {
+    "name": "small_mixed",
+    "model": "llama3.2:3b",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "description": "Best-of-each strategy per phase with small model. Tests whether per-phase strategy optimization compensates for weak model.",
+    "structured_output": true
+  },
+  {
+    "name": "small_llm_only_naive",
+    "model": "llama3.2:3b",
+    "strategy": "naive",
+    "strategy_overrides": {},
+    "description": "LLM-only naive baseline with small model. Single comprehensive prompt.",
+    "method": "llm_only",
+    "timeout_seconds": 300,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "small_llm_only_modular",
+    "model": "llama3.2:3b",
+    "strategy": "modular",
+    "strategy_overrides": {},
+    "description": "LLM-only modular baseline with small model. CQ grouping by theme.",
+    "method": "llm_only",
+    "timeout_seconds": 300,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "small_llm_only_iterative",
+    "model": "llama3.2:3b",
+    "strategy": "iterative",
+    "strategy_overrides": {},
+    "description": "LLM-only iterative baseline with small model. Theme-by-theme processing.",
+    "method": "llm_only",
+    "timeout_seconds": 300,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "small_llm_only_adaptive",
+    "model": "llama3.2:3b",
+    "strategy": "adaptive",
+    "strategy_overrides": {},
+    "description": "LLM-only adaptive baseline with small model. LLM decides scope.",
+    "method": "llm_only",
+    "timeout_seconds": 300,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "medium_baseline",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {},
+    "description": "Baseline with medium thinking model (nemotron-3-nano). No debate strategy overrides.",
+    "structured_output": true
+  },
+  {
+    "name": "medium_dialectical",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "description": "Dialectical debate for structural phases with medium thinking model.",
+    "structured_output": true
+  },
+  {
+    "name": "medium_socratic",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "description": "Socratic questioning for conceptual phases with medium thinking model.",
+    "structured_output": true
+  },
+  {
+    "name": "medium_mixed",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "description": "Best-of-each strategy per phase with medium thinking model.",
+    "structured_output": true
+  },
+  {
+    "name": "medium_llm_only_naive",
+    "model": "nemotron-3-nano",
+    "strategy": "naive",
+    "strategy_overrides": {},
+    "description": "LLM-only naive baseline with medium thinking model. Single comprehensive prompt.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "medium_llm_only_modular",
+    "model": "nemotron-3-nano",
+    "strategy": "modular",
+    "strategy_overrides": {},
+    "description": "LLM-only modular baseline with medium thinking model. CQ grouping by theme.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "medium_llm_only_iterative",
+    "model": "nemotron-3-nano",
+    "strategy": "iterative",
+    "strategy_overrides": {},
+    "description": "LLM-only iterative baseline with medium thinking model. Theme-by-theme processing.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "medium_llm_only_adaptive",
+    "model": "nemotron-3-nano",
+    "strategy": "adaptive",
+    "strategy_overrides": {},
+    "description": "LLM-only adaptive baseline with medium thinking model. LLM decides scope.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "large_baseline",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {},
+    "description": "Baseline with large reasoning model (Qwen3-Next 80B). No debate strategy overrides.",
+    "structured_output": true
+  },
+  {
+    "name": "large_dialectical",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "description": "Dialectical debate for structural phases with large reasoning model.",
+    "structured_output": true
+  },
+  {
+    "name": "large_socratic",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "description": "Socratic questioning for conceptual phases with large reasoning model.",
+    "structured_output": true
+  },
+  {
+    "name": "large_mixed",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "description": "Best-of-each strategy per phase with large reasoning model.",
+    "structured_output": true
+  },
+  {
+    "name": "large_llm_only_naive",
+    "model": "qwen3-next:latest",
+    "strategy": "naive",
+    "strategy_overrides": {},
+    "description": "LLM-only naive baseline with large model. Single comprehensive prompt.",
+    "method": "llm_only",
+    "timeout_seconds": 2400,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "large_llm_only_modular",
+    "model": "qwen3-next:latest",
+    "strategy": "modular",
+    "strategy_overrides": {},
+    "description": "LLM-only modular baseline with large model. CQ grouping by theme.",
+    "method": "llm_only",
+    "timeout_seconds": 2400,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "large_llm_only_iterative",
+    "model": "qwen3-next:latest",
+    "strategy": "iterative",
+    "strategy_overrides": {},
+    "description": "LLM-only iterative baseline with large model. Theme-by-theme processing.",
+    "method": "llm_only",
+    "timeout_seconds": 2400,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "large_llm_only_adaptive",
+    "model": "qwen3-next:latest",
+    "strategy": "adaptive",
+    "strategy_overrides": {},
+    "description": "LLM-only adaptive baseline with large model. LLM decides scope.",
+    "method": "llm_only",
+    "timeout_seconds": 2400,
+    "temperature": 0.5,
+    "structured_output": true
+  }
+]

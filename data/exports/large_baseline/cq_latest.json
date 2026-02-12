@@ -152,5 +152,131 @@
     "added_in_iteration": "v0",
     "sparql_template": null,
     "notes": "Requires Phase class and temporal relations"
+  },
+  {
+    "id": "cq_initiationprocess_properties",
+    "class": "InitiationProcess",
+    "question": "What properties does a InitiationProcess have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_initiationprocess_hierarchy",
+    "class": "InitiationProcess",
+    "question": "Which Plan instances are also InitiationProcess?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_shutdownprocess_properties",
+    "class": "ShutdownProcess",
+    "question": "What properties does a ShutdownProcess have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_shutdownprocess_hierarchy",
+    "class": "ShutdownProcess",
+    "question": "Which InitiationProcess instances are also ShutdownProcess?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_shutdownaction_properties",
+    "class": "ShutdownAction",
+    "question": "What properties does a ShutdownAction have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_shutdownaction_hierarchy",
+    "class": "ShutdownAction",
+    "question": "Which Na38354e3dda94eada0e5768a6d208635 instances are also ShutdownAction?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_permitrequirements_properties",
+    "class": "PermitRequirements",
+    "question": "What properties does a PermitRequirements have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_permitrequirements_hierarchy",
+    "class": "PermitRequirements",
+    "question": "Which DomainRequirement instances are also PermitRequirements?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatorycompliance_properties",
+    "class": "RegulatoryCompliance",
+    "question": "What properties does a RegulatoryCompliance have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatorycompliance_hierarchy",
+    "class": "RegulatoryCompliance",
+    "question": "Which Plan instances are also RegulatoryCompliance?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmentalimpact_properties",
+    "class": "EnvironmentalImpact",
+    "question": "What properties does a EnvironmentalImpact have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmentalimpact_hierarchy",
+    "class": "EnvironmentalImpact",
+    "question": "Which N9bd82af49b704155a3020ada34d87ac1 instances are also EnvironmentalImpact?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_requirement_properties",
+    "class": "Requirement",
+    "question": "What properties does a Requirement have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_requirement_hierarchy",
+    "class": "Requirement",
+    "question": "Which DomainRequirement instances are also Requirement?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_publicsafety_properties",
+    "class": "PublicSafety",
+    "question": "What properties does a PublicSafety have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_publicsafety_hierarchy",
+    "class": "PublicSafety",
+    "question": "Which Plan instances are also PublicSafety?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_kkestate_properties",
+    "class": "KKEState",
+    "question": "What properties does a KKEState have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_kkestate_hierarchy",
+    "class": "KKEState",
+    "question": "Which State instances are also KKEState?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
   }
 ]

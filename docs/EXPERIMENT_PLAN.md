@@ -246,39 +246,6 @@ tail -f logs/small_model_experiments.log
 
 ---
 
-## Implementation Status
-
-| Component | File | Status |
-|-----------|------|--------|
-| Experiment configs (small) | `experiments/small_model_experiments.json` | ✅ Done |
-| Experiment configs (large) | `experiments/large_model_experiments.json` | ✅ Done |
-| Model comparison runner | `scripts/run_model_comparison.py` | ✅ **Fully implemented** |
-| Structural metrics | `scripts/run_model_comparison.py` (OntologyStructuralMetrics) | ✅ **Fully implemented** |
-| Comparison report generator | `scripts/run_model_comparison.py` (ModelComparisonReport) | ✅ **Fully implemented** |
-| Pipeline model override | `.env` via `HITL_OLLAMA_MODEL` | ✅ **Verified working** |
-| W&B quality sub-score logging | `loop_orchestrator.py` (_log_wandb) | **To add** |
-| CQ relation coverage | `evaluation/cq_evaluator.py` | **To implement** |
-
-### What Was Implemented
-
-1. ✅ **OntologyStructuralMetrics** — Complete rdflib-based OWL analysis computing 15 structural metrics including hierarchy depth, branching factors, property connectivity, and axiom counts.
-
-2. ✅ **ModelExperimentRunner** — Full implementation with environment variable overrides, sequential execution, progress logging, and error handling.
-
-3. ✅ **Comparison report generation** — Aggregates results by model size, computes statistical comparisons, generates markdown reports with tables and summaries.
-
-4. ✅ **CLI interface** — `--run-all` flag loads both config files, runs all 8 experiments, saves JSON results and optional markdown reports.
-
-5. ✅ **Bug fixes** — Fixed experiment data overwrite issue, export path problems, and config file locations.
-
-### Remaining Optional Enhancements
-
-1. **Add quality sub-scores to wandb logging** — in `loop_orchestrator.py._log_wandb()`, add `ontology_consistency_score`, `ontology_coherence_score`, `ontology_modularity_score`, `ontology_expressiveness_score`.
-
-2. **CQ relation coverage** — Extend `evaluation/cq_evaluator.py` to measure property coverage in addition to class coverage.
-
----
-
 ## Analysis Plan
 
 After all 8 experiments complete, the comparison report should answer:

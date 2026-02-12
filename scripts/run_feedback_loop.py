@@ -26,6 +26,10 @@ from ontology_hitl.core.config import Settings
 from ontology_hitl.core.feedback_protocol import LoopMode
 from ontology_hitl.core.loop_orchestrator import FeedbackLoopOrchestrator
 
+# Load .env file explicitly
+from dotenv import load_dotenv
+load_dotenv()
+
 logger = structlog.get_logger(__name__)
 app = typer.Typer()
 

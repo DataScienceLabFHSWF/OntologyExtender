@@ -142,10 +142,11 @@ class ExperimentRunner:
                     iterations_dir=str(archive_dir),
                     exports_dir=str(exports_archive))
 
-    def run_pipeline(self, experiment_name: str = "") -> tuple[bool, str, float]:
+    def run_pipeline(self, experiment_name: str = "", model: str = "") -> tuple[bool, str, float]:
         """Run the full pipeline and return success status and execution time."""
         import time
         start_time = time.time()
+        timeout_seconds = self._get_timeout_for_model(model)
 
         try:
             # Set environment variable for experiment-specific output directory
@@ -163,7 +164,7 @@ class ExperimentRunner:
                 capture_output=True,
                 text=True,
                 env=env,
-                timeout=1800  # 30 minute timeout
+                timeout=timeout_seconds
             )
 
             execution_time = time.time() - start_time
@@ -178,8 +179,9 @@ class ExperimentRunner:
 
         except subprocess.TimeoutExpired:
             execution_time = time.time() - start_time
-            logger.error("pipeline_timeout", execution_time=execution_time)
-            return False, "Pipeline timed out after 30 minutes", execution_time
+            logger.error("pipeline_timeout", execution_time=execution_time,
+                        timeout=timeout_seconds, model=model)
+            return False, f"Pipeline timed out after {timeout_seconds // 60} minutes", execution_time
 
     def extract_metrics(self, experiment_name: str = "") -> Dict:
         """Extract metrics from the completed run."""
@@ -228,8 +230,6 @@ class ExperimentRunner:
     def run_experiment_thread_safe(self, config: ExperimentConfig) -> ExperimentResult:
         """Run a single experiment with thread-safe isolation."""
         import threading
-        import tempfile
-        import os
 
         thread_id = threading.current_thread().ident
         # Use original clean experiment name, not thread-suffixed
@@ -253,7 +253,6 @@ class ExperimentRunner:
                 for item in v1_dir.iterdir():
                     dest = temp_iterations_dir / item.name
                     if item.is_file():
-                        import shutil
                         shutil.copy2(str(item), str(dest))
 
             # Apply strategy overrides with thread-safe locking
@@ -287,9 +286,13 @@ class ExperimentRunner:
                     finally:
                         fcntl.flock(f.fileno(), fcntl.LOCK_UN)  # Release lock
 
-            # Set environment variable for experiment-specific output
+            # Set environment variable for experiment-specific output and model config
             env = os.environ.copy()
             env["ONTOLOGY_EXPERIMENT_NAME"] = experiment_name
+            if config.model:
+                env["HITL_OLLAMA_MODEL"] = config.model
+            if config.temperature:
+                env["HITL_LLM_TEMPERATURE"] = str(config.temperature)
 
             # Run pipeline with thread-specific environment
             success, output, execution_time = self.run_pipeline_with_env(experiment_name, env)
@@ -332,18 +335,45 @@ class ExperimentRunner:
 
             # Clean up thread-specific directory
             if temp_iterations_dir.exists():
-                import shutil
                 shutil.rmtree(str(temp_iterations_dir))
+
+    def _get_timeout_for_model(self, model: str) -> int:
+        """Return subprocess timeout in seconds based on model size.
+
+        Ollama serialises inference requests internally.  When multiple
+        experiments hit the same endpoint the effective wait time per
+        request multiplies, so larger models need generous timeouts.
+        """
+        model_lower = (model or "").lower()
+        if any(k in model_lower for k in ("qwen", "79b", "72b", "70b")):
+            return 5400   # 90 min for large models
+        elif any(k in model_lower for k in ("nemotron", "14b", "8b")):
+            return 3600   # 60 min for medium models
+        else:
+            return 1800   # 30 min for small models
 
     def run_pipeline_with_env(self, experiment_name: str, env: dict) -> tuple[bool, str, float]:
         """Run the pipeline with custom environment variables."""
         import time
         start_time = time.time()
 
+        # Derive timeout from the model being used
+        model = env.get("HITL_OLLAMA_MODEL", "")
+        timeout_seconds = self._get_timeout_for_model(model)
+
         try:
+            # Explicitly set W&B environment variables for subprocess
+            env["HITL_WANDB_ENABLED"] = "true"
+            env["HITL_WANDB_ENTITY"] = "dsfhswf"
+            env["HITL_WANDB_PROJECT"] = "ontology-hitl"
+            env["HITL_WANDB_API_KEY"] = "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"
+
             cmd = [sys.executable, "scripts/run_full_pipeline.py"]
             if experiment_name:
                 cmd.extend(["--experiment-name", experiment_name])
+
+            logger.info("pipeline_starting", experiment=experiment_name,
+                       model=model, timeout=timeout_seconds)
 
             result = subprocess.run(
                 cmd,
@@ -351,7 +381,7 @@ class ExperimentRunner:
                 capture_output=True,
                 text=True,
                 env=env,
-                timeout=1800  # 30 minute timeout
+                timeout=timeout_seconds
             )
 
             execution_time = time.time() - start_time
@@ -366,8 +396,9 @@ class ExperimentRunner:
 
         except subprocess.TimeoutExpired:
             execution_time = time.time() - start_time
-            logger.error("pipeline_timeout", execution_time=execution_time)
-            return False, "Pipeline timed out after 30 minutes", execution_time
+            logger.error("pipeline_timeout", execution_time=execution_time,
+                        timeout=timeout_seconds, model=model)
+            return False, f"Pipeline timed out after {timeout_seconds // 60} minutes", execution_time
 
     def archive_experiment_data_thread_safe(self, experiment_name: str, temp_dir: Path):
         """Archive experiment data from thread-specific directory."""
@@ -378,12 +409,20 @@ class ExperimentRunner:
             for item in temp_dir.iterdir():
                 dest = archive_dir / item.name
                 if item.is_file():
-                    import shutil
                     shutil.copy2(str(item), str(dest))
                 elif item.is_dir():
                     if dest.exists():
                         shutil.rmtree(str(dest))
                     shutil.copytree(str(item), str(dest))
+
+        # Also copy convergence report
+        convergence_src = self.base_dir / "data" / "exports" / experiment_name / "convergence_report.json"
+        if convergence_src.exists():
+            shutil.copy2(str(convergence_src), str(archive_dir / "convergence_report.json"))
+
+        logger.info("archived_thread_safe_experiment_data",
+                    experiment=experiment_name,
+                    archive_dir=str(archive_dir))
 
         # Also copy convergence report
         convergence_src = self.base_dir / "data" / "exports" / experiment_name / "convergence_report.json"
@@ -423,9 +462,24 @@ class ExperimentRunner:
     def run_llm_only_experiment(self, config: ExperimentConfig) -> ExperimentResult:
         """Run an LLM-only experiment."""
         import time
+        import os
         start_time = time.time()
 
         try:
+            # Set environment variable for experiment-specific output and model config
+            env = os.environ.copy()
+            env["ONTOLOGY_EXPERIMENT_NAME"] = config.name
+            if config.model:
+                env["HITL_OLLAMA_MODEL"] = config.model
+            if hasattr(config, 'temperature') and config.temperature:
+                env["HITL_LLM_TEMPERATURE"] = str(config.temperature)
+            
+            # Explicitly set W&B environment variables for subprocess
+            env["HITL_WANDB_ENABLED"] = "true"
+            env["HITL_WANDB_ENTITY"] = "dsfhswf"
+            env["HITL_WANDB_PROJECT"] = "ontology-hitl"
+            env["HITL_WANDB_API_KEY"] = "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"
+
             # Set up command for LLM-only baseline
             cmd = [
                 sys.executable, "scripts/llm_only_baseline.py",
@@ -448,6 +502,7 @@ class ExperimentRunner:
                 cwd=self.base_dir,
                 capture_output=True,
                 text=True,
+                env=env,
                 timeout=config.timeout_seconds or 1800  # Default 30 min timeout
             )
 
@@ -577,6 +632,14 @@ def main():
                        help="Run experiments in parallel by model group")
     parser.add_argument("--max-workers", type=int, default=3,
                        help="Maximum number of parallel workers (default: 3)")
+    parser.add_argument("--interleave-models", action="store_true",
+                       help="Interleave experiments across model groups (round-robin). "
+                            "Default is sequential: finish all small, then medium, then large. "
+                            "Only use interleaved mode if Ollama can serve multiple models concurrently.")
+    parser.add_argument("--resume", action="store_true",
+                       help="Skip experiments that already succeeded in a previous run. "
+                            "Reads the --output file and keeps successful results, "
+                            "only re-running failed or missing experiments.")
 
     args = parser.parse_args()
 
@@ -600,43 +663,70 @@ def main():
     results_dir = base_dir / "experiment_results"
     runner = ExperimentRunner(base_dir, results_dir)
 
+    # Resume: load previous results and skip successful experiments
+    prior_results = []
+    skipped_names = set()
+    if args.resume and args.output.exists():
+        with open(args.output, 'r') as f:
+            prior_results = json.load(f)
+        skipped_names = {
+            r['experiment_name'] for r in prior_results if r.get('success')
+        }
+        if skipped_names:
+            experiments = [e for e in experiments if e.name not in skipped_names]
+            print(f"⏩ Resuming: skipping {len(skipped_names)} already-successful experiments")
+            for name in sorted(skipped_names):
+                print(f"   ✔ {name}")
+            print(f"   {len(experiments)} experiments remaining\n")
+        if not experiments:
+            print("✅ All experiments already completed successfully!")
+            sys.exit(0)
+
     if args.parallel:
         # Group experiments by model for parallel execution
         experiment_groups = runner.group_experiments_by_model(experiments)
-        print(f"🚀 Running experiments from {len(experiment_groups)} model groups simultaneously:")
-        for group_name, group_experiments in experiment_groups.items():
-            print(f"   • {group_name}: {len(group_experiments)} experiments")
+        total_experiments = len(experiments)
 
-        # Run experiments from different model groups in parallel (round-robin)
-        print(f"\n⚡ Using {args.max_workers} parallel workers (1 per model size)...")
+        # Sequential-models mode (default): run one model group at a time
+        # to avoid Ollama request queuing across different model sizes.
+        # Ollama serialises inference and must swap models in/out of GPU
+        # memory — running different models concurrently causes massive
+        # slowdowns and timeouts.
+        group_order = ["small", "medium", "large"]
+        ordered_groups = [(g, experiment_groups[g]) for g in group_order if g in experiment_groups]
+        # Add any groups not in the predefined order
+        for g, exps in experiment_groups.items():
+            if g not in group_order:
+                ordered_groups.append((g, exps))
+
+        print(f"🚀 Running {total_experiments} experiments across {len(ordered_groups)} model groups")
+        print(f"   Mode: {'sequential models' if not args.interleave_models else 'interleaved (round-robin)'}")
+        for group_name, group_experiments in ordered_groups:
+            print(f"   • {group_name}: {len(group_experiments)} experiments")
 
         all_results = []
         completed_experiments = 0
-        total_experiments = len(experiments)
 
-        # Create queues for each group
-        from collections import deque
-        group_queues = {name: deque(group) for name, group in experiment_groups.items()}
-        active_futures = {}
+        if not args.interleave_models:
+            # DEFAULT: Run each model group fully before moving to the next.
+            # Within a group, experiments run in parallel up to max_workers.
+            for group_name, group_experiments in ordered_groups:
+                print(f"\n{'='*60}")
+                print(f"📦 Model group: {group_name} ({len(group_experiments)} experiments, "
+                      f"{args.max_workers} workers)")
+                print(f"{'='*60}")
 
-        with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
-            while completed_experiments < total_experiments:
-                # Submit new experiments (one from each active group)
-                for group_name, queue in group_queues.items():
-                    if queue and len(active_futures) < args.max_workers:
-                        config = queue.popleft()
+                with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+                    futures = {}
+                    for config in group_experiments:
                         if config.method == "llm_only":
                             future = executor.submit(runner.run_llm_only_experiment, config)
                         else:
                             future = executor.submit(runner.run_experiment_thread_safe, config)
-                        active_futures[future] = (group_name, config)
+                        futures[future] = config
 
-                # Wait for completed experiments
-                if active_futures:
-                    for future in as_completed(active_futures.keys()):
-                        group_name, config = active_futures[future]
-                        del active_futures[future]
-
+                    for future in as_completed(futures.keys()):
+                        config = futures[future]
                         try:
                             result = future.result()
                             all_results.append(result.model_dump())
@@ -667,10 +757,63 @@ def main():
                         # Save intermediate results
                         with open(args.output, 'w') as f:
                             json.dump(all_results, f, indent=2)
-                else:
-                    # No active futures but work remaining - wait a bit
-                    import time
-                    time.sleep(0.1)
+
+        else:
+            # INTERLEAVED: Original round-robin across model groups.
+            # Use this only if Ollama can handle concurrent model serving.
+            print(f"\n⚡ Using {args.max_workers} parallel workers (round-robin across groups)...")
+            from collections import deque
+            group_queues = {name: deque(group) for name, group in experiment_groups.items()}
+            active_futures = {}
+
+            with ThreadPoolExecutor(max_workers=args.max_workers) as executor:
+                while completed_experiments < total_experiments:
+                    for group_name, queue in group_queues.items():
+                        if queue and len(active_futures) < args.max_workers:
+                            config = queue.popleft()
+                            if config.method == "llm_only":
+                                future = executor.submit(runner.run_llm_only_experiment, config)
+                            else:
+                                future = executor.submit(runner.run_experiment_thread_safe, config)
+                            active_futures[future] = (group_name, config)
+
+                    if active_futures:
+                        for future in as_completed(active_futures.keys()):
+                            group_name, config = active_futures[future]
+                            del active_futures[future]
+
+                            try:
+                                result = future.result()
+                                all_results.append(result.model_dump())
+                                completed_experiments += 1
+
+                                print(f"   ✅ {config.name} ({group_name}) completed ({completed_experiments}/{total_experiments})")
+                                if result.success:
+                                    print(f"      📊 Classes: {result.classes_added}, Time: {result.execution_time_seconds:.1f}s")
+                                else:
+                                    print(f"      ❌ Failed: {result.error_message[:100]}...")
+
+                            except Exception as e:
+                                print(f"   ❌ {config.name} failed with exception: {e}")
+                                error_result = ExperimentResult(
+                                    experiment_name=config.name,
+                                    strategy_overrides=config.strategy_overrides,
+                                    success=False,
+                                    error_message=str(e),
+                                    metrics={},
+                                    classes_added=0,
+                                    cq_coverage=0.0,
+                                    entity_coverage=0.0,
+                                    execution_time_seconds=0.0,
+                                )
+                                all_results.append(error_result.model_dump())
+                                completed_experiments += 1
+
+                            with open(args.output, 'w') as f:
+                                json.dump(all_results, f, indent=2)
+                    else:
+                        import time
+                        time.sleep(0.1)
 
         print(f"\n🎉 All {total_experiments} experiments completed!")
 
@@ -699,6 +842,18 @@ def main():
                 print(f"   ⏱️  Execution time: {result.execution_time_seconds:.1f}s")
 
         all_results = results
+
+    # Merge prior successful results back in when resuming
+    if prior_results and skipped_names:
+        # Keep prior successes, replace prior failures with new results
+        new_names = {r['experiment_name'] for r in all_results}
+        merged = [r for r in prior_results if r.get('success') and r['experiment_name'] not in new_names]
+        merged.extend(all_results)
+        all_results = merged
+
+    # Save final merged results
+    with open(args.output, 'w') as f:
+        json.dump(all_results, f, indent=2)
 
     # Print summary
     print(f"\n📊 Experiment Summary ({len(all_results)} experiments)")

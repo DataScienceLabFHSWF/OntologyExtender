@@ -154,44 +154,16 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_genehmigung_properties",
-    "class": "Genehmigung",
-    "question": "What properties does a Genehmigung have?",
+    "id": "cq_ablaufgenehmigung_properties",
+    "class": "Ablaufgenehmigung",
+    "question": "What properties does a Ablaufgenehmigung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_genehmigung_hierarchy",
-    "class": "Genehmigung",
-    "question": "Which DomainConstant instances are also Genehmigung?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_bewirtschaftung_properties",
-    "class": "Bewirtschaftung",
-    "question": "What properties does a Bewirtschaftung have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_bewirtschaftung_hierarchy",
-    "class": "Bewirtschaftung",
-    "question": "Which DomainConstant instances are also Bewirtschaftung?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_schlusslaufplan_properties",
-    "class": "Schlusslaufplan",
-    "question": "What properties does a Schlusslaufplan have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_schlusslaufplan_hierarchy",
-    "class": "Schlusslaufplan",
-    "question": "Which PlanningProcess instances are also Schlusslaufplan?",
+    "id": "cq_ablaufgenehmigung_hierarchy",
+    "class": "Ablaufgenehmigung",
+    "question": "Which DomainConstant instances are also Ablaufgenehmigung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
@@ -205,63 +177,63 @@
   {
     "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_hierarchy",
     "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
-    "question": "Which DomainConstant instances are also Umweltvertr\u00e4glichkeitspr\u00fcfung?",
+    "question": "Which Ablaufgenehmigung instances are also Umweltvertr\u00e4glichkeitspr\u00fcfung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_regulierung_properties",
-    "class": "Regulierung",
-    "question": "What properties does a Regulierung have?",
+    "id": "cq_fortsetzungsbetrieb_properties",
+    "class": "Fortsetzungsbetrieb",
+    "question": "What properties does a Fortsetzungsbetrieb have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_regulierung_hierarchy",
-    "class": "Regulierung",
-    "question": "Which DomainConstant instances are also Regulierung?",
+    "id": "cq_fortsetzungsbetrieb_hierarchy",
+    "class": "Fortsetzungsbetrieb",
+    "question": "Which DomainConstant instances are also Fortsetzungsbetrieb?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_verantwortlichkeit_properties",
-    "class": "Verantwortlichkeit",
-    "question": "What properties does a Verantwortlichkeit have?",
+    "id": "cq_restbetrieb_properties",
+    "class": "Restbetrieb",
+    "question": "What properties does a Restbetrieb have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_verantwortlichkeit_hierarchy",
-    "class": "Verantwortlichkeit",
-    "question": "Which DomainConstant instances are also Verantwortlichkeit?",
+    "id": "cq_restbetrieb_hierarchy",
+    "class": "Restbetrieb",
+    "question": "Which DomainConstant instances are also Restbetrieb?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_schlusslaufverfahren_properties",
-    "class": "Schlusslaufverfahren",
-    "question": "What properties does a Schlusslaufverfahren have?",
+    "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_properties",
+    "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
+    "question": "What properties does a Umweltvertr\u00e4glichkeitspr\u00fcfung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_schlusslaufverfahren_hierarchy",
-    "class": "Schlusslaufverfahren",
-    "question": "Which Schlusslaufplan instances are also Schlusslaufverfahren?",
+    "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_hierarchy",
+    "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
+    "question": "Which Ablaufgenehmigung instances are also Umweltvertr\u00e4glichkeitspr\u00fcfung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_notifizierung_properties",
-    "class": "Notifizierung",
-    "question": "What properties does a Notifizierung have?",
+    "id": "cq_schlussabnahme_properties",
+    "class": "Schlussabnahme",
+    "question": "What properties does a Schlussabnahme have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_notifizierung_hierarchy",
-    "class": "Notifizierung",
-    "question": "Which Schlusslaufverfahren instances are also Notifizierung?",
+    "id": "cq_schlussabnahme_hierarchy",
+    "class": "Schlussabnahme",
+    "question": "Which DomainConstant instances are also Schlussabnahme?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

@@ -38,6 +38,10 @@ from rdflib.namespace import XSD
 
 from ontology_hitl.core.config import Settings
 
+# Load .env file explicitly
+from dotenv import load_dotenv
+load_dotenv()
+
 logger = structlog.get_logger(__name__)
 
 # Ontology namespaces (same as used in the main system)
@@ -899,26 +903,33 @@ def main():
 
     args = parser.parse_args()
 
-    # Initialize W&B with clean naming
-    run_name = args.experiment_name if args.experiment_name else f"llm_only_{args.strategy}"
-    model_short = args.model.split(":")[0]  # Just the model name, not version
-    tags = [model_short]  # Include the clean model name
-    if args.experiment_name:
-        tags.append(args.experiment_name)
-    
-    wandb.init(
-        project="ontology-hitl",
-        name=run_name,
-        config={
-            "model": args.model,
-            "strategy": args.strategy,
-            "experiment_name": args.experiment_name,
-            "method": f"llm_only_{args.strategy}",
-            "seed_ontology": args.seed,
-            "competency_questions": args.cqs,
-        },
-        tags=tags,
-    )
+    # Load settings to check W&B configuration
+    settings = Settings()
+
+    # Initialize W&B with clean naming if enabled
+    if settings.wandb_enabled:
+        run_name = args.experiment_name if args.experiment_name else f"llm_only_{args.strategy}"
+        model_short = args.model.split(":")[0]  # Just the model name, not version
+        tags = [model_short]  # Include the clean model name
+        if args.experiment_name:
+            tags.append(args.experiment_name)
+        
+        wandb.init(
+            project=settings.wandb_project,
+            entity=settings.wandb_entity,
+            name=run_name,
+            config={
+                "model": args.model,
+                "strategy": args.strategy,
+                "experiment_name": args.experiment_name,
+                "method": f"llm_only_{args.strategy}",
+                "seed_ontology": args.seed,
+                "competency_questions": args.cqs,
+            },
+            tags=tags,
+        )
+    else:
+        logger.info("wandb_disabled", msg="W&B logging disabled")
 
     start_time = time.time()
 

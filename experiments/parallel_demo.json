@@ -1,0 +1,43 @@
+[
+  {
+    "name": "small_baseline_1",
+    "model": "llama3.2:3b",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Small model baseline test 1"
+  },
+  {
+    "name": "small_dialectical_1",
+    "model": "llama3.2:3b",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "structured_output": true,
+    "description": "Small model dialectical test 1"
+  },
+  {
+    "name": "medium_baseline_1",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Medium model baseline test 1"
+  },
+  {
+    "name": "large_baseline_1",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Large model baseline test 1"
+  },
+  {
+    "name": "large_dialectical_1",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "structured_output": true,
+    "description": "Large model dialectical test 1"
+  }
+]

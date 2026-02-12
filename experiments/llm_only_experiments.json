@@ -1,18 +1,151 @@
 [
   {
-    "name": "small_llm_only",
+    "name": "small_naive",
     "model": "llama3.2:3b",
+    "strategy": "naive",
     "strategy_overrides": {},
-    "description": "LLM-only baseline with small model. Direct single-shot prompting without multi-agent debate.",
+    "description": "Naive LLM-only baseline with small model. Single comprehensive prompt.",
     "method": "llm_only",
     "timeout_seconds": 300,
     "temperature": 0.5
   },
   {
-    "name": "large_llm_only",
-    "model": "qwen3-next:latest",
+    "name": "small_modular",
+    "model": "llama3.2:3b",
+    "strategy": "modular",
     "strategy_overrides": {},
-    "description": "LLM-only baseline with large model. Direct single-shot prompting without multi-agent debate.",
+    "description": "Modular LLM-only baseline with small model. CQ grouping by theme.",
+    "method": "llm_only",
+    "timeout_seconds": 300,
+    "temperature": 0.5
+  },
+  {
+    "name": "small_iterative",
+    "model": "llama3.2:3b",
+    "strategy": "iterative",
+    "strategy_overrides": {},
+    "description": "Iterative LLM-only baseline with small model. Theme-by-theme processing.",
+    "method": "llm_only",
+    "timeout_seconds": 300,
+    "temperature": 0.5
+  },
+  {
+    "name": "small_adaptive",
+    "model": "llama3.2:3b",
+    "strategy": "adaptive",
+    "strategy_overrides": {},
+    "description": "Adaptive LLM-only baseline with small model. LLM decides scope.",
+    "method": "llm_only",
+    "timeout_seconds": 300,
+    "temperature": 0.5
+  },
+  {
+    "name": "medium_naive",
+    "model": "nemotron-3-nano",
+    "strategy": "naive",
+    "strategy_overrides": {},
+    "description": "Naive LLM-only baseline with medium thinking model. Single comprehensive prompt.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5
+  },
+  {
+    "name": "medium_modular",
+    "model": "nemotron-3-nano",
+    "strategy": "modular",
+    "strategy_overrides": {},
+    "description": "Modular LLM-only baseline with medium thinking model. CQ grouping by theme.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5
+  },
+  {
+    "name": "medium_iterative",
+    "model": "nemotron-3-nano",
+    "strategy": "iterative",
+    "strategy_overrides": {},
+    "description": "Iterative LLM-only baseline with medium thinking model. Theme-by-theme processing.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5
+  },
+  {
+    "name": "medium_adaptive",
+    "model": "nemotron-3-nano",
+    "strategy": "adaptive",
+    "strategy_overrides": {},
+    "description": "Adaptive LLM-only baseline with medium thinking model. LLM decides scope.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5
+  },
+  {
+    "name": "large_naive",
+    "model": "qwen3-next:latest",
+    "strategy": "naive",
+    "strategy_overrides": {},
+    "description": "Naive LLM-only baseline with large thinking model. Single comprehensive prompt.",
+    "method": "llm_only",
+    "timeout_seconds": 2400,
+    "temperature": 0.5
+  },
+  {
+    "name": "large_modular",
+    "model": "qwen3-next:latest",
+    "strategy": "modular",
+    "strategy_overrides": {},
+    "description": "Modular LLM-only baseline with large thinking model. CQ grouping by theme.",
+    "method": "llm_only",
+    "timeout_seconds": 2400,
+    "temperature": 0.5
+  },
+  {
+    "name": "large_iterative",
+    "model": "qwen3-next:latest",
+    "strategy": "iterative",
+    "strategy_overrides": {},
+    "description": "Iterative LLM-only baseline with large thinking model. Theme-by-theme processing.",
+    "method": "llm_only",
+    "timeout_seconds": 2400,
+    "temperature": 0.5
+  },
+  {
+    "name": "large_adaptive",
+    "model": "qwen3-next:latest",
+    "strategy": "adaptive",
+    "strategy_overrides": {},
+    "description": "Adaptive LLM-only baseline with large thinking model. LLM decides scope.",
+    "method": "llm_only",
+    "timeout_seconds": 2400,
+    "temperature": 0.5
+  }
+  },
+  {
+    "name": "large_modular",
+    "model": "qwen3-next:latest",
+    "strategy": "modular",
+    "strategy_overrides": {},
+    "description": "Modular LLM-only baseline with large model. CQ grouping by theme.",
+    "method": "llm_only",
+    "timeout_seconds": 600,
+    "temperature": 0.5
+  },
+  {
+    "name": "large_iterative",
+    "model": "qwen3-next:latest",
+    "strategy": "iterative",
+    "strategy_overrides": {},
+    "description": "Iterative LLM-only baseline with large model. Theme-by-theme processing.",
+    "method": "llm_only",
+    "timeout_seconds": 600,
+    "temperature": 0.5
+  },
+  {
+    "name": "large_adaptive",
+    "model": "qwen3-next:latest",
+    "strategy": "adaptive",
+    "strategy_overrides": {},
+    "description": "Adaptive LLM-only baseline with large model. LLM decides scope.",
     "method": "llm_only",
     "timeout_seconds": 600,
     "temperature": 0.5

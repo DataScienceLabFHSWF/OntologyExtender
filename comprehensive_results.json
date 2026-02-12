@@ -1,0 +1,340 @@
+[
+  {
+    "experiment_name": "small_baseline",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 18,
+      "cq_coverage_final": 1.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 1.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 18,
+    "cq_coverage": 1.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 579.8838720321655
+  },
+  {
+    "experiment_name": "medium_baseline",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "Pipeline timed out after 30 minutes",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 1800.101373910904
+  },
+  {
+    "experiment_name": "large_baseline",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "Pipeline timed out after 30 minutes",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 1800.1053738594055
+  },
+  {
+    "experiment_name": "small_dialectical",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 17,
+      "cq_coverage_final": 1.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 1.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 17,
+    "cq_coverage": 1.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 556.1206827163696
+  },
+  {
+    "experiment_name": "medium_dialectical",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "success": false,
+    "error_message": "Pipeline timed out after 30 minutes",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 1800.1026368141174
+  },
+  {
+    "experiment_name": "large_dialectical",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "success": false,
+    "error_message": "Pipeline timed out after 30 minutes",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 1800.1045155525208
+  },
+  {
+    "experiment_name": "small_socratic",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 6,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 6,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 601.5680532455444
+  },
+  {
+    "experiment_name": "large_socratic",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "success": false,
+    "error_message": "Pipeline timed out after 30 minutes",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 1800.1020851135254
+  },
+  {
+    "experiment_name": "medium_socratic",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "success": false,
+    "error_message": "Pipeline timed out after 30 minutes",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 1800.1026546955109
+  },
+  {
+    "experiment_name": "small_mixed",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 9,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 9,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 454.1359975337982
+  },
+  {
+    "experiment_name": "large_mixed",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "success": false,
+    "error_message": "Pipeline timed out after 30 minutes",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 1800.1018335819244
+  },
+  {
+    "experiment_name": "medium_mixed",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "success": false,
+    "error_message": "Pipeline timed out after 30 minutes",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 1800.1039242744446
+  },
+  {
+    "experiment_name": "medium_llm_only_naive",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 900 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7297945022583008
+  },
+  {
+    "experiment_name": "large_llm_only_naive",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 2400 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7358896732330322
+  },
+  {
+    "experiment_name": "small_llm_only_naive",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 300 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7860386371612549
+  },
+  {
+    "experiment_name": "large_llm_only_modular",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 2400 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7350726127624512
+  },
+  {
+    "experiment_name": "medium_llm_only_modular",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 900 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7490003108978271
+  },
+  {
+    "experiment_name": "small_llm_only_modular",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 300 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7627546787261963
+  },
+  {
+    "experiment_name": "large_llm_only_iterative",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 2400 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7292840480804443
+  },
+  {
+    "experiment_name": "medium_llm_only_iterative",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 900 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7519655227661133
+  },
+  {
+    "experiment_name": "small_llm_only_iterative",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 300 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.8438801765441895
+  },
+  {
+    "experiment_name": "medium_llm_only_adaptive",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 900 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7431204319000244
+  },
+  {
+    "experiment_name": "small_llm_only_adaptive",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 300 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7436754703521729
+  },
+  {
+    "experiment_name": "large_llm_only_adaptive",
+    "strategy_overrides": {},
+    "success": false,
+    "error_message": "usage: llm_only_baseline.py [-h] [--model MODEL]\n                            [--strategy {naive,modular,iterative,adaptive}]\n                            --output OUTPUT --experiment-name EXPERIMENT_NAME\n                            [--seed SEED] [--cqs CQS] [--verbose]\nllm_only_baseline.py: error: unrecognized arguments: --timeout 2400 --temperature 0.5\n",
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 0.7458686828613281
+  }
+]

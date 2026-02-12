@@ -3,6 +3,7 @@
     "name": "small_baseline",
     "model": "llama3.2:3b",
     "strategy_overrides": {},
+    "structured_output": true,
     "description": "Baseline with small non-reasoning model (llama3.2 3B). No debate strategy overrides."
   },
   {
@@ -12,6 +13,7 @@
       "hierarchy": "dialectical",
       "properties": "dialectical"
     },
+    "structured_output": true,
     "description": "Dialectical debate for structural phases with small model. Tests whether structured disagreement helps a weak model."
   },
   {
@@ -21,6 +23,7 @@
       "scope": "socratic",
       "terms": "socratic"
     },
+    "structured_output": true,
     "description": "Socratic questioning for conceptual phases with small model. Tests whether question-driven probing helps a weak model."
   },
   {
@@ -35,11 +38,14 @@
       "facets": "delphi",
       "instances": "abductive"
     },
+    "structured_output": true,
     "description": "Best-of-each strategy per phase with small model. Tests whether per-phase strategy optimization compensates for weak model."
+  },
   {
     "name": "small_llm_only",
     "model": "llama3.2:3b",
     "strategy_overrides": {},
+    "structured_output": true,
     "description": "LLM-only baseline with small model. Direct single-shot prompting without multi-agent debate. Matches naive approaches in related work.",
     "method": "llm_only",
     "timeout_seconds": 300,

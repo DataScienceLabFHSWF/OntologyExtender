@@ -154,86 +154,128 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_actioneffect_properties",
-    "class": "ActionEffect",
-    "question": "What properties does a ActionEffect have?",
+    "id": "cq_regulatoryagency_properties",
+    "class": "RegulatoryAgency",
+    "question": "What properties does a RegulatoryAgency have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_actioneffect_hierarchy",
-    "class": "ActionEffect",
-    "question": "Which Nade18c540b8248779cd5f40c255a445e instances are also ActionEffect?",
+    "id": "cq_regulatoryagency_hierarchy",
+    "class": "RegulatoryAgency",
+    "question": "Which None instances are also RegulatoryAgency?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_decommissioningplan_properties",
-    "class": "DecommissioningPlan",
-    "question": "What properties does a DecommissioningPlan have?",
+    "id": "cq_kernkraftwerkemsland_properties",
+    "class": "KernkraftwerkEmsland",
+    "question": "What properties does a KernkraftwerkEmsland have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_decommissioningplan_hierarchy",
-    "class": "DecommissioningPlan",
-    "question": "Which N3085f439f18845f587673a67c2ba0bc6 instances are also DecommissioningPlan?",
+    "id": "cq_kernkraftwerkemsland_hierarchy",
+    "class": "KernkraftwerkEmsland",
+    "question": "Which None instances are also KernkraftwerkEmsland?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_renewalplan_properties",
-    "class": "RenewalPlan",
-    "question": "What properties does a RenewalPlan have?",
+    "id": "cq_regelung_properties",
+    "class": "Regelung",
+    "question": "What properties does a Regelung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_renewalplan_hierarchy",
-    "class": "RenewalPlan",
-    "question": "Which N8b9d21b0d2b9414e8003ffa06c71945c instances are also RenewalPlan?",
+    "id": "cq_regelung_hierarchy",
+    "class": "Regelung",
+    "question": "Which None instances are also Regelung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_removalactioneffect_properties",
-    "class": "RemovalActionEffect",
-    "question": "What properties does a RemovalActionEffect have?",
+    "id": "cq_sicherheitsma\u00dfnahme_properties",
+    "class": "Sicherheitsma\u00dfnahme",
+    "question": "What properties does a Sicherheitsma\u00dfnahme have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_removalactioneffect_hierarchy",
-    "class": "RemovalActionEffect",
-    "question": "Which ActionEffect instances are also RemovalActionEffect?",
+    "id": "cq_sicherheitsma\u00dfnahme_hierarchy",
+    "class": "Sicherheitsma\u00dfnahme",
+    "question": "Which None instances are also Sicherheitsma\u00dfnahme?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_abbauplan_properties",
-    "class": "AbbauPlan",
-    "question": "What properties does a AbbauPlan have?",
+    "id": "cq_umweltauswirkung_properties",
+    "class": "Umweltauswirkung",
+    "question": "What properties does a Umweltauswirkung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_abbauplan_hierarchy",
-    "class": "AbbauPlan",
-    "question": "Which N2861670ddd714c7f96933148fde4479f instances are also AbbauPlan?",
+    "id": "cq_umweltauswirkung_hierarchy",
+    "class": "Umweltauswirkung",
+    "question": "Which None instances are also Umweltauswirkung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_stilllegungactioneffect_properties",
-    "class": "StilllegungActionEffect",
-    "question": "What properties does a StilllegungActionEffect have?",
+    "id": "cq_verantwortung_properties",
+    "class": "Verantwortung",
+    "question": "What properties does a Verantwortung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_stilllegungactioneffect_hierarchy",
-    "class": "StilllegungActionEffect",
-    "question": "Which N4fdaf617198d43b195254d9d1b2d4d49 instances are also StilllegungActionEffect?",
+    "id": "cq_verantwortung_hierarchy",
+    "class": "Verantwortung",
+    "question": "Which None instances are also Verantwortung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_planungsprozess_properties",
+    "class": "Planungsprozess",
+    "question": "What properties does a Planungsprozess have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_planungsprozess_hierarchy",
+    "class": "Planungsprozess",
+    "question": "Which None instances are also Planungsprozess?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_technischeanforderung_properties",
+    "class": "TechnischeAnforderung",
+    "question": "What properties does a TechnischeAnforderung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_technischeanforderung_hierarchy",
+    "class": "TechnischeAnforderung",
+    "question": "Which None instances are also TechnischeAnforderung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulierung_properties",
+    "class": "Regulierung",
+    "question": "What properties does a Regulierung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulierung_hierarchy",
+    "class": "Regulierung",
+    "question": "Which None instances are also Regulierung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

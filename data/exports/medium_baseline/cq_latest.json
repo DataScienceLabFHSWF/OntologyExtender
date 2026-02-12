@@ -1,0 +1,562 @@
+[
+  {
+    "id": "CQ_001",
+    "question": "Was ist der Unterschied zwischen Freigabe und Freisetzung?",
+    "expected_entity_types": [
+      "Action",
+      "Regulation"
+    ],
+    "expected_relations": [
+      "regulatedBy",
+      "appliesTo"
+    ],
+    "difficulty": 3,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Seed ontology baseline CQ"
+  },
+  {
+    "id": "CQ_002",
+    "question": "Welche Anlagen werden in den Dokumenten erw\u00e4hnt?",
+    "expected_entity_types": [
+      "Facility"
+    ],
+    "expected_relations": [],
+    "difficulty": 1,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Basic entity retrieval"
+  },
+  {
+    "id": "CQ_003",
+    "question": "Welche Genehmigungen sind f\u00fcr den R\u00fcckbau einer Anlage erforderlich?",
+    "expected_entity_types": [
+      "Facility",
+      "Permit",
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "requiresPermit",
+      "hasStrategy"
+    ],
+    "difficulty": 4,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Facility and Permit classes (likely v1 additions)"
+  },
+  {
+    "id": "CQ_004",
+    "question": "Welche Voraussetzungen m\u00fcssen f\u00fcr die Stilllegung einer Anlage erf\u00fcllt sein?",
+    "expected_entity_types": [
+      "Facility",
+      "Prerequisite",
+      "Regulation"
+    ],
+    "expected_relations": [
+      "requiresPrerequisite",
+      "regulatedBy"
+    ],
+    "difficulty": 4,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": ""
+  },
+  {
+    "id": "CQ_005",
+    "question": "Welche Vorschriften regeln den Transport von Plutonium?",
+    "expected_entity_types": [
+      "Regulation",
+      "Material",
+      "Action"
+    ],
+    "expected_relations": [
+      "regulates",
+      "appliesTo"
+    ],
+    "difficulty": 4,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Material and Regulation classes"
+  },
+  {
+    "id": "CQ_006",
+    "question": "Welche R\u00fcckbaustrategien werden in den Dokumenten beschrieben?",
+    "expected_entity_types": [
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "hasPhase",
+      "appliesTo"
+    ],
+    "difficulty": 3,
+    "priority": 1,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires DecommissioningStrategy class"
+  },
+  {
+    "id": "CQ_007",
+    "question": "Welche Personen oder Organisationen sind f\u00fcr die Stilllegung verantwortlich?",
+    "expected_entity_types": [
+      "Person",
+      "Organization",
+      "Facility"
+    ],
+    "expected_relations": [
+      "responsibleFor",
+      "manages"
+    ],
+    "difficulty": 3,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": ""
+  },
+  {
+    "id": "CQ_008",
+    "question": "Welche Gefahrstoffe oder Strahlungsrisiken werden erw\u00e4hnt?",
+    "expected_entity_types": [
+      "RadiationHazard",
+      "Material"
+    ],
+    "expected_relations": [
+      "hasHazard",
+      "locatedAt"
+    ],
+    "difficulty": 3,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires RadiationHazard class"
+  },
+  {
+    "id": "CQ_009",
+    "question": "Welche zeitlichen Abl\u00e4ufe und Phasen hat ein R\u00fcckbauprojekt?",
+    "expected_entity_types": [
+      "Phase",
+      "Action",
+      "DecommissioningStrategy"
+    ],
+    "expected_relations": [
+      "hasPhase",
+      "precedes",
+      "follows"
+    ],
+    "difficulty": 4,
+    "priority": 2,
+    "added_in_iteration": "v0",
+    "sparql_template": null,
+    "notes": "Requires Phase class and temporal relations"
+  },
+  {
+    "id": "cq_regulatoryagency_properties",
+    "class": "RegulatoryAgency",
+    "question": "What properties does a RegulatoryAgency have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatoryagency_hierarchy",
+    "class": "RegulatoryAgency",
+    "question": "Which None instances are also RegulatoryAgency?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatory_agency_properties",
+    "class": "Regulatory Agency",
+    "question": "What properties does a Regulatory Agency have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatory_agency_hierarchy",
+    "class": "Regulatory Agency",
+    "question": "Which None instances are also Regulatory Agency?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatory_agency_properties",
+    "class": "Regulatory Agency",
+    "question": "What properties does a Regulatory Agency have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatory_agency_hierarchy",
+    "class": "Regulatory Agency",
+    "question": "Which None instances are also Regulatory Agency?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatory_agency_properties",
+    "class": "Regulatory Agency",
+    "question": "What properties does a Regulatory Agency have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_regulatory_agency_hierarchy",
+    "class": "Regulatory Agency",
+    "question": "Which None instances are also Regulatory Agency?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_licensing_requirement_properties",
+    "class": "Licensing Requirement",
+    "question": "What properties does a Licensing Requirement have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_licensing_requirement_hierarchy",
+    "class": "Licensing Requirement",
+    "question": "Which Regulatory Agency instances are also Licensing Requirement?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_licensing_requirement_properties",
+    "class": "Licensing Requirement",
+    "question": "What properties does a Licensing Requirement have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_licensing_requirement_hierarchy",
+    "class": "Licensing Requirement",
+    "question": "Which Regulatory Agency instances are also Licensing Requirement?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_licensing_requirement_properties",
+    "class": "Licensing Requirement",
+    "question": "What properties does a Licensing Requirement have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_licensing_requirement_hierarchy",
+    "class": "Licensing Requirement",
+    "question": "Which Regulatory Agency instances are also Licensing Requirement?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_licensing_requirement_properties",
+    "class": "Licensing Requirement",
+    "question": "What properties does a Licensing Requirement have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_licensing_requirement_hierarchy",
+    "class": "Licensing Requirement",
+    "question": "Which Regulatory Agency instances are also Licensing Requirement?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_properties",
+    "class": "Safety Regulation",
+    "question": "What properties does a Safety Regulation have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_hierarchy",
+    "class": "Safety Regulation",
+    "question": "Which Licensing Requirement instances are also Safety Regulation?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_properties",
+    "class": "Safety Regulation",
+    "question": "What properties does a Safety Regulation have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_hierarchy",
+    "class": "Safety Regulation",
+    "question": "Which Licensing Requirement instances are also Safety Regulation?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_properties",
+    "class": "Safety Regulation",
+    "question": "What properties does a Safety Regulation have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_hierarchy",
+    "class": "Safety Regulation",
+    "question": "Which Licensing Requirement instances are also Safety Regulation?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_properties",
+    "class": "Safety Regulation",
+    "question": "What properties does a Safety Regulation have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_hierarchy",
+    "class": "Safety Regulation",
+    "question": "Which Licensing Requirement instances are also Safety Regulation?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_properties",
+    "class": "Safety Regulation",
+    "question": "What properties does a Safety Regulation have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_regulation_hierarchy",
+    "class": "Safety Regulation",
+    "question": "Which None instances are also Safety Regulation?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_impact_properties",
+    "class": "Environmental Impact",
+    "question": "What properties does a Environmental Impact have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_impact_hierarchy",
+    "class": "Environmental Impact",
+    "question": "Which None instances are also Environmental Impact?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_impact_properties",
+    "class": "Environmental Impact",
+    "question": "What properties does a Environmental Impact have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_impact_hierarchy",
+    "class": "Environmental Impact",
+    "question": "Which None instances are also Environmental Impact?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_impact_properties",
+    "class": "Environmental Impact",
+    "question": "What properties does a Environmental Impact have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_impact_hierarchy",
+    "class": "Environmental Impact",
+    "question": "Which None instances are also Environmental Impact?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_impact_properties",
+    "class": "Environmental Impact",
+    "question": "What properties does a Environmental Impact have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_impact_hierarchy",
+    "class": "Environmental Impact",
+    "question": "Which None instances are also Environmental Impact?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_benefit_properties",
+    "class": "Environmental Benefit",
+    "question": "What properties does a Environmental Benefit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_benefit_hierarchy",
+    "class": "Environmental Benefit",
+    "question": "Which None instances are also Environmental Benefit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_benefit_properties",
+    "class": "Environmental Benefit",
+    "question": "What properties does a Environmental Benefit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_benefit_hierarchy",
+    "class": "Environmental Benefit",
+    "question": "Which None instances are also Environmental Benefit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_benefit_properties",
+    "class": "Environmental Benefit",
+    "question": "What properties does a Environmental Benefit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_benefit_hierarchy",
+    "class": "Environmental Benefit",
+    "question": "Which None instances are also Environmental Benefit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_benefit_properties",
+    "class": "Environmental Benefit",
+    "question": "What properties does a Environmental Benefit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_environmental_benefit_hierarchy",
+    "class": "Environmental Benefit",
+    "question": "Which None instances are also Environmental Benefit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_audit_properties",
+    "class": "Safety Audit",
+    "question": "What properties does a Safety Audit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_audit_hierarchy",
+    "class": "Safety Audit",
+    "question": "Which None instances are also Safety Audit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_audit_properties",
+    "class": "Safety Audit",
+    "question": "What properties does a Safety Audit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_audit_hierarchy",
+    "class": "Safety Audit",
+    "question": "Which None instances are also Safety Audit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_audit_properties",
+    "class": "Safety Audit",
+    "question": "What properties does a Safety Audit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_audit_hierarchy",
+    "class": "Safety Audit",
+    "question": "Which None instances are also Safety Audit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_audit_properties",
+    "class": "Safety Audit",
+    "question": "What properties does a Safety Audit have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_safety_audit_hierarchy",
+    "class": "Safety Audit",
+    "question": "Which None instances are also Safety Audit?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioning_procedures_properties",
+    "class": "Decommissioning Procedures",
+    "question": "What properties does a Decommissioning Procedures have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioning_procedures_hierarchy",
+    "class": "Decommissioning Procedures",
+    "question": "Which None instances are also Decommissioning Procedures?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioning_procedures_properties",
+    "class": "Decommissioning Procedures",
+    "question": "What properties does a Decommissioning Procedures have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioning_procedures_hierarchy",
+    "class": "Decommissioning Procedures",
+    "question": "Which None instances are also Decommissioning Procedures?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioning_procedures_properties",
+    "class": "Decommissioning Procedures",
+    "question": "What properties does a Decommissioning Procedures have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioning_procedures_hierarchy",
+    "class": "Decommissioning Procedures",
+    "question": "Which None instances are also Decommissioning Procedures?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioning_procedures_properties",
+    "class": "Decommissioning Procedures",
+    "question": "What properties does a Decommissioning Procedures have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_decommissioning_procedures_hierarchy",
+    "class": "Decommissioning Procedures",
+    "question": "Which None instances are also Decommissioning Procedures?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  }
+]

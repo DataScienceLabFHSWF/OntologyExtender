@@ -154,198 +154,44 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_kernkraftwerkemsland_properties",
-    "class": "KernkraftwerkEmsland",
-    "question": "What properties does a KernkraftwerkEmsland have?",
+    "id": "cq_organization_properties",
+    "class": "Organization",
+    "question": "What properties does a Organization have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_kernkraftwerkemsland_hierarchy",
-    "class": "KernkraftwerkEmsland",
-    "question": "Which None instances are also KernkraftwerkEmsland?",
+    "id": "cq_organization_hierarchy",
+    "class": "Organization",
+    "question": "Which None instances are also Organization?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_ustidnr_properties",
-    "class": "UStIdNr",
-    "question": "What properties does a UStIdNr have?",
+    "id": "cq_date_properties",
+    "class": "Date",
+    "question": "What properties does a Date have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_ustidnr_hierarchy",
-    "class": "UStIdNr",
-    "question": "Which None instances are also UStIdNr?",
+    "id": "cq_date_hierarchy",
+    "class": "Date",
+    "question": "Which None instances are also Date?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_kernkraftwerkelippeemsgmbh_properties",
-    "class": "KernkraftwerkeLippeEmsGmbh",
-    "question": "What properties does a KernkraftwerkeLippeEmsGmbh have?",
+    "id": "cq_genehmigung_properties",
+    "class": "Genehmigung",
+    "question": "What properties does a Genehmigung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_kernkraftwerkelippeemsgmbh_hierarchy",
-    "class": "KernkraftwerkeLippeEmsGmbh",
-    "question": "Which None instances are also KernkraftwerkeLippeEmsGmbh?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_internationalregulation_properties",
-    "class": "InternationalRegulation",
-    "question": "What properties does a InternationalRegulation have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_internationalregulation_hierarchy",
-    "class": "InternationalRegulation",
-    "question": "Which None instances are also InternationalRegulation?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_germanatomiclaw_properties",
-    "class": "GermanAtomicLaw",
-    "question": "What properties does a GermanAtomicLaw have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_germanatomiclaw_hierarchy",
-    "class": "GermanAtomicLaw",
-    "question": "Which None instances are also GermanAtomicLaw?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_parametertype_properties",
-    "class": "ParameterType",
-    "question": "What properties does a ParameterType have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_parametertype_hierarchy",
-    "class": "ParameterType",
-    "question": "Which None instances are also ParameterType?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningdomain_properties",
-    "class": "PlanningDomain",
-    "question": "What properties does a PlanningDomain have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningdomain_hierarchy",
-    "class": "PlanningDomain",
-    "question": "Which None instances are also PlanningDomain?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_problemobject_properties",
-    "class": "ProblemObject",
-    "question": "What properties does a ProblemObject have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_problemobject_hierarchy",
-    "class": "ProblemObject",
-    "question": "Which None instances are also ProblemObject?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningproblem_properties",
-    "class": "PlanningProblem",
-    "question": "What properties does a PlanningProblem have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningproblem_hierarchy",
-    "class": "PlanningProblem",
-    "question": "Which None instances are also PlanningProblem?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planner_properties",
-    "class": "Planner",
-    "question": "What properties does a Planner have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planner_hierarchy",
-    "class": "Planner",
-    "question": "Which None instances are also Planner?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningtype_properties",
-    "class": "PlanningType",
-    "question": "What properties does a PlanningType have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningtype_hierarchy",
-    "class": "PlanningType",
-    "question": "Which None instances are also PlanningType?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_actioneffect_properties",
-    "class": "ActionEffect",
-    "question": "What properties does a ActionEffect have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_actioneffect_hierarchy",
-    "class": "ActionEffect",
-    "question": "Which None instances are also ActionEffect?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_actionprecondition_properties",
-    "class": "ActionPrecondition",
-    "question": "What properties does a ActionPrecondition have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_actionprecondition_hierarchy",
-    "class": "ActionPrecondition",
-    "question": "Which None instances are also ActionPrecondition?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_domainconstant_properties",
-    "class": "DomainConstant",
-    "question": "What properties does a DomainConstant have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_domainconstant_hierarchy",
-    "class": "DomainConstant",
-    "question": "Which None instances are also DomainConstant?",
+    "id": "cq_genehmigung_hierarchy",
+    "class": "Genehmigung",
+    "question": "Which None instances are also Genehmigung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
@@ -378,20 +224,6 @@
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_initialstate_properties",
-    "class": "InitialState",
-    "question": "What properties does a InitialState have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_initialstate_hierarchy",
-    "class": "InitialState",
-    "question": "Which None instances are also InitialState?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
     "id": "cq_goalstate_properties",
     "class": "GoalState",
     "question": "What properties does a GoalState have?",
@@ -406,16 +238,156 @@
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_classname_properties",
-    "class": "ClassName",
-    "question": "What properties does a ClassName have?",
+    "id": "cq_initialstate_properties",
+    "class": "InitialState",
+    "question": "What properties does a InitialState have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_classname_hierarchy",
-    "class": "ClassName",
-    "question": "Which None instances are also ClassName?",
+    "id": "cq_initialstate_hierarchy",
+    "class": "InitialState",
+    "question": "Which None instances are also InitialState?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_action_properties",
+    "class": "Action",
+    "question": "What properties does a Action have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_action_hierarchy",
+    "class": "Action",
+    "question": "Which None instances are also Action?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_actioneffect_properties",
+    "class": "ActionEffect",
+    "question": "What properties does a ActionEffect have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_actioneffect_hierarchy",
+    "class": "ActionEffect",
+    "question": "Which None instances are also ActionEffect?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_actionprecondition_properties",
+    "class": "ActionPrecondition",
+    "question": "What properties does a ActionPrecondition have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_actionprecondition_hierarchy",
+    "class": "ActionPrecondition",
+    "question": "Which None instances are also ActionPrecondition?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_parameter_properties",
+    "class": "Parameter",
+    "question": "What properties does a Parameter have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_parameter_hierarchy",
+    "class": "Parameter",
+    "question": "Which None instances are also Parameter?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_parametertype_properties",
+    "class": "ParameterType",
+    "question": "What properties does a ParameterType have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_parametertype_hierarchy",
+    "class": "ParameterType",
+    "question": "Which None instances are also ParameterType?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_planner_properties",
+    "class": "Planner",
+    "question": "What properties does a Planner have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_planner_hierarchy",
+    "class": "Planner",
+    "question": "Which None instances are also Planner?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_plannertype_properties",
+    "class": "PlannerType",
+    "question": "What properties does a PlannerType have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_plannertype_hierarchy",
+    "class": "PlannerType",
+    "question": "Which None instances are also PlannerType?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_planningdomain_properties",
+    "class": "PlanningDomain",
+    "question": "What properties does a PlanningDomain have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_planningdomain_hierarchy",
+    "class": "PlanningDomain",
+    "question": "Which None instances are also PlanningDomain?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_planningproblem_properties",
+    "class": "PlanningProblem",
+    "question": "What properties does a PlanningProblem have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_planningproblem_hierarchy",
+    "class": "PlanningProblem",
+    "question": "Which None instances are also PlanningProblem?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_problemobject_properties",
+    "class": "ProblemObject",
+    "question": "What properties does a ProblemObject have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_problemobject_hierarchy",
+    "class": "ProblemObject",
+    "question": "Which None instances are also ProblemObject?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

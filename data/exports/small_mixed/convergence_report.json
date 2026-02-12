@@ -19,7 +19,7 @@
       "delta": 0.0
     },
     "converged_at": null,
-    "classes_added_total": 6,
+    "classes_added_total": 9,
     "acceptance_rate_avg": 1.0
   },
   "iterations": [
@@ -27,10 +27,10 @@
       "iteration": 1,
       "entity_coverage_pct": 0.0,
       "cq_coverage_pct": 0.0,
-      "classes_added": 6,
+      "classes_added": 9,
       "improvement": 0.0,
       "acceptance_rate": 1.0,
-      "timestamp": "2026-02-11T16:16:10.613486"
+      "timestamp": "2026-02-12T16:15:30.578437"
     }
   ]
 }

@@ -464,6 +464,10 @@ class FeedbackLoopOrchestrator:
             import wandb
             from datetime import datetime
             
+            # Ensure we are logged in with the provided API key
+            if self.settings.wandb_api_key:
+                wandb.login(key=self.settings.wandb_api_key)
+            
             # Create clean run name: just the experiment name
             if self.experiment_name:
                 run_name = self.experiment_name
@@ -473,6 +477,8 @@ class FeedbackLoopOrchestrator:
                 run_name = f"{self.mode.value}_{timestamp}"
             
             # Create minimal clean tags: experiment name and model
+            model_name = self.settings.ollama_model
+            model_short = model_name.split(":")[0].split("/")[-1] # Handle 'user/model:version'
             tags = [model_short]  # Include the clean model name
             if self.experiment_name:
                 tags.append(self.experiment_name)
@@ -490,6 +496,7 @@ class FeedbackLoopOrchestrator:
                     "similarity_threshold": self.settings.semantic_similarity_threshold,
                 },
                 tags=tags,
+                reinit=True
             )
         except Exception as e:
             logger.warning("wandb_init_failed", error=str(e))

@@ -1,0 +1,23 @@
+[
+  {
+    "name": "small_baseline",
+    "model": "llama3.2:3b",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Small model baseline test"
+  },
+  {
+    "name": "medium_baseline",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Medium model baseline test"
+  },
+  {
+    "name": "large_baseline",
+    "model": "qwen3-next:latest",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Large model baseline test"
+  }
+]
