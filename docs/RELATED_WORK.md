@@ -131,19 +131,92 @@ https://arxiv.org/abs/2410.23584
 
 ---
 
+## Multi-Agent and Collaborative LLM-Based Ontology Engineering
+
+A recent line of work investigates multi-agent LLM architectures that
+simulate collaborative ontology engineering processes.
+
+### LLM4ACOE (Soularidis et al.)
+
+LLM4ACOE is the most closely related system to ours. It automates
+Collaborative Ontology Engineering (COE) by simulating the HCOME
+methodology with three LLM-powered agents playing distinct roles:
+Knowledge Engineer, Domain Expert, and Knowledge Worker. The system
+uses RAG with three specialized retrievers (domain documents, OWL
+documentation, and ReAct-style reasoning examples) to augment LLM
+responses.
+https://github.com/AndreasSoularidis/LLM-based-OE-Framework-LC3
+
+**Architecture:** LLM4ACOE operates in a fixed three-round pipeline:
+(1) generate ontology from domain data, (2) refine using OWL axiom
+guidance, (3) apply ReAct-style structural improvement. The three
+agent roles are simulated within a single LLM call using role-playing
+prompts, with LangChain orchestrating the RAG retrieval chains.
+
+**Key limitations vs. our system:**
+
+| Dimension | LLM4ACOE | Our System |
+|-----------|----------|-----------|
+| **Agent independence** | Single LLM simulating 3 roles in one prompt | Separate agent invocations with independent state |
+| **Quality control** | No explicit review or critique step | Dedicated review agent + moderator budget control |
+| **Models** | Cloud APIs only (GPT-4o, Claude, Gemini) | Local open models via Ollama — reproducible, private |
+| **Domain scope** | Hardcoded to Search and Rescue (SAR) | Any domain with seed ontology + documents |
+| **Iteration** | Fixed 3 rounds, no convergence detection | Configurable N iterations with convergence check |
+| **HITL** | No human oversight loop | Structured HITL with proposal review + expert feedback |
+| **Formal evaluation** | Manual expert review on SAR only | Automated 6-dimension scoring + OntoURL benchmark |
+
+**Significance:** LLM4ACOE demonstrates that role-playing multi-agent
+simulation is a viable approach to ontology engineering. However, its
+design choices — simulated (not independent) agents, no structured
+review, cloud-only models, single-domain evaluation — limit both its
+reproducibility and generalizability. Our system addresses each of
+these limitations while preserving the core insight that multi-role
+collaboration improves ontological output.
+
+We plan to reproduce LLM4ACOE's HCOME three-role approach as a benchmark
+strategy on the OntoURL evaluation suite (see BENCHMARKING_RATIONALE.md),
+enabling a controlled comparison that holds the LLM and evaluation
+metrics constant while varying only the agentic architecture.
+
+---
+
+## OntoURL: Standardized Ontology Capability Benchmark
+
+OntoURL provides a comprehensive evaluation framework with 15 tasks
+spanning three cognitive levels (Understanding, Reasoning, Learning)
+and ~58,000 examples drawn from 40 real-world ontologies. Published
+baselines exist for Qwen2.5-3B, Qwen2.5-72B, and LLaMA3.3-70B.
+
+We use OntoURL as our primary capability benchmark because it enables:
+(1) isolation of agentic strategy value by holding the knowledge source
+constant (parametric only), (2) direct comparison against published
+baselines under identical conditions, and (3) fine-grained analysis of
+where multi-agent workflows add the most value (Understanding vs.
+Reasoning vs. Learning tasks).
+
+See [BENCHMARKING_RATIONALE.md](BENCHMARKING_RATIONALE.md) for our
+full evaluation methodology and three-layer comparison strategy.
+
+---
+
 ## Summary and Positioning
 
-Across ontology learning, HITL systems, and recent LLM-based approaches,
-the literature consistently shows that:
+Across ontology learning, HITL systems, multi-agent approaches, and
+recent LLM-based evaluations, the literature consistently shows that:
 
 - **Fully automatic ontology construction remains unreliable**, particularly
   for relations and hierarchy depth.
 - **LLMs are effective as assistants**, not autonomous ontology engineers.
 - **Structured human-in-the-loop workflows outperform single-shot
   generation** in both quality and usability.
+- **Multi-agent role simulation** (LLM4ACOE) improves over single-pass
+  generation, but lacks independent critique and structured review.
 - **Recent evaluations confirm** that epistemic pressure and iterative
   validation are necessary to mitigate LLM limitations.
+- **Standardized benchmarks** (OntoURL) enable rigorous, reproducible
+  comparison of ontology engineering approaches across models and methods.
 
 These findings motivate agentic, multi-role, debate-driven ontology
 engineering pipelines that embed grounding, critique, and human oversight
-as first-class design elements.
+as first-class design elements — and demand formal benchmarking to
+substantiate improvement claims.
