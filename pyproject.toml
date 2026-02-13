@@ -43,6 +43,8 @@ dependencies = [
 
     # Experiment tracking
     "wandb>=0.18",
+    "langchain>=1.0",
+    "langsmith>=0.7",
 
     # Web dashboard
     "streamlit>=1.28",
