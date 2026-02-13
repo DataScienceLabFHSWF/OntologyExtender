@@ -1068,6 +1068,17 @@ def main():
     else:
         logger.info("wandb_disabled", msg="W&B logging disabled")
 
+    # Set LangSmith experiment context for trace grouping
+    try:
+        from ontology_hitl.agents.base import set_experiment_context, clear_experiment_context
+        set_experiment_context(
+            experiment_name=args.experiment_name or f"llm_only_{args.strategy}",
+            model=args.model,
+            strategy=args.strategy,
+        )
+    except Exception:
+        pass
+
     start_time = time.time()
 
     try:
@@ -1111,11 +1122,21 @@ def main():
         wandb.log(metadata)
         wandb.finish()
 
+        # Clear LangSmith experiment context
+        try:
+            clear_experiment_context()
+        except Exception:
+            pass
+
         print(f"LLM-only baseline completed for {args.experiment_name}")
         print(f"Results saved to {output_dir}")
         print(f"W&B run: {run_name}")
 
     except Exception as e:
+        try:
+            clear_experiment_context()
+        except Exception:
+            pass
         wandb.finish()
         raise
 

@@ -314,9 +314,23 @@ class DatasetManager:
             from datasets import load_dataset
             ds = load_dataset("XiaoZhang98/OntoURL")
         """
-        raise NotImplementedError(
-            "TODO: load_dataset('XiaoZhang98/OntoURL') or read from local_path"
+        from .ontourl.loader import OntoURLLoader
+
+        loader = OntoURLLoader(
+            cache_dir=local_path or self.cache_dir / "ontourl"
         )
+        dataset = loader.load()
+
+        # Convert to a plain dict keyed by split_id
+        result: dict[str, Any] = {}
+        for split_id in loader.list_splits():
+            try:
+                split = loader.get_split(split_id)
+                result[split_id] = [dict(ex) for ex in split]
+            except KeyError:
+                pass
+
+        return result
 
     def load_taming_hallucinations(
         self, repo_path: Path | None = None

@@ -1,0 +1,324 @@
+"""Results aggregation, comparison tables, and charting for OntoURL.
+
+Generates publication-ready comparison tables (Markdown, CSV) and
+optional visualisations comparing our models against OntoURL's
+published baselines.
+"""
+
+from __future__ import annotations
+
+import csv
+import json
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import structlog
+
+from ontology_hitl.benchmarking.models import (
+    OntoURLCapability,
+    OntoURLCapabilityProfile,
+    OntoURLTask,
+    OntoURLTaskScore,
+)
+from .loader import SPLIT_TASK_MAP
+
+logger = structlog.get_logger(__name__)
+
+
+# ── OntoURL published baselines (from Table 2 in the paper) ─────────
+
+PUBLISHED_BASELINES: dict[str, dict[str, float]] = {
+    "Qwen2.5-3B": {
+        "U1": 77.8, "U2": 86.3, "U3": 73.6, "U4": 69.2, "U5": 76.4,
+        "R1": 64.1, "R2": 66.5, "R3": 58.2, "R4": 47.5, "R5": 50.6,
+        "L1": 12.6, "L2": 0.1, "L3": 0.0, "L4": 0.2, "L5": 6.7,
+    },
+    "Qwen2.5-72B": {
+        "U1": 89.1, "U2": 92.8, "U3": 82.4, "U4": 82.6, "U5": 86.9,
+        "R1": 79.5, "R2": 79.8, "R3": 72.5, "R4": 60.4, "R5": 64.0,
+        "L1": 19.7, "L2": 0.1, "L3": 0.0, "L4": 0.1, "L5": 1.6,
+    },
+    "LLaMA3.3-70B": {
+        "U1": 88.0, "U2": 91.5, "U3": 81.3, "U4": 81.8, "U5": 85.7,
+        "R1": 78.2, "R2": 78.1, "R3": 70.8, "R4": 58.1, "R5": 62.5,
+        "L1": 18.3, "L2": 0.1, "L3": 0.0, "L4": 0.1, "L5": 1.3,
+    },
+}
+
+
+class OntoURLReporter:
+    """Aggregate results and generate comparison reports.
+
+    Parameters
+    ----------
+    output_dir : Path
+        Directory for output files.
+    """
+
+    def __init__(self, output_dir: Path | str = "results/ontourl") -> None:
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    def save_predictions(
+        self,
+        predictions: list[dict[str, Any]],
+        model: str,
+        strategy: str,
+        split_id: str,
+    ) -> Path:
+        """Save per-example predictions as JSONL.
+
+        Parameters
+        ----------
+        predictions : list[dict]
+            Per-example prediction records.
+        model : str
+            Model name.
+        strategy : str
+            Strategy name.
+        split_id : str
+            Split ID.
+
+        Returns
+        -------
+        Path
+            Path to the saved JSONL file.
+        """
+        model_safe = model.replace("/", "_").replace(":", "_")
+        out_dir = self.output_dir / model_safe / strategy
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        jsonl_path = out_dir / f"{split_id}.jsonl"
+        with open(jsonl_path, "w", encoding="utf-8") as f:
+            for record in predictions:
+                f.write(json.dumps(record, ensure_ascii=False, default=str) + "\n")
+
+        logger.info(
+            "predictions_saved",
+            path=str(jsonl_path),
+            count=len(predictions),
+        )
+        return jsonl_path
+
+    def save_split_summary(
+        self,
+        metrics: dict[str, float],
+        model: str,
+        strategy: str,
+        split_id: str,
+        num_examples: int,
+    ) -> Path:
+        """Save aggregate metrics for one (model, strategy, split) run.
+
+        Returns
+        -------
+        Path
+            Path to the saved JSON summary file.
+        """
+        model_safe = model.replace("/", "_").replace(":", "_")
+        out_dir = self.output_dir / model_safe / strategy
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        task_info = SPLIT_TASK_MAP.get(split_id)
+        summary = {
+            "model": model,
+            "strategy": strategy,
+            "split_id": split_id,
+            "task": task_info[1].value if task_info else split_id,
+            "capability": task_info[2].value if task_info else "",
+            "task_type": task_info[0] if task_info else "",
+            "num_examples": num_examples,
+            "metrics": metrics,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        summary_path = out_dir / f"{split_id}_summary.json"
+        with open(summary_path, "w") as f:
+            json.dump(summary, f, indent=2)
+
+        return summary_path
+
+    def build_capability_profile(
+        self,
+        all_metrics: dict[str, dict[str, float]],
+        model: str,
+    ) -> OntoURLCapabilityProfile:
+        """Build a capability profile from per-split metrics.
+
+        Parameters
+        ----------
+        all_metrics : dict
+            Mapping split_id → metrics dict.
+        model : str
+            Model name.
+
+        Returns
+        -------
+        OntoURLCapabilityProfile
+            Aggregated profile.
+        """
+        task_scores: list[OntoURLTaskScore] = []
+        u_scores: list[float] = []
+        r_scores: list[float] = []
+        l_scores: list[float] = []
+
+        for split_id, (task_type, task_enum, capability) in SPLIT_TASK_MAP.items():
+            metrics = all_metrics.get(split_id, {})
+
+            score = OntoURLTaskScore(
+                task=task_enum,
+                capability=capability,
+                num_questions=metrics.get("total", 0),
+            )
+
+            if task_type in ("mc", "bool"):
+                score.accuracy = metrics.get("accuracy", 0.0)
+                val = score.accuracy or 0.0
+            elif task_type == "open_text":
+                score.rouge_l = metrics.get("rouge_l", 0.0)
+                val = score.rouge_l or 0.0
+            elif task_type == "open_triple":
+                score.triple_f1 = metrics.get("triple_f1", 0.0)
+                val = score.triple_f1 or 0.0
+            elif task_type == "open_tuple":
+                score.tuple_f1 = metrics.get("tuple_f1", 0.0)
+                val = score.tuple_f1 or 0.0
+            else:
+                val = 0.0
+
+            task_scores.append(score)
+
+            if capability == OntoURLCapability.UNDERSTANDING:
+                u_scores.append(val)
+            elif capability == OntoURLCapability.REASONING:
+                r_scores.append(val)
+            else:
+                l_scores.append(val)
+
+        u_avg = sum(u_scores) / len(u_scores) if u_scores else 0.0
+        r_avg = sum(r_scores) / len(r_scores) if r_scores else 0.0
+        l_avg = sum(l_scores) / len(l_scores) if l_scores else 0.0
+        overall = (u_avg + r_avg + l_avg) / 3.0 if (u_scores or r_scores or l_scores) else 0.0
+
+        return OntoURLCapabilityProfile(
+            understanding_avg=u_avg,
+            reasoning_avg=r_avg,
+            learning_avg=l_avg,
+            task_scores=task_scores,
+            overall_avg=overall,
+            model_name=model,
+        )
+
+    def generate_comparison_table(
+        self,
+        our_results: dict[str, dict[str, dict[str, float]]],
+        output_format: str = "markdown",
+    ) -> str:
+        """Generate a comparison table: our models × strategies vs published baselines.
+
+        Parameters
+        ----------
+        our_results : dict
+            Nested dict: model → strategy → split_id → metrics.
+        output_format : str
+            'markdown' or 'csv'.
+
+        Returns
+        -------
+        str
+            Formatted table string.
+        """
+        # Collect all task IDs in order
+        task_ids = ["U1", "U2", "U3", "U4", "U5",
+                    "R1", "R2", "R3", "R4", "R5",
+                    "L1", "L2", "L3", "L4", "L5"]
+
+        split_for_task = {
+            "U1": "1_1", "U2": "1_2", "U3": "1_3", "U4": "1_4", "U5": "1_5",
+            "R1": "2_1", "R2": "2_2", "R3": "2_3", "R4": "2_4", "R5": "2_5",
+            "L1": "3_1", "L2": "3_2", "L3": "3_3", "L4": "3_4", "L5": "3_5",
+        }
+
+        metric_for_task = {
+            "U1": "accuracy", "U2": "accuracy", "U3": "accuracy",
+            "U4": "accuracy", "U5": "accuracy",
+            "R1": "accuracy", "R2": "accuracy", "R3": "accuracy",
+            "R4": "accuracy", "R5": "accuracy",
+            "L1": "rouge_l", "L2": "triple_f1", "L3": "triple_f1",
+            "L4": "triple_f1", "L5": "tuple_f1",
+        }
+
+        # Build columns: published baselines + our models × strategies
+        columns: list[tuple[str, str]] = []  # (label, "published"|"ours")
+        for baseline_name in PUBLISHED_BASELINES:
+            columns.append((baseline_name, "published"))
+
+        for model in our_results:
+            for strategy in our_results[model]:
+                columns.append((f"{model}|{strategy}", "ours"))
+
+        # Build rows
+        rows: list[list[str]] = []
+        for tid in task_ids:
+            sid = split_for_task[tid]
+            metric_key = metric_for_task[tid]
+            row = [tid, metric_key]
+
+            for col_label, col_type in columns:
+                if col_type == "published":
+                    val = PUBLISHED_BASELINES[col_label].get(tid, 0.0)
+                    row.append(f"{val:.1f}")
+                else:
+                    model, strategy = col_label.split("|", 1)
+                    metrics = our_results.get(model, {}).get(strategy, {}).get(sid, {})
+                    val = metrics.get(metric_key, 0.0)
+                    row.append(f"{val * 100:.1f}" if val is not None else "—")
+
+            rows.append(row)
+
+        # Format output
+        if output_format == "csv":
+            return self._format_csv(columns, rows)
+        return self._format_markdown(columns, rows)
+
+    def _format_markdown(
+        self,
+        columns: list[tuple[str, str]],
+        rows: list[list[str]],
+    ) -> str:
+        """Format comparison table as Markdown."""
+        col_headers = ["Task", "Metric"] + [c[0] for c in columns]
+        header = "| " + " | ".join(col_headers) + " |"
+        separator = "| " + " | ".join(["---"] * len(col_headers)) + " |"
+
+        lines = [header, separator]
+        for row in rows:
+            lines.append("| " + " | ".join(row) + " |")
+
+        table = "\n".join(lines)
+
+        # Save to file
+        md_path = self.output_dir / "comparison_table.md"
+        with open(md_path, "w") as f:
+            f.write(f"# OntoURL Benchmark Comparison\n\n")
+            f.write(f"Generated: {datetime.now().isoformat()}\n\n")
+            f.write(table)
+
+        return table
+
+    def _format_csv(
+        self,
+        columns: list[tuple[str, str]],
+        rows: list[list[str]],
+    ) -> str:
+        """Format comparison table as CSV."""
+        csv_path = self.output_dir / "comparison_table.csv"
+        col_headers = ["Task", "Metric"] + [c[0] for c in columns]
+
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(col_headers)
+            writer.writerows(rows)
+
+        return str(csv_path)

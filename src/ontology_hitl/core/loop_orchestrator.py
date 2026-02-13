@@ -460,6 +460,18 @@ class FeedbackLoopOrchestrator:
     def _init_wandb(self) -> None:
         if not self.settings.wandb_enabled:
             return
+
+        # Set LangSmith experiment context for trace grouping
+        try:
+            from ontology_hitl.agents.base import set_experiment_context
+            set_experiment_context(
+                experiment_name=self.experiment_name or "orchestrator",
+                model=self.settings.ollama_model,
+                strategy=self.mode.value,
+            )
+        except Exception:
+            pass
+
         try:
             import wandb
             from datetime import datetime
@@ -528,6 +540,12 @@ class FeedbackLoopOrchestrator:
     def _finish_wandb(self, summary: dict) -> None:
         if not self.settings.wandb_enabled:
             return
+        try:
+            # Clear LangSmith experiment context
+            from ontology_hitl.agents.base import clear_experiment_context
+            clear_experiment_context()
+        except Exception:
+            pass
         try:
             import wandb
             wandb.summary.update(summary)

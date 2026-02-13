@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -30,7 +31,91 @@ import structlog
 from ontology_hitl.core.config import Settings
 from ontology_hitl.methodology.ontology101 import AgentQuestion, Phase
 
-# Best-effort LangSmith @traceable import
+# ---------------------------------------------------------------------------
+# Experiment context for LangSmith trace grouping
+# ---------------------------------------------------------------------------
+
+_experiment_context = threading.local()
+
+
+def set_experiment_context(
+    *,
+    experiment_name: str = "",
+    model: str = "",
+    strategy: str = "",
+    extra_tags: list[str] | None = None,
+    extra_metadata: dict[str, Any] | None = None,
+) -> None:
+    """Set thread-local experiment context for LangSmith traces.
+
+    Call this once at the start of an experiment run.  All subsequent
+    ``@ls_traceable`` decorated calls will automatically pick up the
+    tags and metadata set here, enabling experiment-level grouping
+    in the LangSmith UI.
+
+    Parameters
+    ----------
+    experiment_name : str
+        Name of the current experiment (e.g. "exp_llama3_debate").
+    model : str
+        Model identifier (e.g. "llama3.2:3b").
+    strategy : str
+        Strategy name (e.g. "vanilla_zero", "debate").
+    extra_tags : list[str] | None
+        Additional tags to attach to every trace.
+    extra_metadata : dict[str, Any] | None
+        Additional metadata key-value pairs.
+    """
+    _experiment_context.experiment_name = experiment_name
+    _experiment_context.model = model
+    _experiment_context.strategy = strategy
+    _experiment_context.extra_tags = extra_tags or []
+    _experiment_context.extra_metadata = extra_metadata or {}
+
+
+def clear_experiment_context() -> None:
+    """Clear the thread-local experiment context."""
+    for attr in ("experiment_name", "model", "strategy", "extra_tags", "extra_metadata"):
+        if hasattr(_experiment_context, attr):
+            delattr(_experiment_context, attr)
+
+
+def _get_trace_tags() -> list[str]:
+    """Build LangSmith tags from the current experiment context."""
+    tags: list[str] = []
+    name = getattr(_experiment_context, "experiment_name", "")
+    model = getattr(_experiment_context, "model", "")
+    strategy = getattr(_experiment_context, "strategy", "")
+    if name:
+        tags.append(f"exp:{name}")
+    if model:
+        tags.append(f"model:{model.split(':')[0].split('/')[-1]}")
+    if strategy:
+        tags.append(f"strategy:{strategy}")
+    tags.extend(getattr(_experiment_context, "extra_tags", []))
+    return tags
+
+
+def _get_trace_metadata() -> dict[str, Any]:
+    """Build LangSmith metadata from the current experiment context."""
+    meta: dict[str, Any] = {}
+    name = getattr(_experiment_context, "experiment_name", "")
+    model = getattr(_experiment_context, "model", "")
+    strategy = getattr(_experiment_context, "strategy", "")
+    if name:
+        meta["experiment_name"] = name
+    if model:
+        meta["model"] = model
+    if strategy:
+        meta["strategy"] = strategy
+    meta.update(getattr(_experiment_context, "extra_metadata", {}))
+    return meta
+
+
+# ---------------------------------------------------------------------------
+# Best-effort LangSmith @traceable import w/ auto-tagging
+# ---------------------------------------------------------------------------
+
 try:
     from langsmith import traceable as _ls_traceable  # noqa: F401
 except ImportError:  # pragma: no cover
@@ -42,11 +127,26 @@ except ImportError:  # pragma: no cover
 
 
 def ls_traceable(**kwargs):
-    """Conditionally apply @traceable only when LANGSMITH_TRACING is enabled."""
-    if os.getenv("LANGSMITH_TRACING", "false").lower() in ("1", "true", "yes"):
-        return _ls_traceable(**kwargs)
-    # not enabled → return identity decorator
-    return lambda fn: fn
+    """Conditionally apply @traceable with experiment tags/metadata.
+
+    When LANGSMITH_TRACING is enabled, wraps functions with LangSmith's
+    ``@traceable`` decorator and automatically injects tags and metadata
+    from the current experiment context (set via ``set_experiment_context``).
+    """
+    if os.getenv("LANGSMITH_TRACING", "false").lower() not in ("1", "true", "yes"):
+        return lambda fn: fn
+
+    # Merge experiment-context tags and metadata into kwargs
+    ctx_tags = _get_trace_tags()
+    ctx_meta = _get_trace_metadata()
+    if ctx_tags:
+        kwargs.setdefault("tags", [])
+        kwargs["tags"] = list(set(kwargs["tags"] + ctx_tags))
+    if ctx_meta:
+        kwargs.setdefault("metadata", {})
+        kwargs["metadata"].update(ctx_meta)
+
+    return _ls_traceable(**kwargs)
 
 logger = structlog.get_logger(__name__)
 
@@ -389,34 +489,8 @@ class BaseAgent:
                 # Last resort fallback
                 result = json.loads(content)
 
-            # Cache the result
-            # --- optional: push a lightweight LangSmith run for each LLM call ---
-            try:
-                if os.getenv("LANGSMITH_TRACING", "false").lower() in ("1", "true", "yes"):
-                    try:
-                        from langsmith.client import Client
-                        from datetime import datetime, timezone
-
-                        client = Client(api_key=os.getenv("LANGSMITH_API_KEY"))
-                        client.create_run(
-                            name=f"{self.role.value}: llm_call",
-                            inputs={
-                                "system_prompt": (sys_prompt[:400] + "...") if len(sys_prompt) > 400 else sys_prompt,
-                                "user_prompt": (user_prompt[:1000] + "...") if len(user_prompt) > 1000 else user_prompt,
-                                "model": self.settings.ollama_model,
-                                "temperature": temp,
-                            },
-                            outputs={"result_preview": (str(result)[:1000] + "...") if len(str(result)) > 1000 else str(result)},
-                            run_type="llm",
-                            project_name=os.getenv("LANGSMITH_PROJECT", "OntologyExtender"),
-                            start_time=datetime.now(timezone.utc),
-                            end_time=datetime.now(timezone.utc),
-                        )
-                    except Exception as _e:
-                        logger.debug("langsmith_log_failed", error=str(_e))
-            except Exception:
-                # defensive: do not let tracing instrumentation break the agent
-                pass
+            # LangSmith tracing is handled by the @ls_traceable decorator
+            # on this method — no manual Client.create_run() needed.
 
             if use_cache:
                 self._response_cache[cache_key] = result
@@ -484,27 +558,8 @@ class BaseAgent:
 
             parsed = json.loads(content)
 
-            # LangSmith lightweight run for multi-turn calls (best-effort)
-            try:
-                if os.getenv("LANGSMITH_TRACING", "false").lower() in ("1", "true", "yes"):
-                    try:
-                        from langsmith.client import Client
-                        from datetime import datetime, timezone
-
-                        client = Client(api_key=os.getenv("LANGSMITH_API_KEY"))
-                        client.create_run(
-                            name=f"{self.role.value}: llm_multi_turn",
-                            inputs={"messages": messages, "model": self.settings.ollama_model, "temperature": temp},
-                            outputs={"result_preview": (str(parsed)[:1000] + "...") if len(str(parsed)) > 1000 else str(parsed)},
-                            run_type="llm",
-                            project_name=os.getenv("LANGSMITH_PROJECT", "OntologyExtender"),
-                            start_time=datetime.now(timezone.utc),
-                            end_time=datetime.now(timezone.utc),
-                        )
-                    except Exception as _e:
-                        logger.debug("langsmith_log_failed", error=str(_e))
-            except Exception:
-                pass
+            # LangSmith tracing is handled by the @ls_traceable decorator
+            # on this method — no manual Client.create_run() needed.
 
             return parsed
 
