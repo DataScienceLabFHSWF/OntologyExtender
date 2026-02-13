@@ -154,240 +154,212 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_organization_properties",
-    "class": "Organization",
-    "question": "What properties does a Organization have?",
+    "id": "cq_legalrequirement_properties",
+    "class": "LegalRequirement",
+    "question": "What properties does a LegalRequirement have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_organization_hierarchy",
-    "class": "Organization",
-    "question": "Which None instances are also Organization?",
+    "id": "cq_legalrequirement_hierarchy",
+    "class": "LegalRequirement",
+    "question": "Which None instances are also LegalRequirement?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_date_properties",
-    "class": "Date",
-    "question": "What properties does a Date have?",
+    "id": "cq_environmentalstandard_properties",
+    "class": "EnvironmentalStandard",
+    "question": "What properties does a EnvironmentalStandard have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_date_hierarchy",
-    "class": "Date",
-    "question": "Which None instances are also Date?",
+    "id": "cq_environmentalstandard_hierarchy",
+    "class": "EnvironmentalStandard",
+    "question": "Which None instances are also EnvironmentalStandard?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_genehmigung_properties",
-    "class": "Genehmigung",
-    "question": "What properties does a Genehmigung have?",
+    "id": "cq_stakeholderexpectation_properties",
+    "class": "StakeholderExpectation",
+    "question": "What properties does a StakeholderExpectation have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_genehmigung_hierarchy",
-    "class": "Genehmigung",
-    "question": "Which None instances are also Genehmigung?",
+    "id": "cq_stakeholderexpectation_hierarchy",
+    "class": "StakeholderExpectation",
+    "question": "Which None instances are also StakeholderExpectation?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_domainrequirement_properties",
-    "class": "DomainRequirement",
-    "question": "What properties does a DomainRequirement have?",
+    "id": "cq_budgetconstraint_properties",
+    "class": "BudgetConstraint",
+    "question": "What properties does a BudgetConstraint have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_domainrequirement_hierarchy",
-    "class": "DomainRequirement",
-    "question": "Which None instances are also DomainRequirement?",
+    "id": "cq_budgetconstraint_hierarchy",
+    "class": "BudgetConstraint",
+    "question": "Which None instances are also BudgetConstraint?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_state_properties",
-    "class": "State",
-    "question": "What properties does a State have?",
+    "id": "cq_procedure_properties",
+    "class": "Procedure",
+    "question": "What properties does a Procedure have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_state_hierarchy",
-    "class": "State",
-    "question": "Which None instances are also State?",
+    "id": "cq_procedure_hierarchy",
+    "class": "Procedure",
+    "question": "Which None instances are also Procedure?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_goalstate_properties",
-    "class": "GoalState",
-    "question": "What properties does a GoalState have?",
+    "id": "cq_timeline_properties",
+    "class": "Timeline",
+    "question": "What properties does a Timeline have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_goalstate_hierarchy",
-    "class": "GoalState",
-    "question": "Which None instances are also GoalState?",
+    "id": "cq_timeline_hierarchy",
+    "class": "Timeline",
+    "question": "Which None instances are also Timeline?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_initialstate_properties",
-    "class": "InitialState",
-    "question": "What properties does a InitialState have?",
+    "id": "cq_monitoringrequirement_properties",
+    "class": "MonitoringRequirement",
+    "question": "What properties does a MonitoringRequirement have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_initialstate_hierarchy",
-    "class": "InitialState",
-    "question": "Which None instances are also InitialState?",
+    "id": "cq_monitoringrequirement_hierarchy",
+    "class": "MonitoringRequirement",
+    "question": "Which None instances are also MonitoringRequirement?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_action_properties",
-    "class": "Action",
-    "question": "What properties does a Action have?",
+    "id": "cq_safetyprotocol_properties",
+    "class": "SafetyProtocol",
+    "question": "What properties does a SafetyProtocol have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_action_hierarchy",
-    "class": "Action",
-    "question": "Which None instances are also Action?",
+    "id": "cq_safetyprotocol_hierarchy",
+    "class": "SafetyProtocol",
+    "question": "Which None instances are also SafetyProtocol?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_actioneffect_properties",
-    "class": "ActionEffect",
-    "question": "What properties does a ActionEffect have?",
+    "id": "cq_legalrequirement_properties",
+    "class": "LegalRequirement",
+    "question": "What properties does a LegalRequirement have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_actioneffect_hierarchy",
-    "class": "ActionEffect",
-    "question": "Which None instances are also ActionEffect?",
+    "id": "cq_legalrequirement_hierarchy",
+    "class": "LegalRequirement",
+    "question": "Which None instances are also LegalRequirement?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_actionprecondition_properties",
-    "class": "ActionPrecondition",
-    "question": "What properties does a ActionPrecondition have?",
+    "id": "cq_stakeholderexpectation_properties",
+    "class": "StakeholderExpectation",
+    "question": "What properties does a StakeholderExpectation have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_actionprecondition_hierarchy",
-    "class": "ActionPrecondition",
-    "question": "Which None instances are also ActionPrecondition?",
+    "id": "cq_stakeholderexpectation_hierarchy",
+    "class": "StakeholderExpectation",
+    "question": "Which None instances are also StakeholderExpectation?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_parameter_properties",
-    "class": "Parameter",
-    "question": "What properties does a Parameter have?",
+    "id": "cq_budgetconstraint_properties",
+    "class": "BudgetConstraint",
+    "question": "What properties does a BudgetConstraint have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_parameter_hierarchy",
-    "class": "Parameter",
-    "question": "Which None instances are also Parameter?",
+    "id": "cq_budgetconstraint_hierarchy",
+    "class": "BudgetConstraint",
+    "question": "Which None instances are also BudgetConstraint?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_parametertype_properties",
-    "class": "ParameterType",
-    "question": "What properties does a ParameterType have?",
+    "id": "cq_procedure_properties",
+    "class": "Procedure",
+    "question": "What properties does a Procedure have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_parametertype_hierarchy",
-    "class": "ParameterType",
-    "question": "Which None instances are also ParameterType?",
+    "id": "cq_procedure_hierarchy",
+    "class": "Procedure",
+    "question": "Which None instances are also Procedure?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planner_properties",
-    "class": "Planner",
-    "question": "What properties does a Planner have?",
+    "id": "cq_timeline_properties",
+    "class": "Timeline",
+    "question": "What properties does a Timeline have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planner_hierarchy",
-    "class": "Planner",
-    "question": "Which None instances are also Planner?",
+    "id": "cq_timeline_hierarchy",
+    "class": "Timeline",
+    "question": "Which None instances are also Timeline?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_plannertype_properties",
-    "class": "PlannerType",
-    "question": "What properties does a PlannerType have?",
+    "id": "cq_monitoringrequirement_properties",
+    "class": "MonitoringRequirement",
+    "question": "What properties does a MonitoringRequirement have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_plannertype_hierarchy",
-    "class": "PlannerType",
-    "question": "Which None instances are also PlannerType?",
+    "id": "cq_monitoringrequirement_hierarchy",
+    "class": "MonitoringRequirement",
+    "question": "Which None instances are also MonitoringRequirement?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planningdomain_properties",
-    "class": "PlanningDomain",
-    "question": "What properties does a PlanningDomain have?",
+    "id": "cq_safetyprotocol_properties",
+    "class": "SafetyProtocol",
+    "question": "What properties does a SafetyProtocol have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planningdomain_hierarchy",
-    "class": "PlanningDomain",
-    "question": "Which None instances are also PlanningDomain?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningproblem_properties",
-    "class": "PlanningProblem",
-    "question": "What properties does a PlanningProblem have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningproblem_hierarchy",
-    "class": "PlanningProblem",
-    "question": "Which None instances are also PlanningProblem?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_problemobject_properties",
-    "class": "ProblemObject",
-    "question": "What properties does a ProblemObject have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_problemobject_hierarchy",
-    "class": "ProblemObject",
-    "question": "Which None instances are also ProblemObject?",
+    "id": "cq_safetyprotocol_hierarchy",
+    "class": "SafetyProtocol",
+    "question": "Which None instances are also SafetyProtocol?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

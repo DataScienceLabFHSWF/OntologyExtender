@@ -500,16 +500,10 @@ class FeedbackLoopOrchestrator:
                 reinit=True,
             )
 
-            # Optional: LangSmith tracer (enabled via LANGSMITH_TRACING env var)
-            if os.getenv("LANGSMITH_TRACING", "false").lower() in ("1", "true", "yes"):
-                try:
-                    # Only enable if langchain is installed
-                    from langchain.callbacks.tracers import LangsmithTracer
-                    tracer = LangsmithTracer(project_name=os.getenv("LANGSMITH_PROJECT", "OntologyExtender"))
-                    tracer.start()
-                    logger.info("langsmith_tracing_enabled")
-                except Exception as e:
-                    logger.warning("langsmith_init_failed", error=str(e), note="Install langchain to enable LangSmith tracing")
+            # LangSmith tracing is now handled by @ls_traceable decorators
+            # on agent methods and the pipeline (see agents/base.py).
+            # No additional setup needed here — langsmith auto-traces when
+            # LANGSMITH_TRACING=true is set in the environment.
 
         except Exception as e:
             logger.warning("wandb_init_failed", error=str(e))

@@ -9,8 +9,8 @@
       "delta": 0.0
     },
     "cq_coverage": {
-      "initial": 0.0,
-      "final": 0.0,
+      "initial": 0.5,
+      "final": 0.5,
       "delta": 0.0
     },
     "ontology_quality": {
@@ -26,11 +26,11 @@
     {
       "iteration": 1,
       "entity_coverage_pct": 0.0,
-      "cq_coverage_pct": 0.0,
+      "cq_coverage_pct": 0.5,
       "classes_added": 6,
       "improvement": 0.0,
       "acceptance_rate": 1.0,
-      "timestamp": "2026-02-12T15:47:58.126726"
+      "timestamp": "2026-02-13T08:17:50.436623"
     }
   ]
 }

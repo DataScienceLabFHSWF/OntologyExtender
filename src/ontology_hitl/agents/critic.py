@@ -20,7 +20,7 @@ from typing import Any
 
 import structlog
 
-from ontology_hitl.agents.base import AgentMessage, AgentRole, BaseAgent
+from ontology_hitl.agents.base import AgentMessage, AgentRole, BaseAgent, ls_traceable
 from ontology_hitl.core.config import Settings
 from ontology_hitl.methodology.ontology101 import Phase
 
@@ -168,6 +168,7 @@ class CriticAgent(BaseAgent):
         """Update CQs (typically after Phase 1 completes)."""
         self.competency_questions = cqs
 
+    @ls_traceable(run_type="chain", name="Critic.review")
     def review(
         self,
         phase: Phase,

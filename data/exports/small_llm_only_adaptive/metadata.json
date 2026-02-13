@@ -1,0 +1,10 @@
+{
+  "experiment_name": "small_llm_only_adaptive",
+  "method": "llm_only_baseline",
+  "model": "llama3.2:3b",
+  "seed_ontology": "data/seed_ontology/plan-ontology-v1.0.owl",
+  "competency_questions": 9,
+  "final_triples": 0,
+  "seed_triples": 228,
+  "extension_triples": -228
+}

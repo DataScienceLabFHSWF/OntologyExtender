@@ -17,6 +17,7 @@ Escalated outcomes become ``AgentQuestion`` items for HITL review.
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -28,6 +29,24 @@ import structlog
 
 from ontology_hitl.core.config import Settings
 from ontology_hitl.methodology.ontology101 import AgentQuestion, Phase
+
+# Best-effort LangSmith @traceable import
+try:
+    from langsmith import traceable as _ls_traceable  # noqa: F401
+except ImportError:  # pragma: no cover
+    def _ls_traceable(*args, **kwargs):  # type: ignore[misc]
+        """No-op fallback when langsmith is not installed."""
+        if args and callable(args[0]):
+            return args[0]
+        return lambda fn: fn
+
+
+def ls_traceable(**kwargs):
+    """Conditionally apply @traceable only when LANGSMITH_TRACING is enabled."""
+    if os.getenv("LANGSMITH_TRACING", "false").lower() in ("1", "true", "yes"):
+        return _ls_traceable(**kwargs)
+    # not enabled → return identity decorator
+    return lambda fn: fn
 
 logger = structlog.get_logger(__name__)
 
@@ -211,6 +230,7 @@ class BaseAgent:
         else:
             return 900.0   # 15 minutes for medium models
 
+    @ls_traceable(run_type="llm", name="BaseAgent.call_llm")
     def call_llm(
         self,
         user_prompt: str,
@@ -414,6 +434,7 @@ class BaseAgent:
                           raw_content=content[:500] if 'content' in locals() else "No content received")
             return None
 
+    @ls_traceable(run_type="llm", name="BaseAgent.call_llm_multi_turn")
     def call_llm_multi_turn(
         self,
         messages: list[dict[str, str]],

@@ -154,86 +154,86 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_ablaufgenehmigung_properties",
-    "class": "Ablaufgenehmigung",
-    "question": "What properties does a Ablaufgenehmigung have?",
+    "id": "cq_domainconstant_properties",
+    "class": "DomainConstant",
+    "question": "What properties does a DomainConstant have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_ablaufgenehmigung_hierarchy",
-    "class": "Ablaufgenehmigung",
-    "question": "Which DomainConstant instances are also Ablaufgenehmigung?",
+    "id": "cq_domainconstant_hierarchy",
+    "class": "DomainConstant",
+    "question": "Which ProblemObject instances are also DomainConstant?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_properties",
-    "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
-    "question": "What properties does a Umweltvertr\u00e4glichkeitspr\u00fcfung have?",
+    "id": "cq_decommissioninganddismantlingpermit_properties",
+    "class": "DecommissioningAndDismantlingPermit",
+    "question": "What properties does a DecommissioningAndDismantlingPermit have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_hierarchy",
-    "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
-    "question": "Which Ablaufgenehmigung instances are also Umweltvertr\u00e4glichkeitspr\u00fcfung?",
+    "id": "cq_decommissioninganddismantlingpermit_hierarchy",
+    "class": "DecommissioningAndDismantlingPermit",
+    "question": "Which DomainConstant instances are also DecommissioningAndDismantlingPermit?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_fortsetzungsbetrieb_properties",
-    "class": "Fortsetzungsbetrieb",
-    "question": "What properties does a Fortsetzungsbetrieb have?",
+    "id": "cq_nuclearcompliancerequirement_properties",
+    "class": "NuclearComplianceRequirement",
+    "question": "What properties does a NuclearComplianceRequirement have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_fortsetzungsbetrieb_hierarchy",
-    "class": "Fortsetzungsbetrieb",
-    "question": "Which DomainConstant instances are also Fortsetzungsbetrieb?",
+    "id": "cq_nuclearcompliancerequirement_hierarchy",
+    "class": "NuclearComplianceRequirement",
+    "question": "Which DomainConstant instances are also NuclearComplianceRequirement?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_restbetrieb_properties",
-    "class": "Restbetrieb",
-    "question": "What properties does a Restbetrieb have?",
+    "id": "cq_technicalcompliancerequirement_properties",
+    "class": "TechnicalComplianceRequirement",
+    "question": "What properties does a TechnicalComplianceRequirement have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_restbetrieb_hierarchy",
-    "class": "Restbetrieb",
-    "question": "Which DomainConstant instances are also Restbetrieb?",
+    "id": "cq_technicalcompliancerequirement_hierarchy",
+    "class": "TechnicalComplianceRequirement",
+    "question": "Which DomainConstant instances are also TechnicalComplianceRequirement?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_properties",
-    "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
-    "question": "What properties does a Umweltvertr\u00e4glichkeitspr\u00fcfung have?",
+    "id": "cq_decommissioninganddismantlingpermit_properties",
+    "class": "DecommissioningAndDismantlingPermit",
+    "question": "What properties does a DecommissioningAndDismantlingPermit have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_umweltvertr\u00e4glichkeitspr\u00fcfung_hierarchy",
-    "class": "Umweltvertr\u00e4glichkeitspr\u00fcfung",
-    "question": "Which Ablaufgenehmigung instances are also Umweltvertr\u00e4glichkeitspr\u00fcfung?",
+    "id": "cq_decommissioninganddismantlingpermit_hierarchy",
+    "class": "DecommissioningAndDismantlingPermit",
+    "question": "Which DomainConstant instances are also DecommissioningAndDismantlingPermit?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_schlussabnahme_properties",
-    "class": "Schlussabnahme",
-    "question": "What properties does a Schlussabnahme have?",
+    "id": "cq_environmentalimpactassessment_properties",
+    "class": "EnvironmentalImpactAssessment",
+    "question": "What properties does a EnvironmentalImpactAssessment have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_schlussabnahme_hierarchy",
-    "class": "Schlussabnahme",
-    "question": "Which DomainConstant instances are also Schlussabnahme?",
+    "id": "cq_environmentalimpactassessment_hierarchy",
+    "class": "EnvironmentalImpactAssessment",
+    "question": "Which DomainConstant instances are also EnvironmentalImpactAssessment?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

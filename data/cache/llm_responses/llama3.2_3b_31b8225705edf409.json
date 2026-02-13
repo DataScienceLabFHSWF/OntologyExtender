@@ -1,0 +1,7 @@
+{
+  "model": "llama3.2:3b",
+  "prompt_hash": "31b8225705edf409",
+  "timestamp": 1770978543.947712,
+  "response": "{{{\n    \"analysis\": null,\n    \"estimated_classes_needed\": 5,\n    \"estimated_properties_needed\": 15,\n    \"new_classes\": [\n        \"Backfilling\",\n        \"Facility\",\n        \"License\",\n        \"Phase\",\n        \"Regulatory\"\n    ],\n    \"new_properties\": [\n        {\n            \"name\": \"backfilling_required\",\n            \"domain\": \"Facility\"\n        },\n        {\n            \"name\": \"license_type\",\n            \"domain\": \"License\"\n        },\n        {\n            \"name\": \"phase_duration\",\n            \"domain\": \"Phase\"\n        },\n        {\n            \"name\": \"regulatory_body\",\n            \"domain\": \"Regulatory\"\n        }\n    ]\n}}}",
+  "tokens": 148
+}

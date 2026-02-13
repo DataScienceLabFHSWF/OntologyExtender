@@ -17,7 +17,7 @@ from typing import Any
 
 import structlog
 
-from .base import AgentMessage, AgentRole, BaseAgent
+from .base import AgentMessage, AgentRole, BaseAgent, ls_traceable
 from ontology_hitl.sources.law_collection_source import LawCollectionSource
 from ontology_hitl.sources.law_graph_source import LawGraphSource
 
@@ -217,6 +217,7 @@ class DomainExpertAgent(BaseAgent):
         chunks = self.law_collection.search_legal_precedents(query, limit=limit)
         return "\n\n".join([f"[{chunk.document_name}]\n{chunk.text}" for chunk in chunks])
 
+    @ls_traceable(run_type="chain", name="DomainExpert.review")
     def review(
         self,
         phase: Phase,

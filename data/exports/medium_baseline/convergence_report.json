@@ -9,8 +9,8 @@
       "delta": 0.0
     },
     "cq_coverage": {
-      "initial": 1.0,
-      "final": 1.0,
+      "initial": 0.9166666666666666,
+      "final": 0.9166666666666666,
       "delta": 0.0
     },
     "ontology_quality": {
@@ -19,18 +19,18 @@
       "delta": 0.0
     },
     "converged_at": null,
-    "classes_added_total": 29,
+    "classes_added_total": 0,
     "acceptance_rate_avg": 1.0
   },
   "iterations": [
     {
       "iteration": 1,
       "entity_coverage_pct": 0.0,
-      "cq_coverage_pct": 1.0,
-      "classes_added": 29,
+      "cq_coverage_pct": 0.9166666666666666,
+      "classes_added": 0,
       "improvement": 0.0,
       "acceptance_rate": 1.0,
-      "timestamp": "2026-02-12T13:36:43.204217"
+      "timestamp": "2026-02-13T08:27:59.096933"
     }
   ]
 }

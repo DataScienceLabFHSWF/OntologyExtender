@@ -1,0 +1,7 @@
+{
+  "model": "llama3.2:3b",
+  "prompt_hash": "2c3f18874f81a72d",
+  "timestamp": 1770978545.289512,
+  "response": "{{{\n  \"analysis\": null,\n  \"estimated_classes_needed\": 5,\n  \"estimated_properties_needed\": 13,\n  \"new_classes\": [\n    \"R\u00fcckbauplan\",\n    \"Genehmigung\",\n    \"Vorschrift\"\n  ],\n  \"new_properties\": [\n    {\n      \"name\": \"R\u00fcckbauplan_Genehmigung\",\n      \"domain\": \"PlanningDomain\",\n      \"type\": \"xsd:string\"\n    },\n    {\n      \"name\": \"R\u00fcckbauplan_Vorschrift\",\n      \"domain\": \"PlanningDomain\",\n      \"type\": \"xsd:string\"\n    },\n    {\n      \"name\": \"Genehmigung_Richtlinie\",\n      \"domain\": \"Genehmigung\",\n      \"type\": \"xsd:string\"\n    },\n    {\n      \"name\": \"R\u00fcckbauplan_Phase\",\n      \"domain\": \"R\u00fcckbauplan\",\n      \"type\": \"xsd:string\"\n    },\n    {\n      \"name\": \"Vorschrift_Richtlinie\",\n      \"domain\": \"Vorschrift\",\n      \"type\": \"xsd:string\"\n    },\n    {\n      \"name\": \"Genehmigung_Bezug\",\n      \"domain\": \"Genehmigung\",\n      \"type\": \"PlanningProblem\"\n    }\n  ]\n}}}",
+  "tokens": 269
+}

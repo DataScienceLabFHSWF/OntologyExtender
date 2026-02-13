@@ -88,8 +88,7 @@ class NaiveStrategy(BaselineStrategy):
     
     def extend_ontology(self) -> Graph:
         prompt = self.baseline.generate_naive_prompt()
-        response = self.baseline.call_llm(prompt, verbose=self.baseline.verbose)
-        parsed_data = self.baseline.parse_llm_response(response)
+        parsed_data = self.baseline.call_llm_with_retry(prompt)
         return self.baseline.generate_owl_extensions(parsed_data)
 
 
@@ -98,8 +97,7 @@ class ModularStrategy(BaselineStrategy):
     
     def extend_ontology(self) -> Graph:
         prompt = self.baseline.generate_modular_prompt()
-        response = self.baseline.call_llm(prompt, verbose=self.baseline.verbose)
-        parsed_data = self.baseline.parse_llm_response(response)
+        parsed_data = self.baseline.call_llm_with_retry(prompt)
         return self.baseline.generate_owl_extensions(parsed_data)
 
 
@@ -113,8 +111,7 @@ class IterativeStrategy(BaselineStrategy):
         for i, prompt in enumerate(prompts):
             print(f"\n🔄 Iteration {i+1}/{len(prompts)}: Processing theme...")
             try:
-                response = self.baseline.call_llm(prompt, verbose=self.baseline.verbose)
-                parsed_data = self.baseline.parse_llm_response(response)
+                parsed_data = self.baseline.call_llm_with_retry(prompt)
                 theme_graph = self.baseline.generate_owl_extensions(parsed_data)
                 
                 # Merge into combined graph
@@ -135,8 +132,7 @@ class AdaptiveStrategy(BaselineStrategy):
     
     def extend_ontology(self) -> Graph:
         prompt = self.baseline.generate_adaptive_prompt()
-        response = self.baseline.call_llm(prompt, verbose=self.baseline.verbose)
-        parsed_data = self.baseline.parse_llm_response(response)
+        parsed_data = self.baseline.call_llm_with_retry(prompt)
         return self.baseline.generate_owl_extensions(parsed_data)
 
 
@@ -788,6 +784,67 @@ Be very focused and avoid generic additions.
 
         return None
 
+    def call_llm_with_retry(
+        self,
+        prompt: str,
+        max_retries: int = 3,
+    ) -> Dict:
+        """Call LLM and parse its response with automatic retries.
+
+        On each retry the prompt is augmented with a strong "JSON only" nudge
+        so that models that initially output free-text analysis have another
+        chance to produce valid JSON.
+
+        After exhausting retries the method returns a minimal empty extension
+        instead of crashing, so experiments can still record a 0-class result
+        rather than an outright failure.
+        """
+        last_error: Exception | None = None
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                if attempt == 1:
+                    current_prompt = prompt
+                else:
+                    # Augment prompt with explicit JSON-only instruction
+                    current_prompt = (
+                        prompt
+                        + "\n\n"
+                        + "CRITICAL REMINDER (retry attempt {attempt}): "
+                        + "Your ENTIRE response must be a single valid JSON object. "
+                        + "Do NOT include any analysis, reasoning, markdown, or text "
+                        + "outside the JSON. Start your response with {{ and end with }}. "
+                        + 'The JSON must have "new_classes" and "new_properties" arrays.'
+                    ).replace("{attempt}", str(attempt))
+                    # Bust the response cache so we get a fresh answer
+                    current_prompt += f"  [retry-{attempt}]"
+
+                response = self.call_llm(current_prompt, verbose=self.verbose)
+                parsed = self.parse_llm_response(response)
+                if attempt > 1:
+                    logger.info("retry_succeeded", attempt=attempt)
+                return parsed
+
+            except Exception as e:
+                last_error = e
+                logger.warning(
+                    "llm_parse_retry",
+                    attempt=attempt,
+                    max_retries=max_retries,
+                    error=str(e)[:300],
+                )
+                print(f"   ⚠️  Attempt {attempt}/{max_retries} failed: {str(e)[:120]}")
+
+        # All retries exhausted — return empty extension so the experiment
+        # records a 0-class result instead of crashing.
+        logger.error(
+            "all_retries_exhausted",
+            max_retries=max_retries,
+            last_error=str(last_error)[:500],
+        )
+        print(f"   ❌ All {max_retries} attempts exhausted — returning empty extension")
+        return {"new_classes": [], "new_properties": []}
+
     def parse_llm_response(self, response: str) -> Dict:
         """Parse the LLM's JSON response into structured data using Pydantic validation.
 
@@ -795,6 +852,10 @@ Be very focused and avoid generic additions.
         ranges. It will extract the JSON block when possible and normalize common
         variant shapes (list ranges, pipe-separated types).
         """
+
+        # Strip <think>...</think> blocks (qwen-style reasoning tokens)
+        if "</think>" in response:
+            response = response.split("</think>", 1)[1].strip()
 
         try:
             # With structured outputs, the response should be pure JSON

@@ -154,184 +154,44 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_company_properties",
-    "class": "Company",
-    "question": "What properties does a Company have?",
+    "id": "cq_domainrequirement_properties",
+    "class": "DomainRequirement",
+    "question": "What properties does a DomainRequirement have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_company_hierarchy",
-    "class": "Company",
-    "question": "Which ParameterType instances are also Company?",
+    "id": "cq_domainrequirement_hierarchy",
+    "class": "DomainRequirement",
+    "question": "Which  instances are also DomainRequirement?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_regulation_properties",
-    "class": "Regulation",
-    "question": "What properties does a Regulation have?",
+    "id": "cq_action_properties",
+    "class": "Action",
+    "question": "What properties does a Action have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_regulation_hierarchy",
-    "class": "Regulation",
-    "question": "Which ParameterType instances are also Regulation?",
+    "id": "cq_action_hierarchy",
+    "class": "Action",
+    "question": "Which  instances are also Action?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_policy_properties",
-    "class": "Policy",
-    "question": "What properties does a Policy have?",
+    "id": "cq_plan_properties",
+    "class": "Plan",
+    "question": "What properties does a Plan have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_policy_hierarchy",
-    "class": "Policy",
-    "question": "Which ParameterType instances are also Policy?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningproblem_properties",
-    "class": "PlanningProblem",
-    "question": "What properties does a PlanningProblem have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningproblem_hierarchy",
-    "class": "PlanningProblem",
-    "question": "Which PlanningProblem instances are also PlanningProblem?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningproblem_properties",
-    "class": "PlanningProblem",
-    "question": "What properties does a PlanningProblem have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningproblem_hierarchy",
-    "class": "PlanningProblem",
-    "question": "Which PlanningProblem instances are also PlanningProblem?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_plannertype_properties",
-    "class": "PlannerType",
-    "question": "What properties does a PlannerType have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_plannertype_hierarchy",
-    "class": "PlannerType",
-    "question": "Which PlanningProblem instances are also PlannerType?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_plannertype_properties",
-    "class": "PlannerType",
-    "question": "What properties does a PlannerType have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_plannertype_hierarchy",
-    "class": "PlannerType",
-    "question": "Which PlanningProblem instances are also PlannerType?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningdomain_properties",
-    "class": "PlanningDomain",
-    "question": "What properties does a PlanningDomain have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningdomain_hierarchy",
-    "class": "PlanningDomain",
-    "question": "Which PlanningProblem instances are also PlanningDomain?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningdomain_properties",
-    "class": "PlanningDomain",
-    "question": "What properties does a PlanningDomain have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningdomain_hierarchy",
-    "class": "PlanningDomain",
-    "question": "Which PlanningProblem instances are also PlanningDomain?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_state_properties",
-    "class": "State",
-    "question": "What properties does a State have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_state_hierarchy",
-    "class": "State",
-    "question": "Which ParameterType instances are also State?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_goalstate_properties",
-    "class": "GoalState",
-    "question": "What properties does a GoalState have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_goalstate_hierarchy",
-    "class": "GoalState",
-    "question": "Which ParameterType instances are also GoalState?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_initialstate_properties",
-    "class": "InitialState",
-    "question": "What properties does a InitialState have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_initialstate_hierarchy",
-    "class": "InitialState",
-    "question": "Which ParameterType instances are also InitialState?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_actionprecondition_properties",
-    "class": "ActionPrecondition",
-    "question": "What properties does a ActionPrecondition have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_actionprecondition_hierarchy",
-    "class": "ActionPrecondition",
-    "question": "Which PlanningProblem instances are also ActionPrecondition?",
+    "id": "cq_plan_hierarchy",
+    "class": "Plan",
+    "question": "Which  instances are also Plan?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
@@ -345,35 +205,7 @@
   {
     "id": "cq_actioneffect_hierarchy",
     "class": "ActionEffect",
-    "question": "Which PlanningProblem instances are also ActionEffect?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_domainconstant_properties",
-    "class": "DomainConstant",
-    "question": "What properties does a DomainConstant have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_domainconstant_hierarchy",
-    "class": "DomainConstant",
-    "question": "Which ParameterType instances are also DomainConstant?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_domainpredicate_properties",
-    "class": "DomainPredicate",
-    "question": "What properties does a DomainPredicate have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_domainpredicate_hierarchy",
-    "class": "DomainPredicate",
-    "question": "Which ParameterType instances are also DomainPredicate?",
+    "question": "Which  instances are also ActionEffect?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
@@ -387,21 +219,35 @@
   {
     "id": "cq_macroaction_hierarchy",
     "class": "MacroAction",
-    "question": "Which PlanningProblem instances are also MacroAction?",
+    "question": "Which  instances are also MacroAction?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_domainrequirement_properties",
-    "class": "DomainRequirement",
-    "question": "What properties does a DomainRequirement have?",
+    "id": "cq_goalstate_properties",
+    "class": "GoalState",
+    "question": "What properties does a GoalState have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_domainrequirement_hierarchy",
-    "class": "DomainRequirement",
-    "question": "Which ParameterType instances are also DomainRequirement?",
+    "id": "cq_goalstate_hierarchy",
+    "class": "GoalState",
+    "question": "Which  instances are also GoalState?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_initialstate_properties",
+    "class": "InitialState",
+    "question": "What properties does a InitialState have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_initialstate_hierarchy",
+    "class": "InitialState",
+    "question": "Which  instances are also InitialState?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

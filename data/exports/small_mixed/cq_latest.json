@@ -154,128 +154,114 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_regulatoryagency_properties",
-    "class": "RegulatoryAgency",
-    "question": "What properties does a RegulatoryAgency have?",
+    "id": "cq_decommissioningandabandonmentpermit_properties",
+    "class": "DecommissioningAndAbandonmentPermit",
+    "question": "What properties does a DecommissioningAndAbandonmentPermit have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_regulatoryagency_hierarchy",
-    "class": "RegulatoryAgency",
-    "question": "Which None instances are also RegulatoryAgency?",
+    "id": "cq_decommissioningandabandonmentpermit_hierarchy",
+    "class": "DecommissioningAndAbandonmentPermit",
+    "question": "Which None instances are also DecommissioningAndAbandonmentPermit?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_kernkraftwerkemsland_properties",
-    "class": "KernkraftwerkEmsland",
-    "question": "What properties does a KernkraftwerkEmsland have?",
+    "id": "cq_planningprobleminstance_properties",
+    "class": "PlanningProblemInstance",
+    "question": "What properties does a PlanningProblemInstance have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_kernkraftwerkemsland_hierarchy",
-    "class": "KernkraftwerkEmsland",
-    "question": "Which None instances are also KernkraftwerkEmsland?",
+    "id": "cq_planningprobleminstance_hierarchy",
+    "class": "PlanningProblemInstance",
+    "question": "Which PlanningProblem instances are also PlanningProblemInstance?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_regelung_properties",
-    "class": "Regelung",
-    "question": "What properties does a Regelung have?",
+    "id": "cq_actionprecondition_properties",
+    "class": "ActionPrecondition",
+    "question": "What properties does a ActionPrecondition have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_regelung_hierarchy",
-    "class": "Regelung",
-    "question": "Which None instances are also Regelung?",
+    "id": "cq_actionprecondition_hierarchy",
+    "class": "ActionPrecondition",
+    "question": "Which None instances are also ActionPrecondition?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_sicherheitsma\u00dfnahme_properties",
-    "class": "Sicherheitsma\u00dfnahme",
-    "question": "What properties does a Sicherheitsma\u00dfnahme have?",
+    "id": "cq_actioneffect_properties",
+    "class": "ActionEffect",
+    "question": "What properties does a ActionEffect have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_sicherheitsma\u00dfnahme_hierarchy",
-    "class": "Sicherheitsma\u00dfnahme",
-    "question": "Which None instances are also Sicherheitsma\u00dfnahme?",
+    "id": "cq_actioneffect_hierarchy",
+    "class": "ActionEffect",
+    "question": "Which None instances are also ActionEffect?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_umweltauswirkung_properties",
-    "class": "Umweltauswirkung",
-    "question": "What properties does a Umweltauswirkung have?",
+    "id": "cq_domainrequirement_properties",
+    "class": "DomainRequirement",
+    "question": "What properties does a DomainRequirement have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_umweltauswirkung_hierarchy",
-    "class": "Umweltauswirkung",
-    "question": "Which None instances are also Umweltauswirkung?",
+    "id": "cq_domainrequirement_hierarchy",
+    "class": "DomainRequirement",
+    "question": "Which None instances are also DomainRequirement?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_verantwortung_properties",
-    "class": "Verantwortung",
-    "question": "What properties does a Verantwortung have?",
+    "id": "cq_planningproblem_properties",
+    "class": "PlanningProblem",
+    "question": "What properties does a PlanningProblem have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_verantwortung_hierarchy",
-    "class": "Verantwortung",
-    "question": "Which None instances are also Verantwortung?",
+    "id": "cq_planningproblem_hierarchy",
+    "class": "PlanningProblem",
+    "question": "Which None instances are also PlanningProblem?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planungsprozess_properties",
-    "class": "Planungsprozess",
-    "question": "What properties does a Planungsprozess have?",
+    "id": "cq_planningdomain_properties",
+    "class": "PlanningDomain",
+    "question": "What properties does a PlanningDomain have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planungsprozess_hierarchy",
-    "class": "Planungsprozess",
-    "question": "Which None instances are also Planungsprozess?",
+    "id": "cq_planningdomain_hierarchy",
+    "class": "PlanningDomain",
+    "question": "Which None instances are also PlanningDomain?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_technischeanforderung_properties",
-    "class": "TechnischeAnforderung",
-    "question": "What properties does a TechnischeAnforderung have?",
+    "id": "cq_planningprobleminstance_properties",
+    "class": "PlanningProblemInstance",
+    "question": "What properties does a PlanningProblemInstance have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_technischeanforderung_hierarchy",
-    "class": "TechnischeAnforderung",
-    "question": "Which None instances are also TechnischeAnforderung?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_regulierung_properties",
-    "class": "Regulierung",
-    "question": "What properties does a Regulierung have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_regulierung_hierarchy",
-    "class": "Regulierung",
-    "question": "Which None instances are also Regulierung?",
+    "id": "cq_planningprobleminstance_hierarchy",
+    "class": "PlanningProblemInstance",
+    "question": "Which PlanningProblem instances are also PlanningProblemInstance?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

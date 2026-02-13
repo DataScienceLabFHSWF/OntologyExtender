@@ -17,7 +17,7 @@ from typing import Any
 import json
 import structlog
 
-from ontology_hitl.agents.base import AgentMessage, AgentRole, BaseAgent
+from ontology_hitl.agents.base import AgentMessage, AgentRole, BaseAgent, ls_traceable
 from ontology_hitl.core.config import Settings
 from ontology_hitl.methodology.ontology101 import Phase
 
@@ -201,6 +201,7 @@ class OntologyEngineerAgent(BaseAgent):
     def __init__(self, settings: Settings | None = None) -> None:
         super().__init__(settings=settings, system_prompt=ENGINEER_IDENTITY)
 
+    @ls_traceable(run_type="chain", name="OntologyEngineer.propose")
     def propose(self, phase: Phase, context: str) -> AgentMessage:
         """Generate an initial proposal for the given phase.
 
@@ -222,6 +223,7 @@ class OntologyEngineerAgent(BaseAgent):
             reasoning=f"Phase {phase.value}: initial proposal based on Ont-101 rules",
         )
 
+    @ls_traceable(run_type="chain", name="OntologyEngineer.revise")
     def revise(
         self,
         phase: Phase,

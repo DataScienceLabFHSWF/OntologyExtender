@@ -1,0 +1,10 @@
+{
+  "experiment_name": "large_llm_only_modular",
+  "method": "llm_only_baseline",
+  "model": "qwen3-next:latest",
+  "seed_ontology": "data/seed_ontology/plan-ontology-v1.0.owl",
+  "competency_questions": 9,
+  "final_triples": 0,
+  "seed_triples": 228,
+  "extension_triples": -228
+}

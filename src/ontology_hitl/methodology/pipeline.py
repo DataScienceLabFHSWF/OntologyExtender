@@ -24,7 +24,7 @@ from pathlib import Path
 import structlog
 
 from ontology_hitl.agents.team import AgentTeam
-from ontology_hitl.agents.base import DebateVerdict
+from ontology_hitl.agents.base import DebateVerdict, ls_traceable
 from ontology_hitl.core.config import Settings
 from ontology_hitl.discovery.entity_linker import EntityLinker
 from ontology_hitl.discovery.embedding_advisor import EmbeddingAdvisor
@@ -162,6 +162,7 @@ class Ont101Pipeline:
             self._team.set_document_context(docs_text)
         return self._team
 
+    @ls_traceable(run_type="chain", name="Ont101Pipeline.run_iteration")
     def run_iteration(
         self,
         document_excerpts: list[str] | None = None,
