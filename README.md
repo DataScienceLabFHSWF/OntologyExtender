@@ -201,6 +201,31 @@ Notes:
 - LangSmith integration is best-effort and non-fatal — if LangSmith is unreachable the pipeline continues normally. 
 - Full LangChain instrumentation can be added later for per-chain/agent step traces.
 
+#### LangSmith example (what you should see) 🧾
+
+Below is a representative LangSmith `llm` run that our agent instrumentation creates for each LLM call (values are previews/truncated):
+
+```json
+{
+  "name": "ontology_engineer: llm_call",
+  "project_name": "OntologyExtender",
+  "run_type": "llm",
+  "inputs": {
+    "system_prompt": "You are an ontology engineer—produce JSON describing new classes...",
+    "user_prompt": "Given the competency questions, propose new_classes and new_properties...",
+    "model": "llama3.2:3b",
+    "temperature": 0.5
+  },
+  "outputs": {
+    "result_preview": "{'new_classes': [{'name': 'ReleaseAction', 'parent_class': 'Action', ...}], ...}"
+  },
+  "start_time": "2026-02-13T10:34:40Z",
+  "end_time": "2026-02-13T10:34:42Z"
+}
+```
+
+You can view runs in the LangSmith UI under the project name (default `OntologyExtender`) or programmatically via `langsmith.Client`.
+
 ## Tests
 
 ```bash
