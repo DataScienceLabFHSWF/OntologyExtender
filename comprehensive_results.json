@@ -88,5 +88,317 @@
     "cq_coverage": 0.0,
     "entity_coverage": 0.0,
     "execution_time_seconds": 161.39759922027588
+  },
+  {
+    "experiment_name": "small_llm_only_naive",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 7.8867247104644775
+  },
+  {
+    "experiment_name": "small_llm_only_modular",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 4.95336127281189
+  },
+  {
+    "experiment_name": "small_llm_only_iterative",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 13.443477630615234
+  },
+  {
+    "experiment_name": "small_llm_only_adaptive",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 3.556394338607788
+  },
+  {
+    "experiment_name": "medium_baseline",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 0,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 0.5714285714285714,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.5714285714285714,
+    "execution_time_seconds": 538.8564224243164
+  },
+  {
+    "experiment_name": "medium_dialectical",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 0,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 1.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 1.0,
+    "execution_time_seconds": 570.0184831619263
+  },
+  {
+    "experiment_name": "medium_socratic",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 3,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 3,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 580.6273753643036
+  },
+  {
+    "experiment_name": "medium_mixed",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 0,
+      "cq_coverage_final": 0.25,
+      "entity_coverage_final": 0.8571428571428571,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.25,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 0,
+    "cq_coverage": 0.25,
+    "entity_coverage": 0.8571428571428571,
+    "execution_time_seconds": 506.60726523399353
+  },
+  {
+    "experiment_name": "medium_llm_only_naive",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 3.5525927543640137
+  },
+  {
+    "experiment_name": "medium_llm_only_modular",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 33.867942810058594
+  },
+  {
+    "experiment_name": "medium_llm_only_iterative",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 31.687960147857666
+  },
+  {
+    "experiment_name": "medium_llm_only_adaptive",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 3.6594936847686768
+  },
+  {
+    "experiment_name": "large_baseline",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 0,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 745.89497423172
+  },
+  {
+    "experiment_name": "large_dialectical",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 0,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 750.8819074630737
+  },
+  {
+    "experiment_name": "large_socratic",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 0,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 756.8443677425385
+  },
+  {
+    "experiment_name": "large_mixed",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "success": true,
+    "error_message": null,
+    "metrics": {
+      "classes_added_total": 0,
+      "cq_coverage_final": 0.0,
+      "entity_coverage_final": 0.0,
+      "acceptance_rate_avg": 1.0,
+      "new_classes": 0,
+      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.0
+    },
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 758.35840010643
+  },
+  {
+    "experiment_name": "large_llm_only_naive",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 3.4382474422454834
+  },
+  {
+    "experiment_name": "large_llm_only_modular",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 113.11390447616577
+  },
+  {
+    "experiment_name": "large_llm_only_iterative",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 112.51714777946472
+  },
+  {
+    "experiment_name": "large_llm_only_adaptive",
+    "strategy_overrides": {},
+    "success": true,
+    "error_message": null,
+    "metrics": {},
+    "classes_added": 0,
+    "cq_coverage": 0.0,
+    "entity_coverage": 0.0,
+    "execution_time_seconds": 3.980189323425293
   }
 ]

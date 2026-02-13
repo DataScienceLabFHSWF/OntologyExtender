@@ -5,6 +5,98 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
 >
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasAction">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
+    <rdfs:range rdf:resource="http://caressesrobot.org/ontology#Action"/>
+    <rdfs:comment>a property that relates a planning domain to a domain action that is available in it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/dc/terms/contributor">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasRequirement">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
+    <rdfs:comment>a property that relates a planning domain or problem to a domain requirement that is required or supported by it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasConstant">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#DomainConstant"/>
+    <rdfs:comment>a property that relates a planning domain to a domain constant that is defined in it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="Nfcefca99ad03495b849047744e589f61">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#ofPlannerType"/>
+    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#PlannerType"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ParameterType">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment xml:lang="en">represents a kind of entity in a planning domain</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="Nc160076358bd4f2fa0d79303f924f13b">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasAction"/>
+    <owl:someValuesFrom rdf:resource="http://caressesrobot.org/ontology#Action"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#InitialState">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:subClassOf rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
+    <rdfs:comment xml:lang="en">represents the starting or the given state of a planning problem</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasActionExplanation">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:domain rdf:resource="http://caressesrobot.org/ontology#Action"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N11c2869950c642af8c6e734aa1210a93">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasPlanCost"/>
+    <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#PlanningDomain">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:subClassOf rdf:nodeID="Nc160076358bd4f2fa0d79303f924f13b"/>
+    <rdfs:subClassOf rdf:nodeID="N132115b85e044934a7fa1d0c7da81367"/>
+    <rdfs:subClassOf rdf:nodeID="N4bb594ac80f8441db6d6ef74f2ad5eaa"/>
+    <rdfs:comment xml:lang="en">a class that represents a problem setting for automated planning</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#PlanningProblem">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:subClassOf rdf:nodeID="N692026623e694330934b6d9f192c72a2"/>
+    <rdfs:subClassOf rdf:nodeID="Nbafe7570016a473fa20b4843f90ab86b"/>
+    <rdfs:subClassOf rdf:nodeID="N4ca70709361f47b19c92867493edb505"/>
+    <rdfs:subClassOf rdf:nodeID="N08ff2a2e92b746b1a7adb94e6183edac"/>
+    <rdfs:comment xml:lang="en">represents a task of the planning domain that requires a plan to be solved</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="Ndfb03c2f76e248ee862f99fb65fc0b65">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasEffect"/>
+    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#ActionEffect"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasModelReconciliationExplanation">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#DomainRequirement">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment xml:lang="en">A feature that a planning domain requires or supports</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasParameter">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="http://caressesrobot.org/ontology#Action"/>
+    <rdfs:range rdf:resource="http://caressesrobot.org/ontology#Parameter"/>
+    <rdfs:comment>a property that relates an action to an action parameter that is involved in it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPlan">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningProblem"/>
+    <rdfs:range rdf:resource="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan"/>
+    <rdfs:comment>a property that relates a planning problem to a plan that solves it</rdfs:comment>
+  </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Ontology"/>
     <owl:versionIRI rdf:resource="https://purl.org/ai4s/ontology/planning/v2.0"/>
@@ -17,25 +109,43 @@
     <rdfs:seeAlso>https://github.com/BharathMuppasani/AI-Planning-Ontology</rdfs:seeAlso>
     <owl:versionInfo rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">2.0</owl:versionInfo>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#deletesPredicate">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasMediumRelevancePlanner">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#ActionEffect"/>
-    <rdfs:range rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
-    <rdfs:comment>a property that relates an effect to a state that deletes a predicate from it</rdfs:comment>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
+    <rdfs:comment>a property that relates a planning domain to a planner that has a medium relevance score for it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:nodeID="Ne089f3dd64be4f4099a7327ad1eb5cbc">
+  <rdf:Description rdf:about="http://purl.org/vocab/lifecycle/schema#State">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment xml:lang="en">represents a situation or a configuration of the world in a planning problem</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPlanCost">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:domain rdf:resource="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N08ff2a2e92b746b1a7adb94e6183edac">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#deletesPredicate"/>
-    <owl:someValuesFrom rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasPlan"/>
+    <owl:someValuesFrom rdf:resource="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan"/>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#DomainPredicate">
+  <rdf:Description rdf:about="http://caressesrobot.org/ontology#Parameter">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment xml:lang="en">a class that represents a condition or a fact that can be true or false in a planning domain</rdfs:comment>
+    <rdfs:comment xml:lang="en">a class that represents what is involved in an action</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#GoalState">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
-    <rdfs:comment xml:lang="en">represents a desired or a target state defined in a task that a plan should achieve</rdfs:comment>
+  <rdf:Description rdf:about="http://purl.org/dc/terms/language">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N9dfbe45f791242a086fdb2c5de192524">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#isGeneratedBy"/>
+    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#solvesRequirement">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
+    <rdfs:comment xml:lang="en">a property that relates a planner to a domain requirement that it can handle or satisfy</rdfs:comment>
   </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasObject">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
@@ -43,26 +153,10 @@
     <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ProblemObject"/>
     <rdfs:comment>a property that relates a planning problem to a problem object that is involved in it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasHighRelevancePlanner">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
-    <rdfs:comment>a property that relates a planning domain to a planner that has a high relevance score for it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="N73fcbccda8cd490a80477a3622b0a32d">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasAction"/>
-    <owl:someValuesFrom rdf:resource="http://caressesrobot.org/ontology#Action"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ofParameterType">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="http://caressesrobot.org/ontology#Parameter"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ParameterType"/>
-    <rdfs:comment>a property that relates an action parameter to a type that classifies it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://caressesrobot.org/ontology#Parameter">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment xml:lang="en">a class that represents what is involved in an action</rdfs:comment>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPlanExplanation">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:domain rdf:resource="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#isGeneratedBy">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
@@ -70,111 +164,37 @@
     <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
     <rdfs:comment>a property that relates a plan to a planner that generates it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasRequirement">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#solvedBy">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
-    <rdfs:comment>a property that relates a planning domain or problem to a domain requirement that is required or supported by it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://caressesrobot.org/ontology#Action">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:nodeID="N47f2b2b40f0a49f697676e110f4d945e"/>
-    <rdfs:comment xml:lang="en">a class that represents a type of action that can be performed in a planning domain</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ParameterType">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment xml:lang="en">represents a kind of entity in a planning domain</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/vocab/lifecycle/schema#State">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment xml:lang="en">represents a situation or a configuration of the world in a planning problem</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/dc/terms/license">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#Planner">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:nodeID="Nc412c4ac23e54888b9676bb2b3e9c650"/>
-    <rdfs:subClassOf rdf:nodeID="N254aee9f9b7c4574bdccb12383991a51"/>
-    <rdfs:comment xml:lang="en">a system that can generate plans for a given planning domain and problem</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="N18fc9f2120884d2e85fd5f8cd70f1f2c">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasRequirement"/>
-    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="N7ae5760b539d4033b82b4b645a2c5c79">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasPlanCost"/>
-    <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPredicate">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#DomainPredicate"/>
-    <rdfs:comment>a property that relates a planning domain to a domain predicate that is defined in it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ofPlannerType">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#PlannerType"/>
-    <rdfs:comment>a property that relates a planner to a planner type that categorizes it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasParameterType">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ParameterType"/>
-    <rdfs:comment>a property that relates a planning domain to a type</rdfs:comment>
+    <owl:inverseOf rdf:resource="https://purl.org/ai4s/ontology/planning#solvesRequirement"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
+    <rdfs:comment>a property that relates a domain requirement to a planner that solves it</rdfs:comment>
   </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ActionPrecondition">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:comment xml:lang="en">a class that represents what needs to be true before an action can be done</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:nodeID="N2aeb85080dab4782acce2dd5647b38b0">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasGoalState"/>
-    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#GoalState"/>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ProblemObject">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment xml:lang="en">represents an entity or a constant that is involved in a planning problem</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasConstant">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#DomainConstant"/>
-    <rdfs:comment>a property that relates a planning domain to a domain constant that is defined in it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPlan">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasGoalState">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
     <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningProblem"/>
-    <rdfs:range rdf:resource="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan"/>
-    <rdfs:comment>a property that relates a planning problem to a plan that solves it</rdfs:comment>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#GoalState"/>
+    <rdfs:comment>a property that relates a planning problem to a goal state that is desired for it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasProblem">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#MacroAction">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:subClassOf rdf:resource="http://caressesrobot.org/ontology#Action"/>
+    <rdfs:comment xml:lang="en">Extracted macro action, which is a combination of multiple actions of a planning domain</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasLowRelevancePlanner">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
     <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningProblem"/>
-    <rdfs:comment>a property that relates a planning domain to a planning problem that is defined in it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#PlanningProblem">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:nodeID="N2aeb85080dab4782acce2dd5647b38b0"/>
-    <rdfs:subClassOf rdf:nodeID="N6110eb9dfd524c8fb35dc1983665d624"/>
-    <rdfs:subClassOf rdf:nodeID="N349cc8553cff441ba9dd2a9b61c6e028"/>
-    <rdfs:subClassOf rdf:nodeID="N8556748c017f4fbab656fed1822977bf"/>
-    <rdfs:comment xml:lang="en">represents a task of the planning domain that requires a plan to be solved</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasExtractedAction">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#MacroAction"/>
-    <rdfs:comment>a property that relates a planning domain to an action that is extracted from its plan</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#InitialState">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
-    <rdfs:comment xml:lang="en">represents the starting or the given state of a planning problem</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/dc/terms/language">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
+    <rdfs:comment>a property that relates a planning domain to a planner that has a low relevance score for it</rdfs:comment>
   </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasInitialState">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
@@ -182,23 +202,34 @@
     <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#InitialState"/>
     <rdfs:comment>a property that relates a planning problem to an initial state that is given for it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:nodeID="N254aee9f9b7c4574bdccb12383991a51">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#solvesRequirement"/>
-    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasParameter">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPredicate">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="http://caressesrobot.org/ontology#Action"/>
-    <rdfs:range rdf:resource="http://caressesrobot.org/ontology#Parameter"/>
-    <rdfs:comment>a property that relates an action to an action parameter that is involved in it</rdfs:comment>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#DomainPredicate"/>
+    <rdfs:comment>a property that relates a planning domain to a domain predicate that is defined in it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#PlanningDomain">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:nodeID="N73fcbccda8cd490a80477a3622b0a32d"/>
-    <rdfs:subClassOf rdf:nodeID="Nc23739371a4642bcad63313b7a7a5b24"/>
-    <rdfs:subClassOf rdf:nodeID="N18fc9f2120884d2e85fd5f8cd70f1f2c"/>
-    <rdfs:comment xml:lang="en">a class that represents a problem setting for automated planning</rdfs:comment>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ofParameterType">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="http://caressesrobot.org/ontology#Parameter"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ParameterType"/>
+    <rdfs:comment>a property that relates an action parameter to a type that classifies it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasExtractedAction">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#MacroAction"/>
+    <rdfs:comment>a property that relates a planning domain to an action that is extracted from its plan</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasHighRelevancePlanner">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
+    <rdfs:comment>a property that relates a planning domain to a planner that has a high relevance score for it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N4ca70709361f47b19c92867493edb505">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasObject"/>
+    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#ProblemObject"/>
   </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#addsPredicate">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
@@ -208,60 +239,26 @@
   </rdf:Description>
   <rdf:Description rdf:about="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:nodeID="Ndc792b39508849afbdca440659b02fbb"/>
-    <rdfs:subClassOf rdf:nodeID="N7ae5760b539d4033b82b4b645a2c5c79"/>
+    <rdfs:subClassOf rdf:nodeID="N9dfbe45f791242a086fdb2c5de192524"/>
+    <rdfs:subClassOf rdf:nodeID="N11c2869950c642af8c6e734aa1210a93"/>
   </rdf:Description>
-  <rdf:Description rdf:nodeID="N349cc8553cff441ba9dd2a9b61c6e028">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasObject"/>
-    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#ProblemObject"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasEffect">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="http://caressesrobot.org/ontology#Action"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ActionEffect"/>
-    <rdfs:comment>a property that relates an action to an action effect that results from it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasLowRelevancePlanner">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
-    <rdfs:comment>a property that relates a planning domain to a planner that has a low relevance score for it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ActionEffect">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:nodeID="Neefbf51089fa41c4b92e665212f34b52"/>
-    <rdfs:subClassOf rdf:nodeID="Ne089f3dd64be4f4099a7327ad1eb5cbc"/>
-    <rdfs:comment xml:lang="en">a class that represents what happens after an action is done</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="Neefbf51089fa41c4b92e665212f34b52">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#addsPredicate"/>
-    <owl:someValuesFrom rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasActionExplanation">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    <rdfs:domain rdf:resource="http://caressesrobot.org/ontology#Action"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="Ndc792b39508849afbdca440659b02fbb">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#isGeneratedBy"/>
-    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasModelReconciliationExplanation">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="Nc23739371a4642bcad63313b7a7a5b24">
+  <rdf:Description rdf:nodeID="N132115b85e044934a7fa1d0c7da81367">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
     <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasPredicate"/>
     <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#DomainPredicate"/>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#DomainRequirement">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment xml:lang="en">A feature that a planning domain requires or supports</rdfs:comment>
+  <rdf:Description rdf:about="http://purl.org/dc/terms/creator">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N692026623e694330934b6d9f192c72a2">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasGoalState"/>
+    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#GoalState"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="Nbafe7570016a473fa20b4843f90ab86b">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasInitialState"/>
+    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#InitialState"/>
   </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPDDLTypeInstance">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
@@ -269,15 +266,51 @@
     <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ProblemObject"/>
     <rdfs:comment>a property that relates a type to a problem object that is an instance of it</rdfs:comment>
   </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ofPlannerType">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#PlannerType"/>
+    <rdfs:comment>a property that relates a planner to a planner type that categorizes it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#Planner">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:subClassOf rdf:nodeID="Nfcefca99ad03495b849047744e589f61"/>
+    <rdfs:subClassOf rdf:nodeID="N070e182da55a4e3db111da93c5aef343"/>
+    <rdfs:comment xml:lang="en">a system that can generate plans for a given planning domain and problem</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasTag">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#ParameterType"/>
+    <rdfs:comment>a property that relates a type to a type tag that labels it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#DomainPredicate">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment xml:lang="en">a class that represents a condition or a fact that can be true or false in a planning domain</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/dc/terms/description">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N070e182da55a4e3db111da93c5aef343">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#solvesRequirement"/>
+    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
+  </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#PlannerType">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
     <rdfs:comment xml:lang="en">a category or classification of planners based on their characteristics or features</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasAction">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#DomainConstant">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment xml:lang="en">represents a fixed entity in a planning domain</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/dc/terms/title">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasParameterType">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
     <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="http://caressesrobot.org/ontology#Action"/>
-    <rdfs:comment>a property that relates a planning domain to a domain action that is available in it</rdfs:comment>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ParameterType"/>
+    <rdfs:comment>a property that relates a planning domain to a type</rdfs:comment>
   </rdf:Description>
   <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPrecondition">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
@@ -285,92 +318,59 @@
     <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ActionPrecondition"/>
     <rdfs:comment>a property that relates an action to an action precondition that is required for it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#Authors">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#solvedBy">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <owl:inverseOf rdf:resource="https://purl.org/ai4s/ontology/planning#solvesRequirement"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
-    <rdfs:comment>a property that relates a domain requirement to a planner that solves it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#solvesRequirement">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
-    <rdfs:comment xml:lang="en">a property that relates a planner to a domain requirement that it can handle or satisfy</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="Nc412c4ac23e54888b9676bb2b3e9c650">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#ofPlannerType"/>
-    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#PlannerType"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#DomainConstant">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment xml:lang="en">represents a fixed entity in a planning domain</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPlanExplanation">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    <rdfs:domain rdf:resource="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="N6110eb9dfd524c8fb35dc1983665d624">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasInitialState"/>
-    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#InitialState"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasGoalState">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningProblem"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#GoalState"/>
-    <rdfs:comment>a property that relates a planning problem to a goal state that is desired for it</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasMediumRelevancePlanner">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasProblem">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
     <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningDomain"/>
-    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#Planner"/>
-    <rdfs:comment>a property that relates a planning domain to a planner that has a medium relevance score for it</rdfs:comment>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#PlanningProblem"/>
+    <rdfs:comment>a property that relates a planning domain to a planning problem that is defined in it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:nodeID="N47f2b2b40f0a49f697676e110f4d945e">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasEffect"/>
-    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#ActionEffect"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ProblemObject">
+  <rdf:Description rdf:about="http://caressesrobot.org/ontology#Action">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment xml:lang="en">represents an entity or a constant that is involved in a planning problem</rdfs:comment>
+    <rdfs:subClassOf rdf:nodeID="Ndfb03c2f76e248ee862f99fb65fc0b65"/>
+    <rdfs:comment xml:lang="en">a class that represents a type of action that can be performed in a planning domain</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasPlanCost">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    <rdfs:domain rdf:resource="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan"/>
-    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/dc/terms/creator">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/dc/terms/description">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
-  </rdf:Description>
-  <rdf:Description rdf:nodeID="N8556748c017f4fbab656fed1822977bf">
+  <rdf:Description rdf:nodeID="Nb263dcf010c34ee69737f84c763e904c">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
-    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasPlan"/>
-    <owl:someValuesFrom rdf:resource="http://www.ontologydesignpatterns.org/ont/dul/DUL.owl#Plan"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#deletesPredicate"/>
+    <owl:someValuesFrom rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasTag">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#hasEffect">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#ParameterType"/>
-    <rdfs:comment>a property that relates a type to a type tag that labels it</rdfs:comment>
+    <rdfs:domain rdf:resource="http://caressesrobot.org/ontology#Action"/>
+    <rdfs:range rdf:resource="https://purl.org/ai4s/ontology/planning#ActionEffect"/>
+    <rdfs:comment>a property that relates an action to an action effect that results from it</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#MacroAction">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#ActionEffect">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:subClassOf rdf:resource="http://caressesrobot.org/ontology#Action"/>
-    <rdfs:comment xml:lang="en">Extracted macro action, which is a combination of multiple actions of a planning domain</rdfs:comment>
+    <rdfs:subClassOf rdf:nodeID="N7174484fd22242568f690974f32115d4"/>
+    <rdfs:subClassOf rdf:nodeID="Nb263dcf010c34ee69737f84c763e904c"/>
+    <rdfs:comment xml:lang="en">a class that represents what happens after an action is done</rdfs:comment>
   </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/dc/terms/contributor">
+  <rdf:Description rdf:nodeID="N7174484fd22242568f690974f32115d4">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#addsPredicate"/>
+    <owl:someValuesFrom rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#GoalState">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:subClassOf rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
+    <rdfs:comment xml:lang="en">represents a desired or a target state defined in a task that a plan should achieve</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#deletesPredicate">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:domain rdf:resource="https://purl.org/ai4s/ontology/planning#ActionEffect"/>
+    <rdfs:range rdf:resource="http://purl.org/vocab/lifecycle/schema#State"/>
+    <rdfs:comment>a property that relates an effect to a state that deletes a predicate from it</rdfs:comment>
+  </rdf:Description>
+  <rdf:Description rdf:nodeID="N4bb594ac80f8441db6d6ef74f2ad5eaa">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Restriction"/>
+    <owl:onProperty rdf:resource="https://purl.org/ai4s/ontology/planning#hasRequirement"/>
+    <owl:someValuesFrom rdf:resource="https://purl.org/ai4s/ontology/planning#DomainRequirement"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/dc/terms/license">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://purl.org/dc/terms/title">
+  <rdf:Description rdf:about="https://purl.org/ai4s/ontology/planning#Authors">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AnnotationProperty"/>
   </rdf:Description>
 </rdf:RDF>

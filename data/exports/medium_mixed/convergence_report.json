@@ -4,13 +4,13 @@
   "summary": {
     "total_iterations": 1,
     "entity_coverage": {
-      "initial": 0.0,
-      "final": 0.0,
+      "initial": 0.8571428571428571,
+      "final": 0.8571428571428571,
       "delta": 0.0
     },
     "cq_coverage": {
-      "initial": 0.0,
-      "final": 0.0,
+      "initial": 0.25,
+      "final": 0.25,
       "delta": 0.0
     },
     "ontology_quality": {
@@ -25,12 +25,12 @@
   "iterations": [
     {
       "iteration": 1,
-      "entity_coverage_pct": 0.0,
-      "cq_coverage_pct": 0.0,
+      "entity_coverage_pct": 0.8571428571428571,
+      "cq_coverage_pct": 0.25,
       "classes_added": 0,
-      "improvement": 0.0,
+      "improvement": 0.8571428571428571,
       "acceptance_rate": 1.0,
-      "timestamp": "2026-02-13T08:52:21.725168"
+      "timestamp": "2026-02-13T12:19:58.737211"
     }
   ]
 }

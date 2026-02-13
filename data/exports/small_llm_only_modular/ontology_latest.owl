@@ -3,48 +3,36 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
 >
-  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#hasFacility">
+  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#anlagenart">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    <rdfs:comment>The facility where the action takes place</rdfs:comment>
-    <rdfs:domain rdf:resource="http://www.semanticweb.org/ontology#ActionPrecondition"/>
-    <rdfs:range rdf:resource="http://www.semanticweb.org/ontology#Facility"/>
+    <rdfs:comment>Type of facility or plant in the current state</rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.semanticweb.org/ontology#Anlagenzustand"/>
+    <rdfs:range rdf:resource="http://www.semanticweb.org/ontology#Analenart or xsd:string"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#Facility">
+  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#Anlagenart">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment>A physical structure or location where an action takes place</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ontology#PlanningDomain"/>
+    <rdfs:comment>Type of facility or plant</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ontology#DomainConstant"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#hasFacilityReference">
+  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#Rückbauberechtigung">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment>Right to decommissioning</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ontology#DomainConstant"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#Genehmigung">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:comment>License or permit</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ontology#DomainConstant"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#genehmigung">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    <rdfs:comment>The facility referenced in the planning domain</rdfs:comment>
-    <rdfs:domain rdf:resource="http://www.semanticweb.org/ontology#PlanningDomain"/>
-    <rdfs:range rdf:resource="http://www.semanticweb.org/ontology#Facility"/>
+    <rdfs:comment>License or permit for decommissioning</rdfs:comment>
+    <rdfs:domain rdf:resource="http://www.semanticweb.org/ontology#Rückbauberechtigung"/>
+    <rdfs:range rdf:resource="http://www.semanticweb.org/ontology#Genehmigung or xsd:string"/>
   </rdf:Description>
-  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#hasRegulatoryDocument">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    <rdfs:comment>The regulatory document that outlines requirements for the action</rdfs:comment>
-    <rdfs:domain rdf:resource="http://www.semanticweb.org/ontology#ActionPrecondition"/>
-    <rdfs:range rdf:resource="http://www.semanticweb.org/ontology#RegulatoryDocument"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#RegulatoryDocument">
+  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#Anlagenzustand">
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment>A legal document that outlines requirements and regulations for a specific activity or operation</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ontology#ActionPrecondition"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#License">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment>A legal document granting permission for a specific activity or operation</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ontology#ActionPrecondition"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#isTypeOfLicense">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
-    <rdfs:comment>Whether the license is a specific type of license</rdfs:comment>
-    <rdfs:domain rdf:resource="http://www.semanticweb.org/ontology#ActionPrecondition"/>
-    <rdfs:range rdf:resource="http://www.semanticweb.org/ontology#License"/>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://www.semanticweb.org/ontology#Permit">
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
-    <rdfs:comment>A written authorization granted by an authority to carry out a specific activity or operation</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ontology#License"/>
+    <rdfs:comment>State of the facility or plant</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.semanticweb.org/ontology#GoalState"/>
   </rdf:Description>
 </rdf:RDF>
