@@ -174,6 +174,33 @@ HITL_CQ_ANSWERABILITY_TARGET=0.80
 HITL_ENTITY_COVERAGE_TARGET=0.80
 ```
 
+### LangSmith tracing (optional) 🔍
+
+Enable detailed LLM-call traces in LangSmith for experiment runs and agent activity.
+
+- Toggle in `.env`:
+  - `LANGSMITH_TRACING=true`
+  - `LANGSMITH_API_KEY=<your_api_key>`
+  - `LANGSMITH_PROJECT` (optional, default: `OntologyExtender`)
+
+- What we record (best-effort, lightweight per LLM call):
+  - system + user prompt preview, model, temperature
+  - parsed response preview
+  - run type = `llm` (visible in LangSmith UI)
+
+Example: Tracing is enabled automatically when running the feedback loop with W&B enabled.
+
+```bash
+# enable tracing in your environment
+export LANGSMITH_TRACING=true
+export LANGSMITH_API_KEY="<your_key>"
+python scripts/run_feedback_loop.py --mode standalone --max-iterations 1
+```
+
+Notes:
+- LangSmith integration is best-effort and non-fatal — if LangSmith is unreachable the pipeline continues normally. 
+- Full LangChain instrumentation can be added later for per-chain/agent step traces.
+
 ## Tests
 
 ```bash

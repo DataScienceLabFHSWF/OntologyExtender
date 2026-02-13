@@ -370,6 +370,34 @@ class BaseAgent:
                 result = json.loads(content)
 
             # Cache the result
+            # --- optional: push a lightweight LangSmith run for each LLM call ---
+            try:
+                if os.getenv("LANGSMITH_TRACING", "false").lower() in ("1", "true", "yes"):
+                    try:
+                        from langsmith.client import Client
+                        from datetime import datetime, timezone
+
+                        client = Client(api_key=os.getenv("LANGSMITH_API_KEY"))
+                        client.create_run(
+                            name=f"{self.role.value}: llm_call",
+                            inputs={
+                                "system_prompt": (sys_prompt[:400] + "...") if len(sys_prompt) > 400 else sys_prompt,
+                                "user_prompt": (user_prompt[:1000] + "...") if len(user_prompt) > 1000 else user_prompt,
+                                "model": self.settings.ollama_model,
+                                "temperature": temp,
+                            },
+                            outputs={"result_preview": (str(result)[:1000] + "...") if len(str(result)) > 1000 else str(result)},
+                            run_type="llm",
+                            project_name=os.getenv("LANGSMITH_PROJECT", "OntologyExtender"),
+                            start_time=datetime.now(timezone.utc),
+                            end_time=datetime.now(timezone.utc),
+                        )
+                    except Exception as _e:
+                        logger.debug("langsmith_log_failed", error=str(_e))
+            except Exception:
+                # defensive: do not let tracing instrumentation break the agent
+                pass
+
             if use_cache:
                 self._response_cache[cache_key] = result
                 logger.debug("llm_cache_stored", agent=self.role.value, cache_key=cache_key[:16])
@@ -433,7 +461,31 @@ class BaseAgent:
             import re
             content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)
 
-            return json.loads(content)
+            parsed = json.loads(content)
+
+            # LangSmith lightweight run for multi-turn calls (best-effort)
+            try:
+                if os.getenv("LANGSMITH_TRACING", "false").lower() in ("1", "true", "yes"):
+                    try:
+                        from langsmith.client import Client
+                        from datetime import datetime, timezone
+
+                        client = Client(api_key=os.getenv("LANGSMITH_API_KEY"))
+                        client.create_run(
+                            name=f"{self.role.value}: llm_multi_turn",
+                            inputs={"messages": messages, "model": self.settings.ollama_model, "temperature": temp},
+                            outputs={"result_preview": (str(parsed)[:1000] + "...") if len(str(parsed)) > 1000 else str(parsed)},
+                            run_type="llm",
+                            project_name=os.getenv("LANGSMITH_PROJECT", "OntologyExtender"),
+                            start_time=datetime.now(timezone.utc),
+                            end_time=datetime.now(timezone.utc),
+                        )
+                    except Exception as _e:
+                        logger.debug("langsmith_log_failed", error=str(_e))
+            except Exception:
+                pass
+
+            return parsed
 
         except httpx.HTTPError as e:
             logger.warning("llm_multi_turn_failed", agent=self.role.value, error=str(e))
