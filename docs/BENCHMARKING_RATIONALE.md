@@ -1,285 +1,265 @@
-# Benchmarking Rationale: OntoURL, LLM4ACOE, and Our System
+# Evaluation Strategy
 
-## 1. Why We Run the OntoURL Benchmark
+How we prove that our system works, and why each evaluation layer exists.
 
-### 1.1 The Core Question
+---
 
-Our system (CogAgent/OntologyExtender) claims that **agentic multi-role workflows** produce better ontological outputs than simple LLM prompting. OntoURL provides the first rigorous way to test this claim because it decomposes "ontology capability" into 15 measurable tasks across three cognitive levels:
+## 1. The Claim We Need to Prove
 
-| Level | Tasks | What It Measures |
-|-------|-------|-----------------|
-| **Understanding** (U1–U5) | Class definitions, relations, property domains, instance classification, instance definitions | Can the model comprehend existing ontological structures? |
-| **Reasoning** (R1–R5) | Inferred relations, constraints, instance reasoning, SWRL logic, description logic | Can the model perform formal ontological inference? |
-| **Learning** (L1–L5) | Definition generation, hierarchy construction, property construction, constraint construction, ontology alignment | Can the model *produce* new ontological structures? |
+Our system claims three things:
 
-### 1.2 Why This Benchmark Without RAG Is Still Valid
+1. **Agentic workflows** (multi-turn, debate, self-verify) produce better ontological outputs than single-shot LLM prompting
+2. **Our architecture** (independent agents + structured review + moderator) outperforms simulated multi-role approaches (LLM4ACOE)
+3. **Human-in-the-loop** adds value that no amount of automation can replicate
 
-**Objection:** *"Our system uses RAG-enhanced agents with document retrieval. OntoURL tests parametric knowledge only. Isn't this testing the wrong thing?"*
+Each claim requires a different evaluation method. We use four layers.
 
-**Answer: No. Here's why the parametric-only evaluation actually strengthens our argument.**
+---
 
-1. **Isolating the agentic contribution.** By removing RAG, we hold the knowledge source constant (the LLM's training data) and vary only the *reasoning process*. Any improvement from self_verify, multi_turn, or debate strategies over vanilla prompting is **purely attributable to the agentic workflow**, not to better retrieval.
-
-2. **Lower bound on system capability.** Our production system has RAG, knowledge graphs, and human-in-the-loop. OntoURL scores represent the *floor* of our system's capability — what it can do with just the LLM and the workflow. Real-world performance will be strictly better.
-
-3. **Comparability with published results.** OntoURL provides published baselines (Qwen2.5-3B, Qwen2.5-72B, LLaMA3.3-70B) all tested without RAG. Running our models under identical conditions ensures fair comparison.
-
-4. **Highlighting where structure helps most.** If agentic strategies improve Learning tasks (L1–L5) but not Understanding (U1–U5), that tells us exactly where multi-agent workflows add value: in *generative* ontology construction, not in comprehension.
-
-### 1.3 What RAG Extension Would Require
-
-To extend the OntoURL benchmark with RAG, we would need to:
-
-| Component | Implementation | Effort |
-|-----------|---------------|--------|
-| **Ontology context retrieval** | For each OntoURL question, retrieve relevant triples/axioms from the source ontology as context | Medium — OntoURL provides ontology names, need to download and index all 40 source ontologies |
-| **RAG adapter strategy** | New `RAGStrategy` that prepends retrieved ontology fragments to the prompt before answering | Low — extends existing `OntoURLStrategy` base class |
-| **Fair comparison design** | Published OntoURL baselines don't use RAG, so RAG results would be a separate column ("Our System + RAG") alongside vanilla baselines | Design decision |
-| **Chunking & embedding** | Process 40 OWL ontologies through our existing vector store pipeline (`src/ontology_hitl/sources/vector_store.py`) | Medium — need to parse OWL to text, chunk, embed |
-| **Retrieval quality metrics** | Measure retrieval precision/recall to separate RAG quality from LLM quality | Low |
-
-**This is Phase 2 work** — run parametric-only first, then add RAG to show the additional lift.
-
-## 2. Strategy Coverage and Comparison
-
-### 2.1 Our Benchmark Strategies
-
-We run 6 strategies that form a clear progression from simple to complex:
+## 2. Evaluation Layers
 
 ```
-Baseline Tier (1 LLM call per example, all tasks):
-┌──────────────────┐
-│ vanilla_zero     │  Direct prompt → answer (OntoURL's exact methodology)
-│ cot              │  Chain-of-thought prefix before answering
-│ engineer         │  Ontology engineer role-play system prompt
-└──────────────────┘
-
-Agentic Tier (2-3 LLM calls per example):
-┌──────────────────┐
-│ self_verify      │  Answer → verify reasoning → revise (ALL tasks)
-│ multi_turn       │  Analyze → draft → critique → refine (L1–L5)
-│ debate           │  Proposer → Critic → Revise cycle (L1–L5)
-└──────────────────┘
+Layer 1: OntoURL Benchmark — Parametric (no RAG)
+│   Proves: agentic workflows > vanilla prompting
+│   Method: 15 standardized tasks × 6 strategies × 3 models
+│   Compare against: published baselines (Qwen2.5, LLaMA3.3)
+│
+Layer 2: OntoURL Benchmark — with RAG
+│   Proves: RAG + agentic > agentic alone
+│   Method: same 15 tasks, but inject source ontology context
+│   Compare against: Layer 1 scores (our own baseline)
+│
+Layer 3: LLM4ACOE Head-to-Head
+│   Proves: our architecture > LLM4ACOE's HCOME architecture
+│   Method A: reproduce their method as an OntoURL strategy (our turf)
+│   Method B: run our method on their SAR domain (their turf)
+│   Compare against: LLM4ACOE published results + our reproduction
+│
+Layer 4: Full System Evaluation (HITL)
+│   Proves: grounded, iterative, human-supervised > autonomous
+│   Method: 6-dimension scoring on gold-standard ontologies
+│   Compare against: LLM-only baselines, Layer 1-3 scores
 ```
 
-### 2.2 What Each Strategy Tests
+### Why this progression works
 
-| Strategy | Mirrors in CogAgent | Hypothesis |
-|----------|---------------------|------------|
-| `vanilla_zero` | — (pure baseline) | Control group: raw LLM capability |
-| `cot` | — (enhanced prompting) | Does step-by-step reasoning help ontology tasks? |
-| `engineer` | Role-play in proposal agent | Does role framing improve ontological output quality? |
-| `self_verify` | **Review agent** feedback loop | Does self-check catch and fix ontological errors? |
-| `multi_turn` | **Iterative refinement** through pipeline stages | Does structured decomposition (analyze→draft→refine) improve generative quality? |
-| `debate` | **Multi-agent debate** (proposer vs. critic) | Does adversarial review produce better ontological structures? |
+- **Layer 1** isolates the reasoning architecture — holds knowledge constant, varies only the workflow. Any improvement is purely from the agentic design.
+- **Layer 2** shows what RAG adds on top of the agentic foundation.
+- **Layer 3** proves our architecture beats the closest competitor under controlled conditions.
+- **Layer 4** shows the complete system's value with HITL.
 
-### 2.3 Task × Strategy Coverage Matrix
+If Layer 1 shows no agentic improvement, the workflow design needs fixing. If Layer 3 shows no advantage over LLM4ACOE, our architecture isn't better. Only if all layers show progressive improvement do we have a strong overall claim.
 
-| Strategy | U1-U5 (MCQ) | R1-R4 (MCQ) | R5 (Bool) | L1 (Text) | L2-L4 (Triple) | L5 (Tuple) |
-|----------|:-----------:|:-----------:|:---------:|:---------:|:-------------:|:----------:|
-| vanilla_zero | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| cot | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| engineer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| self_verify | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| multi_turn | — | — | — | ✅ | ✅ | ✅ |
-| debate | — | — | — | ✅ | ✅ | ✅ |
+---
 
-multi_turn and debate are restricted to Learning tasks because the agentic analyze→draft→refine pattern is designed for *generative* tasks, not MCQ selection.
+## 3. Layer 1: OntoURL Parametric Benchmark
 
-## 3. Comparison with LLM4ACOE (LC3 Framework)
+### 3.1 What OntoURL Tests
 
-### 3.1 LLM4ACOE Architecture Summary
+15 tasks across three cognitive levels, ~58K examples from 40 real-world ontologies:
 
-LLM4ACOE (Soularidis et al.) — "LLM-based framework that automates the Collaborative Ontology Engineering process using simulated LLM-powered Agents enhanced with RAG" — is the closest published system to ours. Key architecture:
+| Level | Tasks | Metric | What It Tests |
+|-------|-------|--------|---------------|
+| **Understanding** (U1–U5) | Class defs, relations, property domains, instances | Accuracy | Can the model comprehend existing ontology structures? |
+| **Reasoning** (R1–R5) | Inferred relations, constraints, SWRL, description logic | Accuracy | Can it perform formal ontological inference? |
+| **Learning** (L1–L5) | Definition generation, hierarchy, properties, alignment | ROUGE-L / Triple-F1 | Can it *produce* new ontological structures? |
 
-| Component | LLM4ACOE (LC3) | Our System (CogAgent) |
-|-----------|----------------|----------------------|
-| **Agent roles** | 3 fixed roles: Knowledge Engineer, Domain Expert, Knowledge Worker (HCOME methodology) | 6+ configurable agents: Proposal, Discovery, Gap Analysis, Review, Mapping, Moderator |
-| **RAG sources** | 3 retrievers: SAR domain docs, OWL documentation, ReAct examples | Multi-source: vector store, knowledge graph, web search, ontology repos |
-| **LLM backend** | GPT-4o, Gemini, Claude (closed-source, cloud API) | Ollama local (llama3.2, nemotron, qwen3-next) — fully self-hosted |
-| **Reasoning** | ReAct-style think-act-observe prompting (baked into prompt) | Actual tool-use agents with structured state management |
-| **Iteration** | 3 fixed rounds: (1) domain data → ontology, (2) OWL refinement, (3) ReAct refinement | Configurable N iterations with convergence detection |
-| **Output** | Turtle (TTL) via regex extraction from LLM response | Structured OWL via dedicated OntologySerializer |
-| **Evaluation** | Manual expert review on SAR domain | Automated 6-dimension scoring + OntoURL benchmark + expert review |
-| **Reproducibility** | Requires OpenAI/Google/Anthropic API keys, fixed SAR domain | Fully local, any domain, open models |
+### 3.2 Our 6 Strategies
 
-### 3.2 How We Can Benchmark Against LLM4ACOE
+Ordered from simple to complex:
 
-**Direct OntoURL comparison is not possible** because LLM4ACOE:
-- Uses closed-source models (GPT-4o) that we don't have API access for
-- Their pipeline is domain-specific (Search and Rescue) and prompt-fixed
-- No published OntoURL scores exist for LLM4ACOE
+| Strategy | LLM Calls | Task Coverage | What It Mirrors in CogAgent |
+|----------|-----------|---------------|---------------------------|
+| `vanilla_zero` | 1 | All 15 tasks | Pure baseline — raw LLM capability |
+| `cot` | 1 | All 15 tasks | Chain-of-thought reasoning |
+| `engineer` | 1 | All 15 tasks | Ontology engineer role-play (proposal agent) |
+| `self_verify` | 2 | All 15 tasks | Review agent feedback loop |
+| `multi_turn` | 3 | L1–L5 | Iterative refinement pipeline |
+| `debate` | 3 | L1–L5 | Multi-agent proposer-critic debate |
 
-**What we CAN do:**
+multi_turn and debate are restricted to Learning tasks because generate-then-critique is designed for generative tasks, not MCQ selection.
 
-#### Option A: Reproduce Their Method on OntoURL (Recommended)
+### 3.3 Why No RAG Is Valid Here
 
-Implement LLM4ACOE's core approach as another benchmark strategy:
+1. **Isolates agentic contribution.** Knowledge source is constant (parametric); only the workflow varies. Any improvement is purely from the strategy.
+2. **Fair comparison.** Published OntoURL baselines (Qwen2.5-3B/72B, LLaMA3.3-70B) all run without RAG. Same conditions → fair comparison.
+3. **Lower bound.** Our production system has RAG + HITL. OntoURL parametric scores are the *floor* — real performance is strictly better.
 
-```python
-class HCOMEStrategy(OntoURLStrategy):
-    """Reproduce LLM4ACOE's HCOME 3-role simulation.
-    
-    Simulates Knowledge Engineer, Domain Expert, and Knowledge Worker
-    having a collaborative discussion to answer each OntoURL question.
-    """
-    name = "hcome_3role"
-```
+### 3.4 Expected Results
 
-This would involve:
-1. **3-role prompt**: Exact HCOME role definitions from LC3's `PromptTemplates.py`
-2. **Single-turn simulation**: One LLM call with the 3-role simulation prompt
-3. **Multi-round variant**: 3 sequential rounds matching LC3's enhanced pipeline
+| Task Type | Expected Agentic Uplift | Why |
+|-----------|------------------------|-----|
+| U1–U5 | Minimal (0–5%) | MCQ comprehension is single-inference; little room for self-correction |
+| R1–R4 | Small (5–10%) | CoT helps multi-step reasoning, but ceiling is set by model capability |
+| R5 | Moderate (10–15%) | Boolean T/F benefits most from self-verification |
+| L1 | Moderate (5–15%) | Multi-turn refinement → more precise definitions |
+| L2–L4 | Significant (15–30%) | Debate and multi_turn should shine on structured construction |
+| L5 | Moderate (10–20%) | Multi-turn ontology analysis before alignment catches missed mappings |
 
-**Advantage:** Same models, same evaluation, same dataset → fair comparison of *method*, holding everything else constant.
+**Key prediction:** Small models (3B) should show proportionally *larger* uplift from agentic strategies — they benefit more from structured scaffolding.
 
-#### Option B: Structural Comparison Table
+---
 
-Even without running their code, we can produce a **theoretical comparison** based on architectural properties:
+## 4. Layer 2: OntoURL with RAG
 
-| Dimension | LLM4ACOE | Our System | Advantage |
-|-----------|----------|-----------|-----------|
-| Agent independence | Single LLM playing 3 roles (simulated multi-agent) | Separate agent invocations with independent reasoning | Ours — true separation of concerns |
-| Quality control | None — no explicit validation step | Review agent with structured critique + Moderator budget | Ours — built-in error correction |
-| Superfluous element control | None mentioned | Moderator agent with explicit budget/scope checks | Ours |
-| Iteration convergence | Fixed 3 rounds | Configurable with convergence detection | Ours |
-| RAG integration | 3 separate retrievers (SAR, OWL, ReAct) | Unified multi-source with relevance scoring | Comparable |
-| Model flexibility | Tied to cloud APIs | Any Ollama-compatible model | Ours — cost, privacy, reproducibility |
-| Domain flexibility | Hardcoded SAR domain | Generic (any seed ontology + documents) | Ours |
+### 4.1 The RAG Question
 
-### 3.3 Implementation Plan for LLM4ACOE Comparison
+OntoURL tests parametric knowledge, but our production system uses RAG. Can we add RAG to OntoURL to show the additional lift?
 
-**Can be implemented while the benchmark runs** — it's just another strategy:
+### 4.2 What "Domain Documents" Means for OntoURL
 
-```
-1. Add HCOMEStrategy to strategies.py (~80 lines)
-   - Adapts LC3's exact 3-role HCOME prompt format
-   - Uses our OllamaAdapter (same model, fair comparison)
-   
-2. Add HCOMEEnhancedStrategy to strategies.py (~120 lines)
-   - 3-round sequential refinement matching LC3's enhanced pipeline
-   - Round 1: Generate ontology from domain context
-   - Round 2: Refine with OWL axiom guidance  
-   - Round 3: Apply ReAct-style structural improvement
-   
-3. Register in run_ontourl_benchmark.py
-   
-4. Run on same tasks × same models → direct comparison
-```
+OntoURL's questions are derived from 40 real-world ontologies across 8 domains (Healthcare, Finance, Food, Ecology, Legal, Sciences, Arts, Society). Each question includes a `domain` field (e.g., `health_medicine/addiction_ontology`) and often an entity IRI. The source ontology OWL files are available ([Google Drive](https://drive.google.com/drive/folders/1jpvdZ9uH9ZOXhrDiJdFI9wjvJM1DGwmj)).
 
-**Estimated effort:** 2-3 hours to implement and wire up. Can run alongside our existing strategies.
+**The challenge: the "documents" ARE the ontologies.** Unlike LC3's setup (where domain documents are fire incident reports and the ontology is built FROM those documents), OntoURL's questions are ABOUT the ontologies themselves. Feeding the ontology back as RAG context is somewhat circular — you're giving the LLM the answer source.
 
-## 4. The Complete Evaluation Argument
+**But this is still a valid and interesting test:**
+- A real ontology-aware agent WOULD consult the ontology to answer questions about it
+- It tests whether our RAG pipeline can effectively chunk, index, and retrieve OWL structures
+- The retrieval quality itself becomes a variable — bad chunking/retrieval won't help even if the answers are in the index
+- It shows the delta between "LLM guessing about an ontology" vs. "LLM consulting the actual ontology"
 
-### 4.1 Three-Layer Evaluation Strategy
+### 4.3 Implementation Plan
 
-```
-Layer 1: OntoURL Parametric Benchmark (current)
-├── Tests: Pure LLM ontology capability across 15 tasks
-├── Controls: Published baselines (Qwen2.5, LLaMA3.3)
-├── Variables: Our 6 strategies × 3 models
-├── Claim: Agentic strategies improve ontological output quality
-└── Evidence: Score deltas on Learning tasks (L1–L5)
+| Step | What | Effort |
+|------|------|--------|
+| Download OWL files | Get all 40 ontologies from Google Drive (8 domain folders) | Low |
+| Parse & chunk | Convert OWL to text chunks: class definitions, axiom groups, hierarchy subtrees | Medium |
+| Index per ontology | Create per-ontology FAISS/Qdrant index using our existing vector store pipeline | Medium |
+| RAG strategy | New `RAGStrategy` that retrieves from the correct ontology index based on the `domain` field | Low |
+| Run benchmark | Same 15 tasks, same models, RAG column alongside parametric columns | Low |
 
-Layer 2: LLM4ACOE Method Comparison (next)
-├── Tests: Our strategies vs. LC3's HCOME 3-role approach
-├── Controls: Same models, same tasks, same evaluation
-├── Variables: Architectural differences only
-├── Claim: Independent agent roles + review loops outperform simulated multi-role
-└── Evidence: Head-to-head score comparison on OntoURL
+**Total effort:** ~1 week. The hardest part is OWL-to-text chunking — ontology structures don't chunk as cleanly as prose documents. We need to decide granularity: individual axioms? Class blocks? Entire subgraphs?
 
-Layer 3: Full System HITL Evaluation (future)
-├── Tests: Complete CogAgent pipeline with RAG + HITL + seed ontology
-├── Controls: Gold-standard ontologies with graded reduction
-├── Variables: Full system vs. LLM-only vs. LC3 approach
-├── Claim: Grounded, iterative, human-supervised extension > autonomous generation
-└── Evidence: 6-dimension composite score + expert review
-```
+### 4.4 What This Proves
 
-### 4.2 Why This Progression Works
+- RAG on U1–U5 should provide **large** uplift — answers are literally in the ontology
+- RAG on R1–R5 should provide **moderate** uplift — facts come from retrieval, inference still needed
+- RAG on L1–L5 should provide **moderate** uplift — structural examples help, but generation is creative
 
-1. **Layer 1 isolates the reasoning architecture.** By removing RAG and HITL, we show that the *structure* of multi-agent workflows (not just better ingredients) drives improvement.
+The critical comparison: **RAG + vanilla** vs. **no-RAG + agentic**. If agentic strategies WITHOUT RAG beat vanilla WITH RAG on Learning tasks, that proves the workflow matters more than the knowledge source for generative ontology tasks.
 
-2. **Layer 2 provides methodological comparison.** Running LC3's HCOME approach on our infrastructure proves that our architecture genuinely outperforms the closest competitor, not just that different models perform differently.
+---
 
-3. **Layer 3 shows the complete value proposition.** Adding RAG + HITL on top of the agentic foundation demonstrates the full system's practical utility.
+## 5. Layer 3: LLM4ACOE Head-to-Head
 
-**Each layer builds on the previous one.** If Layer 1 shows no improvement from agentic strategies, we know the problem is in our workflow design (and Layer 2/3 won't help). If Layer 1 shows improvement but Layer 2 doesn't differentiate from LC3, our architecture isn't better, just equally good. Only if all three layers show progressive improvement do we have a strong claim.
+### 5.1 Why LLM4ACOE Is the Right Comparison Target
 
-### 4.3 What We Expect From Results
+LLM4ACOE (Soularidis et al., 2025) is the closest published system:
+- Multi-agent ontology engineering with role-based collaboration
+- RAG-enhanced (domain docs + OWL docs + ReAct examples)
+- Published results: 78% CQ coverage on Search and Rescue domain
 
-Based on the OntoURL paper's findings and our architecture:
+| Dimension | LLM4ACOE | Our System |
+|-----------|----------|-----------|
+| Agent roles | 3 fixed roles simulated in single prompt | 6+ independent agents with separate state |
+| Quality control | None | Review agent + Moderator budget |
+| LLMs | GPT-4o, Claude, Gemini (cloud only) | Ollama local (any open model) |
+| RAG | 3 retrievers (domain, OWL, ReAct) | Multi-source (vector store, KG, web) |
+| Iteration | Fixed 3 rounds | Configurable N with convergence detection |
+| HITL | None | Structured review (accept/reject/revise) |
+| Domain | SAR only | Any domain |
 
-| Task Type | Expected Agentic Uplift | Reasoning |
-|-----------|------------------------|-----------|
-| U1–U5 (Understanding) | **Minimal** (~0-5%) | MCQ comprehension is a single-inference task; self_verify may catch some errors but fundamentally limited by parametric knowledge |
-| R1–R4 (Reasoning) | **Small** (~5-10%) | CoT and self_verify can improve multi-step reasoning, but the reasoning ceiling is set by the model's inference capability |
-| R5 (Description Logic) | **Moderate** (~10-15%) | Boolean T/F benefits most from self-verification — the model can reason about its own uncertainty |
-| L1 (Definition Generation) | **Moderate** (~5-15%) | Multi-turn refinement should produce more precise, complete definitions |
-| L2–L4 (Triple Construction) | **Significant** (~15-30%) | This is where debate and multi_turn should shine — structured decomposition of complex construction tasks with error correction |
-| L5 (Ontology Alignment) | **Moderate** (~10-20%) | Multi-turn analysis of two ontologies before alignment should catch missed mappings |
+### 5.2 Comparison A: Their Method on Our Turf (OntoURL)
 
-**Key prediction:** The absolute scores for small models (3B) will be low, but the *relative improvement* from agentic strategies should be proportionally larger for small models — because they benefit more from structured scaffolding.
+Implement LLM4ACOE's approach as OntoURL strategies:
 
-## 5. Running the Benchmark
+**`hcome_single`** — Single LLM call with 3-role simulation prompt. All three HCOME roles respond in sequence. Tests whether role-playing alone adds value.
 
-### 5.1 Current Configuration
+**`hcome_3round`** — 3 sequential calls matching LC3's enhanced pipeline: (1) generate from domain context, (2) refine with OWL axioms, (3) ReAct-style improvement.
+
+Same models, same tasks, same metrics → differences are purely architectural. If our `debate` beats their `hcome_3round`, our architecture is better.
+
+### 5.3 Comparison B: Our Method on Their Turf (SAR Domain)
+
+LC3 provides everything needed:
+
+| Resource | Location in LC3 repo |
+|----------|---------------------|
+| Domain documents | `data/SAR_docs_text/Fire_Document_{1-10}.txt` |
+| Reference ontology | `Experiments/SAR/safers_ontology_V3.0.owl` |
+| Competency questions | `Experiments/SAR/Phase_{1,2,3}/CQs/` |
+| Their results | `Experiments/SAR/Phase_{1,2,3}/Ontologies/` |
+
+**Plan:**
+1. Download their SAR docs and reference ontology
+2. Run our full pipeline (gap analysis → multi-agent debate → review) on the same docs
+3. Use our local Ollama models (no cloud API)
+4. Evaluate with CQ coverage (their metric, 78% target) AND our 6-dimension scoring
+5. Compare: their GPT-4o output vs. our qwen3-next output vs. our llama3.2:3b output
+
+### 5.4 Effort Estimate
+
+| Task | Time |
+|------|------|
+| HCOME strategies for OntoURL | ~3h |
+| Download SAR resources from LC3 repo | ~30min |
+| Run our pipeline on SAR domain | ~2h |
+| Evaluation and comparison tables | ~2h |
+| **Total** | **~8h** |
+
+---
+
+## 6. Layer 4: Full System (6-Dimension HITL Evaluation)
+
+### 6.1 Core Metrics (Already Implemented)
+
+| Dimension | Weight | Target | What It Measures |
+|-----------|--------|--------|-----------------|
+| Semantic Correctness | 0.25 | ≥ 0.92 | Embedding alignment with gold standard |
+| Hallucination Rate | 0.20 | < 0.05 | Elements with no gold-standard match |
+| CQ Coverage | 0.20 | > 0.85 | Competency questions answerable |
+| Hierarchy Quality | 0.10 | 0.8–1.0 | Depth/breadth vs. gold standard |
+| Domain Compliance | 0.15 | ≥ 0.95 | Vocabulary/namespace alignment |
+| Expert Acceptance | 0.10 | ≥ 0.87 | Human acceptance in HITL sessions |
+
+These directly address failure modes from Lippolis et al. (2025): superfluous elements → Hallucination Rate, wrong axioms → Semantic Correctness, flat hierarchies → Hierarchy Quality.
+
+### 6.2 Extended Methods
+
+| Method | Source | What It Adds |
+|--------|--------|-------------|
+| **TamingHallucinations** | Fathallah et al. (2025) | Semantic matching (concept + triple level) |
+| **OWLUnit** | Asprino (2024) | Ontology unit testing (annotation, CQ, inference, error) |
+| **Lippolis metrics** | Lippolis et al. (2025) | OOPS! pitfall scan, superfluous rate, expert qualitative |
+
+See [BENCHMARKING.md](BENCHMARKING.md) for implementation details of all metrics and baselines.
+
+### 6.3 Existing Experiment Results
+
+We have already run experiments with these 6-dimension metrics using our HITL pipeline (see `results/` directory). These results are preserved and will be incorporated into the final comparison. The experiments cover:
+- Multiple debate strategies (consensus, dialectical, Socratic, Delphi, abductive)
+- Small vs. large model comparison
+- LLM-only baselines vs. full agentic pipeline
+
+---
+
+## 7. The Complete Comparison Matrix
+
+| Comparison | Evaluation Layer | Metric | What It Proves |
+|-----------|-----------------|--------|---------------|
+| Our strategies vs. published baselines | L1: OntoURL (no RAG) | Accuracy, ROUGE-L, Triple-F1 | Agentic > vanilla |
+| With RAG vs. without RAG | L2: OntoURL (RAG) | Same | RAG adds value |
+| RAG+vanilla vs. no-RAG+agentic | L1 vs L2 cross | Same | Workflow vs. knowledge source |
+| Our debate vs. HCOME 3-role | L3: OntoURL comparison | Same | Architecture matters |
+| Our system vs. LLM4ACOE on SAR | L3: SAR domain | CQ coverage + 6-dim | Full system comparison |
+| HITL vs. LLM-only | L4: Gold standard | 6-dim composite | HITL value quantified |
+| Us vs. student baselines | L4: Lippolis methodology | Superfluous rate | Practical quality |
+
+### Running Everything
 
 ```bash
-# Models available via Ollama (localhost:18135):
-llama3.2:3b       # 2.0 GB — small baseline  
-nemotron-3-nano   # 24.3 GB — medium model
-qwen3-next:latest # 50.4 GB — large model (79.7B params)
-
-# Strategies (6 total):
-vanilla_zero  # Baseline: direct prompt
-cot           # Enhanced: chain-of-thought
-engineer      # Enhanced: ontology engineer role
-self_verify   # Agentic: answer → verify → revise
-multi_turn    # Agentic: analyze → draft → refine (L1-L5)
-debate        # Agentic: proposer → critic → revise (L1-L5)
-
-# Full run command:
+# Layer 1: OntoURL parametric (currently running)
 bash scripts/run_full_ontourl.sh
+
+# Layer 2: OntoURL with RAG (after OWL indexing)
+python scripts/run_ontourl_benchmark.py --strategy rag_vanilla --tasks ALL
+
+# Layer 3a: LLM4ACOE methods on OntoURL
+python scripts/run_ontourl_benchmark.py --strategy hcome_single hcome_3round --tasks ALL
+
+# Layer 3b: Our system on SAR domain
+python scripts/run_feedback_loop.py --mode standalone --documents data/sar_docs/
+
+# Layer 4: Full 6-dimension evaluation
+python scripts/run_benchmark.py evaluate --enable-semantic-matching --enable-owlunit
 ```
-
-### 5.2 Resume Support
-
-The benchmark runner saves results after every completed split as:
-- `results/ontourl/<model>/<strategy>/<split>.jsonl` — per-example predictions
-- `results/ontourl/<model>/<strategy>/<split>_summary.json` — metrics
-
-Re-running with `--resume` skips completed splits. Safe to interrupt and restart.
-
-### 5.3 Tracing
-
-All benchmark runs are traced via:
-- **LangSmith**: Tagged with `exp:ontourl_<model>`, `model:<model>`, `strategy:benchmark`
-- **W&B**: Logged to `dsfhswf/ontology-hitl` with per-split metrics
-
-### 5.4 Estimated Timeline
-
-| Phase | Scale | Est. Time |
-|-------|-------|-----------|
-| Baseline strategies (vanilla, cot, engineer) × 3 models | ~294k inferences | ~40-70h |
-| self_verify × 3 models | ~196k inferences | ~50-80h |
-| multi_turn + debate × 3 models (L1-L5 only) | ~35k inferences × 3 calls | ~20-40h |
-| **Total** | | **~110-190h** |
-
-With 2× NVIDIA H200 NVL GPUs, the small and medium models run fast (~0.5s/inference). The 80B model is slower (~3-5s/inference).
-
-## 6. After the Benchmark
-
-### 6.1 Deliverables
-
-1. **Comparison table** (auto-generated): Our 3 models × 6 strategies vs. published baselines (Qwen2.5-3B/72B, LLaMA3.3-70B)
-2. **Capability profiles**: Understanding/Reasoning/Learning averages per model+strategy
-3. **Strategy uplift analysis**: Per-task improvement from agentic strategies over vanilla baseline
-4. **Cost-benefit analysis**: Quality improvement per additional LLM call
-5. **LLM4ACOE comparison**: Head-to-head if HCOME strategy is implemented
-
-### 6.2 What Success Looks Like
-
-- **Minimum viable result:** Self_verify shows statistically significant improvement on L2–L4 Triple-F1 for at least one model
-- **Good result:** Agentic strategies (debate, multi_turn) outperform vanilla by >10% on Learning tasks across all models
-- **Ideal result:** Clear progression — vanilla < cot < engineer < self_verify < multi_turn ≈ debate — showing that each layer of agentic complexity adds value

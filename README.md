@@ -1,50 +1,31 @@
-# OntologyExtender (ontology-hitl)
+# OntologyExtender
 
-**Human-in-the-Loop Ontology Extension** for Knowledge Graph Construction.
+**Human-in-the-Loop Ontology Extension** using multi-agent debate.
 
 Multiple LLM agents debate what to add to a seed ontology while a human
-reviewer keeps the final say.
+reviewer keeps the final say. Benchmarked against published baselines on
+OntoURL (58K questions, 15 tasks) and compared with LLM4ACOE.
 
 ## How It Works
 
 ```
-Documents (Qdrant) → Gap Analysis → Multi-Agent Debate → Human Review → Extended Ontology
+Documents → Gap Analysis → Multi-Agent Debate → Human Review → Extended Ontology
 ```
 
-1. **Gap Analysis** — Find entities in documents that the ontology can't represent.
-2. **7-Phase Pipeline** — Three agents debate scope, terms, hierarchy, properties, facets, instances.
-3. **Human Review** — Accept, reject, or revise what the agents proposed.
-4. **Export** — Produce extended OWL, SHACL constraints, and updated competency questions.
-5. **Evaluate** — Measure improvement. Repeat until 80%+ coverage.
-
-The seed ontology is the
-[AI Planning Ontology](https://github.com/BharathMuppasani/AI-Planning-Ontology)
-(`data/seed_ontology/plan-ontology-v1.0.owl` — 18 classes, 26 properties).
-
-## Contributions
-
-### C1. Seed-Based Automatic Ontology Extension (HITL)
-
-Extend a seed ontology from documents while preserving semantic correctness.
-
-| ID | Contribution | Description |
-|----|-------------|-------------|
-| **C1.1** | Seed Ontology & Competency Questions | Define core classes, relations, constraints, and CQs as a formal starting point |
-| **C1.2** | Ontology-Guided Concept Discovery | Automatically propose new classes and relations from document evidence via multi-agent debate |
-| **C1.3** | Constraint-Aware Ontology Update | Integrate extensions while enforcing OWL/SHACL constraints and seed protection |
-| **C1.4** | Human-in-the-Loop Validation | Review, accept/reject, and refine ontology changes through structured HITL sessions |
-| **C1.5** | Ontology Evaluation | Measure CQ coverage, consistency, and change impact across iterations |
+1. **Gap Analysis** — Find entities in documents the ontology can't represent
+2. **7-Phase Pipeline** — Three agents debate scope, terms, hierarchy, properties, facets, instances
+3. **Human Review** — Accept, reject, or revise proposals
+4. **Export** — Produce OWL, SHACL constraints, and updated competency questions
+5. **Evaluate** — Measure improvement across 6 dimensions. Repeat until convergence.
 
 ## Quick Start
 
 ```bash
-# Setup
 python3 -m venv .venv && source .venv/bin/activate
-cp .env.example .env
+cp .env.example .env          # configure Ollama URL, model, etc.
 pip install -e ".[dev]"
-docker compose up -d
+docker compose up -d           # Ollama + optional Fuseki
 
-# Run
 python scripts/run_feedback_loop.py --mode standalone --max-iterations 4
 ```
 
@@ -59,10 +40,79 @@ python scripts/export_ontology.py     --decisions decisions.json   --proposals p
 python scripts/evaluate_iteration.py  --before before.json --after after.json --output report.json
 ```
 
+## Architecture
+
+```
+src/ontology_hitl/
+├── agents/          3 agents + moderator + 5 debate strategies
+├── core/            Loop orchestrator, config, data models
+├── methodology/     Ont-101 pipeline (7 phases), validation
+├── discovery/       Gap analysis, entity linking, embedding advisor
+├── schema/          OWL export, SHACL, seed protection, versioning
+├── evaluation/      CQ evaluator, completeness, quality metrics
+├── review/          CLI (Rich/Typer) + web dashboard (Streamlit)
+├── sources/         Qdrant document source, CQ generator
+├── mapping/         YARRRML/RML mapping rules
+└── benchmarking/    OntoURL benchmark + 6-dimension evaluation
+```
+
+### Agents & Debate Strategies
+
+| Agent | Role |
+|-------|------|
+| **OntologyEngineer** | Propose extensions (Ont-101 methodology) |
+| **DomainExpert** | Validate against documents |
+| **Critic** | Stress-test structural quality |
+
+| Strategy | Phase | Prevents |
+|----------|-------|----------|
+| Consensus | Reuse (Phase 2) | Authority bias |
+| Dialectical | Hierarchy, Properties (4–5) | Premature agreement |
+| Socratic | Scope, Terms (1, 3) | Unexamined assumptions |
+| Delphi | Facets (Phase 6) | Anchoring + groupthink |
+| Abductive | Instances (Phase 7) | Over-engineering |
+
+## Benchmarking
+
+### OntoURL Benchmark (Layer 1–2)
+
+Run 15 standardized ontology tasks with 6 strategy tiers:
+
+```bash
+bash scripts/run_full_ontourl.sh
+```
+
+Strategies: `vanilla_zero` → `cot` → `engineer` → `self_verify` → `multi_turn` → `debate`
+
+Compare against published baselines (Qwen2.5-3B/72B, LLaMA3.3-70B) and
+our reproduced LLM4ACOE HCOME strategies.
+
+### LLM4ACOE Comparison (Layer 3)
+
+Head-to-head with LLM4ACOE (Soularidis et al., 2025):
+- **Our turf:** HCOME 3-role method reproduced as OntoURL strategies
+- **Their turf:** Our pipeline run on their SAR domain documents
+
+### 6-Dimension Evaluation (Layer 4)
+
+```bash
+python scripts/run_benchmark.py evaluate --enable-semantic-matching --enable-owlunit
+```
+
+| Metric | Weight | Target |
+|--------|--------|--------|
+| Semantic Correctness | 0.25 | ≥ 0.92 |
+| Hallucination Rate | 0.20 | < 0.05 |
+| CQ Coverage | 0.20 | > 0.85 |
+| Hierarchy Quality | 0.10 | 0.8–1.0 |
+| Domain Compliance | 0.15 | ≥ 0.95 |
+| Expert Acceptance | 0.10 | ≥ 0.87 |
+
+Full evaluation rationale: [docs/BENCHMARKING_RATIONALE.md](docs/BENCHMARKING_RATIONALE.md)
+
 ## Design Rationale
 
-The system uses **philosophical traditions as engineering mechanisms** to
-solve documented failure modes of multi-agent LLM systems:
+Philosophical traditions as engineering mechanisms:
 
 | Problem | Solution | Mechanism |
 |---------|----------|-----------|
@@ -71,99 +121,36 @@ solve documented failure modes of multi-agent LLM systems:
 | First reviewer anchors others | Delphi method | Anonymous independent reviews |
 | Extensions drift from documents | Gadamer's hermeneutics | Every concept checked against source text |
 | Nobody says "stop" | Popper's falsificationism | Critic tries to *break* proposals |
-| Complexity only goes up | Peirce's abduction | "Simplest extension that explains the gap" |
-| No single metric captures quality | Feyerabend's pluralism | 5 independent quality lenses |
+| Complexity only goes up | Peirce's abduction | Simplest extension that explains the gap |
 
 Full derivation: [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 
-## Architecture
+## Models
 
-```
-src/ontology_hitl/
-├── agents/        3 agents + moderator + 5 debate strategies
-├── core/          Loop orchestrator, config, data models
-├── methodology/   Ont-101 pipeline (7 phases), validation rules
-├── discovery/     Gap analysis, entity linking, embedding advisor, ensemble
-├── schema/        OWL export, SHACL generation, seed protection, versioning
-├── evaluation/    CQ evaluator, completeness, quality metrics, provenance
-├── review/        CLI (Rich/Typer) + web dashboard (Streamlit)
-├── sources/       Qdrant document source, CQ generator
-├── mapping/       YARRRML/RML mapping rules
-└── benchmarking/  Evaluation framework (10 modules)
-```
+| Model | Params | Use |
+|-------|--------|-----|
+| `llama3.2:3b` | 3.2B | Small baseline |
+| `nemotron-3-nano` | ~8B | Practical deployment |
+| `qwen3-next` | 79.7B | Maximum capability |
 
-### Agents & Debate Strategies
-
-| Agent | Role | Lens |
-|-------|------|------|
-| **OntologyEngineer** | Propose extensions | Ont-101 methodology |
-| **DomainExpert** | Check against documents | Domain accuracy |
-| **Critic** | Stress-test quality | Structural soundness |
-
-| Strategy | Applied In | Prevents |
-|----------|-----------|----------|
-| Consensus | Phase 2 (Reuse) | Authority bias |
-| Dialectical | Phases 4–5 (Hierarchy, Properties) | Premature agreement |
-| Socratic | Phases 1, 3 (Scope, Terms) | Unexamined assumptions |
-| Delphi | Phase 6 (Facets) | Anchoring + groupthink |
-| Abductive | Phase 7 (Instances) | Over-engineering |
-
-### Literature-Inspired Modules
-
-| Module | Source | Function |
-|--------|--------|----------|
-| A. Seed Protection | Azure DTDL | Extensions via `subClassOf` only — seed is immutable |
-| B. Entity Linking | John et al. (2025) | Links to Wikidata, BFO, EMMO, schema.org, SAREF |
-| C. Embedding Advisor | Memariani et al. (2025) | Embedding-based parent class recommendations |
-| D. Provenance | John et al. (2025) | PROV-O evidence chains |
-| E. Ensemble Strategy | Mossakowski (2023+) | Weighted vote: LLM (0.5) + embedding (0.3) + co-occurrence (0.2) |
-| F. Feedback Learning | John et al. (2025) | Few-shot learning from HITL accept/reject history |
+All served locally via Ollama (`localhost:18135`).
 
 ## Experiments
 
-Compare debate strategies and LLM sizes:
-
 ```bash
-# Run all experiments (parallel)
+# Run all experiments
 python scripts/run_experiments.py --experiments experiments/comprehensive_experiments.json \
-    --parallel --output comprehensive_results.json
+    --parallel --output results/comprehensive_results.json
 
-# Model comparison (small vs large)
+# Model comparison
 python scripts/run_model_comparison.py --run-all --output results/full_comparison.json
 ```
 
-| Model | Params | Reasoning | Config |
-|-------|--------|-----------|--------|
-| `llama3.2:3b` | 3.2B | No | `experiments/small_model_experiments.json` |
-| `qwen3-next` | 79.7B | Yes | `experiments/large_model_experiments.json` |
-
 Details: [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md)
-
-## Benchmarking
-
-A 9-dimension evaluation framework integrating five recent papers.
-Compares CogAgent against Agent-OM, LLM4ACOE, and NLP-W2V baselines using
-core metrics, semantic matching, capability profiling, and unit testing.
-
-```bash
-python scripts/run_benchmark.py init --gold-standard data/seed_ontology/plan-ontology-v1.0.owl
-python scripts/run_benchmark.py run  --systems cogagent,agent_om,llm4acoe,nlp_w2v
-python scripts/run_benchmark.py evaluate --enable-semantic-matching --enable-owlunit
-python scripts/run_benchmark.py report --format markdown,latex
-```
-
-Details: [docs/BENCHMARKING.md](docs/BENCHMARKING.md)
-
-## Services
-
-| Service | Port | Purpose |
-|---------|------|---------|
-| `ollama-ontology-extender` | 18135 | Ollama LLM (qwen3-next, GPU) |
-| `fuseki-staging` | 3031 | Optional ontology versioning |
 
 ## Configuration
 
-Key settings in `.env` (all prefixed `HITL_`):
+Key settings in `.env`:
 
 ```bash
 HITL_OLLAMA_URL=http://localhost:18135
@@ -171,80 +158,34 @@ HITL_OLLAMA_MODEL=qwen3-next
 HITL_QDRANT_URL=http://localhost:6333
 HITL_QDRANT_COLLECTION=documents
 HITL_CQ_ANSWERABILITY_TARGET=0.80
-HITL_ENTITY_COVERAGE_TARGET=0.80
 ```
 
-### LangSmith tracing (optional) 🔍
-
-Enable detailed LLM-call traces in LangSmith for experiment runs and agent activity.
-
-- Toggle in `.env`:
-  - `LANGSMITH_TRACING=true`
-  - `LANGSMITH_API_KEY=<your_api_key>`
-  - `LANGSMITH_PROJECT` (optional, default: `OntologyExtender`)
-
-- What we record (best-effort, lightweight per LLM call):
-  - system + user prompt preview, model, temperature
-  - parsed response preview
-  - run type = `llm` (visible in LangSmith UI)
-
-Example: Tracing is enabled automatically when running the feedback loop with W&B enabled.
+### Tracing (optional)
 
 ```bash
-# enable tracing in your environment
-export LANGSMITH_TRACING=true
-export LANGSMITH_API_KEY="<your_key>"
-python scripts/run_feedback_loop.py --mode standalone --max-iterations 1
+LANGSMITH_TRACING=true           # LangSmith LLM call traces
+LANGSMITH_API_KEY=<key>
+WANDB_PROJECT=ontology-hitl       # W&B experiment tracking
 ```
-
-Notes:
-- LangSmith integration is best-effort and non-fatal — if LangSmith is unreachable the pipeline continues normally. 
-- Full LangChain instrumentation can be added later for per-chain/agent step traces.
-
-#### LangSmith example (what you should see) 🧾
-
-Below is a representative LangSmith `llm` run that our agent instrumentation creates for each LLM call (values are previews/truncated):
-
-```json
-{
-  "name": "ontology_engineer: llm_call",
-  "project_name": "OntologyExtender",
-  "run_type": "llm",
-  "inputs": {
-    "system_prompt": "You are an ontology engineer—produce JSON describing new classes...",
-    "user_prompt": "Given the competency questions, propose new_classes and new_properties...",
-    "model": "llama3.2:3b",
-    "temperature": 0.5
-  },
-  "outputs": {
-    "result_preview": "{'new_classes': [{'name': 'ReleaseAction', 'parent_class': 'Action', ...}], ...}"
-  },
-  "start_time": "2026-02-13T10:34:40Z",
-  "end_time": "2026-02-13T10:34:42Z"
-}
-```
-
-You can view runs in the LangSmith UI under the project name (default `OntologyExtender`) or programmatically via `langsmith.Client`.
 
 ## Tests
 
 ```bash
-python -m pytest tests/ -v     # ~144 passing
+python -m pytest tests/ -v
 ```
 
 ## Documentation
 
-| Document | Audience | Content |
-|----------|----------|---------|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Developers | Module reference, pipeline details, testing |
-| [docs/BENCHMARKING.md](docs/BENCHMARKING.md) | Researchers | Evaluation framework, metrics, datasets, baselines |
-| [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md) | Deep dive | Epistemological foundations, debate strategy derivation |
-| [docs/WORKFLOW.md](docs/WORKFLOW.md) | Operators | Step-by-step operational workflow, convergence criteria |
-| [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md) | Researchers | Model comparison design, hypotheses, metrics |
-| [docs/RELATED_WORK.md](docs/RELATED_WORK.md) | Researchers | Literature review with references |
-| [docs/EXPERT_GUIDE.md](docs/EXPERT_GUIDE.md) | Domain experts | How to review proposals in HITL sessions |
-| [docs/INTERFACE_CONTRACT.md](docs/INTERFACE_CONTRACT.md) | Integrators | Schemas for Neo4j, Qdrant, Fuseki, checkpoints |
-| [docs/BUGS_AND_FIXES.md](docs/BUGS_AND_FIXES.md) | Developers | Known bugs and applied fixes |
+| Document | Content |
+|----------|---------|
+| [BENCHMARKING_RATIONALE.md](docs/BENCHMARKING_RATIONALE.md) | 4-layer evaluation strategy, LLM4ACOE comparison plan |
+| [BENCHMARKING.md](docs/BENCHMARKING.md) | Metrics, datasets, baselines, CLI usage |
+| [PHILOSOPHY.md](docs/PHILOSOPHY.md) | Epistemological foundations, debate strategy derivation |
+| [RELATED_WORK.md](docs/RELATED_WORK.md) | Literature review, LLM4ACOE analysis |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Module reference, pipeline details |
+| [WORKFLOW.md](docs/WORKFLOW.md) | Operational workflow, convergence criteria |
+| [EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md) | Model comparison design |
+| [EXPERT_GUIDE.md](docs/EXPERT_GUIDE.md) | How to review proposals in HITL sessions |
 
 ## License
 
