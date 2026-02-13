@@ -486,7 +486,7 @@ Be thoughtful and economical in your extensions."""
             "prompt": prompt,
             "stream": True,  # Enable streaming to see progress
             "options": {
-                "temperature": 0.5,
+                "temperature": float(getattr(self, "temperature", 0.5)),
                 "num_predict": 2048,
             }
         }
@@ -705,7 +705,7 @@ Be very focused and avoid generic additions.
             "prompt": prompt,
             "stream": True,  # Enable streaming to see progress
             "options": {
-                "temperature": 0.5,
+                "temperature": float(getattr(self, "temperature", 0.5)),
                 "num_predict": 2048,
             }
         }
@@ -749,8 +749,52 @@ Be very focused and avoid generic additions.
             result = resp.json()
             return result["response"]
 
+    def _extract_json_block(self, text: str) -> str | None:
+        """Try multiple heuristics to extract a JSON object from LLM text."""
+        # 1) fenced ```json``` blocks
+        m = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', text, re.IGNORECASE)
+        if m:
+            return m.group(1)
+
+        # 2) first balanced JSON object that contains the keys we expect
+        key_pos = None
+        for key in ("new_classes", "new_properties"):
+            kp = text.find(key)
+            if kp != -1:
+                key_pos = kp
+                break
+
+        if key_pos is None:
+            # fallback: find first '{' and try to balance
+            start = text.find('{')
+        else:
+            # find nearest '{' before the key
+            start = text.rfind('{', 0, key_pos)
+            if start == -1:
+                start = text.find('{')
+
+        if start == -1:
+            return None
+
+        depth = 0
+        for i in range(start, len(text)):
+            ch = text[i]
+            if ch == '{':
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+                if depth == 0:
+                    return text[start : i + 1]
+
+        return None
+
     def parse_llm_response(self, response: str) -> Dict:
-        """Parse the LLM's JSON response into structured data using Pydantic validation."""
+        """Parse the LLM's JSON response into structured data using Pydantic validation.
+
+        This is tolerant to LLMs that prepend analysis or include lists for property
+        ranges. It will extract the JSON block when possible and normalize common
+        variant shapes (list ranges, pipe-separated types).
+        """
 
         try:
             # With structured outputs, the response should be pure JSON
@@ -760,18 +804,38 @@ Be very focused and avoid generic additions.
             # Fallback to manual parsing if structured output fails
             logger.warning("structured_parse_failed", error=str(e), response=response[:500])
 
-            # Extract JSON from response (LLM might add extra text)
-            json_match = re.search(r'\{.*\}', response, re.DOTALL)
-            if not json_match:
+            json_str = self._extract_json_block(response)
+            if not json_str:
                 raise ValueError(f"No JSON found in LLM response: {response[:500]}...")
 
-            json_str = json_match.group()
             try:
                 data = json.loads(json_str)
-                return data
             except json.JSONDecodeError as e:
                 logger.error("json_parse_failed", error=str(e), response=response[:1000])
                 raise
+
+            # --- Normalise common LLM variations ---
+            # Ensure new_properties ranges are strings (LLM may return lists)
+            for p in data.get("new_properties", []):
+                rv = p.get("range")
+                if isinstance(rv, list) and rv:
+                    # prefer an XSD-like type if present, otherwise first element
+                    picked = next((r for r in rv if isinstance(r, str) and r.lower().startswith("xsd:")), rv[0])
+                    p["range"] = picked
+                # Normalize 'type' fields like 'object|datatype'
+                t = p.get("type")
+                if isinstance(t, str) and "|" in t:
+                    opts = [s.strip().lower() for s in t.split("|")]
+                    p["type"] = "object" if "object" in opts else opts[0]
+
+            # Ensure new_classes are well-formed (fill missing fields)
+            for c in data.get("new_classes", []):
+                if "properties" not in c or c["properties"] is None:
+                    c["properties"] = []
+                if "parent_class" not in c:
+                    c["parent_class"] = None
+
+            return data
 
     def generate_owl_extensions(self, parsed_data: Dict) -> Graph:
         """Convert parsed LLM response into OWL RDF graph."""
@@ -832,18 +896,28 @@ Be very focused and avoid generic additions.
                 domain_uri = ONTOLOGY_NS[domain]
                 extension_graph.add((prop_uri, RDFS.domain, domain_uri))
 
-            # Add range
+            # Add range (tolerant to lists and multiple formats)
             range_val = prop_data.get("range")
             if range_val:
-                if range_val.startswith("xsd:"):
+                # Accept list forms produced by some LLMs
+                if isinstance(range_val, list) and range_val:
+                    # choose first XSD-like if present else first element
+                    candidate = next((r for r in range_val if isinstance(r, str) and r.lower().startswith("xsd:")), range_val[0])
+                    range_val = candidate
+
+                if isinstance(range_val, str) and range_val.startswith("xsd:"):
                     # XSD datatype
                     range_uri = XSD[range_val[4:]]  # Remove "xsd:" prefix
-                elif range_val in ["string", "date", "int", "boolean"]:
+                elif isinstance(range_val, str) and range_val in ["string", "date", "int", "boolean"]:
                     # Common XSD types without prefix
                     range_uri = XSD[range_val]
-                else:
+                elif isinstance(range_val, str):
                     # Assume it's a class in our ontology
                     range_uri = ONTOLOGY_NS[range_val]
+                else:
+                    # Fallback to string
+                    range_uri = XSD.string
+
                 extension_graph.add((prop_uri, RDFS.range, range_uri))
 
         logger.info("owl_extensions_generated",
@@ -900,6 +974,8 @@ def main():
     parser.add_argument("--seed", default="data/seed_ontology/plan-ontology-v1.0.owl", help="Seed ontology path")
     parser.add_argument("--cqs", default="data/evaluation/competency_questions.json", help="Competency questions path")
     parser.add_argument("--verbose", action="store_true", help="Show verbose token output during generation")
+    parser.add_argument("--timeout", type=float, default=None, help="Override LLM HTTP timeout (seconds)")
+    parser.add_argument("--temperature", type=float, default=None, help="Override generation temperature for the LLM")
 
     args = parser.parse_args()
 
@@ -942,6 +1018,13 @@ def main():
             model=args.model,
             verbose=args.verbose
         )
+
+        # Apply optional overrides passed via CLI
+        if args.timeout is not None:
+            baseline.timeout = float(args.timeout)
+        if args.temperature is not None:
+            # attach temperature to instance for use by call_llm
+            setattr(baseline, "temperature", float(args.temperature))
 
         # Run extension
         extended_graph = baseline.extend_ontology()
