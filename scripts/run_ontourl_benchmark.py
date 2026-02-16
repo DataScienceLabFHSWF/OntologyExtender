@@ -54,6 +54,8 @@ from ontology_hitl.benchmarking.ontourl.strategies import (
     SelfVerifyStrategy,
     HCOMEStrategy,
 )
+# Import the 3-round HCOME implementation
+from ontology_hitl.benchmarking.ontourl.hcome_strategy import HCOME3RoundStrategy  # type: ignore
 from ontology_hitl.benchmarking.ontourl.reporter import OntoURLReporter
 
 logger = structlog.get_logger(__name__)
@@ -71,6 +73,7 @@ STRATEGY_REGISTRY: dict[str, type] = {
     "debate": DebateStrategy,
     "self_verify": SelfVerifyStrategy,
     "hcome": HCOMEStrategy,
+    "hcome_3round": HCOME3RoundStrategy,
 }
 
 
@@ -94,6 +97,8 @@ def create_strategy(name: str, llm: OllamaAdapter) -> object:
         return SelfVerifyStrategy(llm)
     elif name == "hcome":
         return HCOMEStrategy(llm)
+    elif name == "hcome_3round":
+        return HCOME3RoundStrategy(llm)
     else:
         raise ValueError(f"Unknown strategy: {name}. Available: {list(STRATEGY_REGISTRY.keys())}")
 

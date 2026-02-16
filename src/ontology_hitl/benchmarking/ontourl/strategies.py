@@ -26,6 +26,12 @@ from .prompts import OntoURLPromptBuilder
 
 logger = structlog.get_logger(__name__)
 
+# Import HCOME strategy into this module namespace for backward compatibility
+try:
+    from .hcome_strategy import HCOMEStrategy  # type: ignore
+except Exception:
+    HCOMEStrategy = None
+
 
 class OllamaAdapter:
     """Thin wrapper around the Ollama HTTP API for OntoURL inference.
@@ -60,19 +66,14 @@ class OllamaAdapter:
         self.max_tokens = max_tokens
         self.timeout = timeout
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, timeout: float | None = None) -> str:
         """Single-turn generation via Ollama /api/generate.
 
-        Parameters
-        ----------
-        prompt : str
-            Full prompt text.
-
-        Returns
-        -------
-        str
-            Model's raw response text.
+        Accepts an optional per-call `timeout` override (falls back to
+        the adapter's `self.timeout` when `None`). This enables
+        per-strategy timeouts without changing the public callsites.
         """
+        effective_timeout = self.timeout if timeout is None else timeout
         resp = httpx.post(
             f"{self.ollama_url}/api/generate",
             json={
@@ -84,7 +85,7 @@ class OllamaAdapter:
                     "num_predict": self.max_tokens,
                 },
             },
-            timeout=self.timeout,
+            timeout=effective_timeout,
         )
         resp.raise_for_status()
         text = resp.json().get("response", "")
@@ -95,19 +96,12 @@ class OllamaAdapter:
 
         return text
 
-    def generate_chat(self, messages: list[dict[str, str]]) -> str:
+    def generate_chat(self, messages: list[dict[str, str]], timeout: float | None = None) -> str:
         """Multi-turn generation via Ollama /api/chat.
 
-        Parameters
-        ----------
-        messages : list[dict]
-            Conversation messages [{role, content}, ...].
-
-        Returns
-        -------
-        str
-            Model's raw response text.
+        Accepts an optional per-call `timeout` override.
         """
+        effective_timeout = self.timeout if timeout is None else timeout
         resp = httpx.post(
             f"{self.ollama_url}/api/chat",
             json={
@@ -119,7 +113,7 @@ class OllamaAdapter:
                     "num_predict": self.max_tokens,
                 },
             },
-            timeout=self.timeout,
+            timeout=effective_timeout,
         )
         resp.raise_for_status()
         text = resp.json()["message"]["content"]
@@ -133,9 +127,15 @@ class OllamaAdapter:
 # ── Base strategy ────────────────────────────────────────────────────
 
 class OntoURLStrategy(ABC):
-    """Base class for OntoURL benchmark strategies."""
+    """Base class for OntoURL benchmark strategies.
+
+    Supports an optional `strategy_timeout` (per-call timeout override)
+    so some strategies can request longer/shorter per-request timeouts
+    than the global Ollama adapter default.
+    """
 
     name: str = "base"
+    strategy_timeout: float | None = None
 
     def __init__(self, llm: OllamaAdapter) -> None:
         self.llm = llm
@@ -172,6 +172,17 @@ class OntoURLStrategy(ABC):
         Override in subclasses to restrict strategies to certain tasks.
         """
         return True
+
+    # Helper wrappers to call the LLM with an optional per-strategy timeout.
+    def _generate(self, prompt: str) -> str:
+        if getattr(self, "strategy_timeout", None) is not None:
+            return self.llm.generate(prompt, timeout=self.strategy_timeout)
+        return self.llm.generate(prompt)
+
+    def _generate_chat(self, messages: list[dict[str, str]]) -> str:
+        if getattr(self, "strategy_timeout", None) is not None:
+            return self.llm.generate_chat(messages, timeout=self.strategy_timeout)
+        return self.llm.generate_chat(messages)
 
 
 # ── Vanilla (direct prompt → answer) ────────────────────────────────
@@ -215,7 +226,7 @@ class VanillaStrategy(OntoURLStrategy):
             strategy="vanilla",
             few_shot_examples=self.few_shot_examples,
         )
-        return self.llm.generate(prompt)
+        return self._generate(prompt)
 
 
 # ── Chain-of-Thought ─────────────────────────────────────────────────
@@ -237,7 +248,7 @@ class ChainOfThoughtStrategy(OntoURLStrategy):
             task_type=task_type,
             strategy="cot",
         )
-        return self.llm.generate(prompt)
+        return self._generate(prompt)
 
 
 # ── Ontology Engineer Role ───────────────────────────────────────────
@@ -259,12 +270,14 @@ class OntologyEngineerStrategy(OntoURLStrategy):
             task_type=task_type,
             strategy="engineer",
         )
-        return self.llm.generate(prompt)
+        return self._generate(prompt)
 
 
 # ── Multi-Turn Strategy ─────────────────────────────────────────────
 
 class MultiTurnStrategy(OntoURLStrategy):
+    # Multi-turn involves multiple chat calls — allow longer per-call timeout
+    strategy_timeout = 180.0
     """Multi-turn refinement: analyze → draft → critique → final.
 
     For Learning tasks L1–L5 (generation/construction/alignment).
@@ -287,7 +300,7 @@ class MultiTurnStrategy(OntoURLStrategy):
             example=example,
             task_type=task_type,
         )
-        analysis = self.llm.generate_chat(initial_messages)
+        analysis = self._generate_chat(initial_messages)
 
         # Turn 2: Generate based on analysis
         if task_type == "open_text":
@@ -312,7 +325,7 @@ class MultiTurnStrategy(OntoURLStrategy):
             {"role": "assistant", "content": analysis},
             {"role": "user", "content": gen_instruction},
         ]
-        draft = self.llm.generate_chat(generation_messages)
+        draft = self._generate_chat(generation_messages)
 
         # Turn 3: Self-critique and refine
         if task_type == "open_text":
@@ -345,12 +358,14 @@ class MultiTurnStrategy(OntoURLStrategy):
             {"role": "assistant", "content": draft},
             {"role": "user", "content": refine_instruction},
         ]
-        return self.llm.generate_chat(refinement_messages)
+        return self._generate_chat(refinement_messages)
 
 
 # ── Debate Strategy ─────────────────────────────────────────────────
 
 class DebateStrategy(OntoURLStrategy):
+    # Debate runs several chat calls; increase per-call timeout
+    strategy_timeout = 180.0
     """Simulated multi-agent debate for Learning tasks.
 
     Proposer generates → Critic identifies issues →
@@ -386,7 +401,7 @@ class DebateStrategy(OntoURLStrategy):
             output_fmt = " Put all triples between <ans> and </ans>."
 
         # Agent 1 (Proposer): Generate initial answer
-        proposal = self.llm.generate_chat([
+        proposal = self._generate_chat([
             {"role": "system", "content": debate_config["proposer_system"]},
             {
                 "role": "user",
@@ -399,7 +414,7 @@ class DebateStrategy(OntoURLStrategy):
         ])
 
         # Agent 2 (Critic): Review and identify issues
-        critique = self.llm.generate_chat([
+        critique = self._generate_chat([
             {"role": "system", "content": debate_config["critic_system"]},
             {
                 "role": "user",
@@ -413,7 +428,7 @@ class DebateStrategy(OntoURLStrategy):
         ])
 
         # Agent 1 (Proposer): Revise based on critique
-        revised = self.llm.generate_chat([
+        revised = self._generate_chat([
             {"role": "system", "content": debate_config["proposer_system"]},
             {
                 "role": "user",
@@ -442,6 +457,8 @@ class SelfVerifyStrategy(OntoURLStrategy):
     """
 
     name = "self_verify"
+    # Self-verify performs multiple calls; allow a longer per-call timeout
+    strategy_timeout = 120.0
 
     def answer(
         self,
@@ -456,7 +473,7 @@ class SelfVerifyStrategy(OntoURLStrategy):
             task_type=task_type,
             strategy="vanilla",
         )
-        initial = self.llm.generate(prompt)
+        initial = self._generate(prompt)
 
         # Step 2: Verify — ask model to check its own answer
         if task_type in ("mc", "bool"):
@@ -507,4 +524,4 @@ class SelfVerifyStrategy(OntoURLStrategy):
             )
 
         # Step 3: Get verified/revised answer
-        return self.llm.generate(verify_prompt)
+        return self._generate(verify_prompt)
