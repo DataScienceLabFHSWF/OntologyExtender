@@ -142,9 +142,37 @@ class ResultsAggregator:
         ValueError
             If no results have been added.
         """
-        raise NotImplementedError(
-            "TODO: group results by system, average metrics across test cases"
-        )
+        if not self.results:
+            raise ValueError("No results to aggregate")
+        table: dict[str, dict[str, float]] = {}
+        # group by system
+        by_system: dict[str, list[BenchmarkResult]] = {}
+        for r in self.results:
+            by_system.setdefault(r.system.value, []).append(r)
+
+        for system, results in by_system.items():
+            # average metrics across test cases
+            sums = {
+                "semantic_correctness": 0.0,
+                "hallucination_rate": 0.0,
+                "cq_coverage": 0.0,
+                "hierarchy_quality": 0.0,
+                "domain_compliance": 0.0,
+                "expert_acceptance": 0.0,
+                "composite_score": 0.0,
+            }
+            for res in results:
+                m = res.metrics
+                sums["semantic_correctness"] += m.semantic_correctness
+                sums["hallucination_rate"] += m.hallucination_rate
+                sums["cq_coverage"] += m.cq_coverage
+                sums["hierarchy_quality"] += m.hierarchy_quality
+                sums["domain_compliance"] += m.domain_compliance
+                sums["expert_acceptance"] += m.expert_acceptance
+                sums["composite_score"] += m.composite_score
+            n = len(results)
+            table[system] = {k: (v / n) for k, v in sums.items()}
+        return table
 
     def build_per_level_table(
         self, level: ReductionLevel

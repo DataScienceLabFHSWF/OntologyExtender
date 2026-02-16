@@ -380,45 +380,83 @@ class BaseAgent:
                 logger.debug("llm_cache_hit", agent=self.role.value, cache_key=cache_key[:16])
                 return self._response_cache[cache_key]
 
-        try:
-            logger.debug("llm_call_start", agent=self.role.value, timeout=self.effective_llm_timeout_seconds, stream=stream_progress)
-            
-            if stream_progress:
-                # Use streaming API to show progress
-                with httpx.stream(
-                    "POST",
-                    f"{self.settings.ollama_url}/api/chat",
-                    json={
-                        "model": self.settings.ollama_model,
-                        "messages": [
-                            {"role": "system", "content": sys_prompt},
-                            {"role": "user", "content": user_prompt},
-                        ],
-                        "stream": True,
-                        "options": {
-                            "temperature": temp,
-                            "num_predict": 4096,
+        max_attempts = 3
+        backoff = 1
+        for attempt in range(1, max_attempts + 1):
+            try:
+                logger.debug("llm_call_start", agent=self.role.value, timeout=self.effective_llm_timeout_seconds, stream=stream_progress, attempt=attempt)
+                if stream_progress:
+                    # Use streaming API to show progress
+                    with httpx.stream(
+                        "POST",
+                        f"{self.settings.ollama_url}/api/chat",
+                        json={
+                            "model": self.settings.ollama_model,
+                            "messages": [
+                                {"role": "system", "content": sys_prompt},
+                                {"role": "user", "content": user_prompt},
+                            ],
+                            "stream": True,
+                            "options": {
+                                "temperature": temp,
+                                "num_predict": 4096,
+                            },
                         },
-                    },
-                    timeout=self.effective_llm_timeout_seconds,
-                ) as resp:
+                        timeout=self.effective_llm_timeout_seconds,
+                    ) as resp:
+                        resp.raise_for_status()
+                        content = ""
+                        thinking_started = False
+                        chars_received = 0
+                        
+                        for line in resp.iter_lines():
+                            if line.strip():
+                                try:
+                                    data = json.loads(line)
+                                    if "message" in data and "content" in data["message"]:
+                                        chunk = data["message"]["content"]
+                                        content += chunk
+                                        chars_received += len(chunk)
+                                        
+                                        # Show progress indicators
+                                        if "</think>" in content and not thinking_started:
+                                            thinking_started = True
+                else:
+                    resp = httpx.post(
+                        f"{self.settings.ollama_url}/api/chat",
+                        json={
+                            "model": self.settings.ollama_model,
+                            "messages": [
+                                {"role": "system", "content": sys_prompt},
+                                {"role": "user", "content": user_prompt},
+                            ],
+                            "stream": False,
+                            "options": {"temperature": temp, "num_predict": 4096},
+                        },
+                        timeout=self.effective_llm_timeout_seconds,
+                    )
                     resp.raise_for_status()
-                    content = ""
-                    thinking_started = False
-                    chars_received = 0
-                    
-                    for line in resp.iter_lines():
-                        if line.strip():
-                            try:
-                                data = json.loads(line)
-                                if "message" in data and "content" in data["message"]:
-                                    chunk = data["message"]["content"]
-                                    content += chunk
-                                    chars_received += len(chunk)
-                                    
-                                    # Show progress indicators
-                                    if "</think>" in content and not thinking_started:
-                                        thinking_started = True
+                    content = resp.json().get("message", {}).get("content", "")
+
+                # Parse thinking blocks if present and cache
+                if "</think>" in content:
+                    content = content.split("</think>")[-1]
+
+                parsed = {"content": content}
+                if use_cache:
+                    self._response_cache[cache_key] = parsed
+                return parsed
+            except Exception as e:
+                logger.warning("llm_call_error", agent=self.role.value, error=str(e), attempt=attempt)
+                if attempt >= max_attempts:
+                    logger.error("llm_call_failed_max_attempts", agent=self.role.value)
+                    return None
+                else:
+                    import time as _time
+
+                    _time.sleep(backoff)
+                    backoff *= 2
+                    continue                                        thinking_started = True
                                         print(f"🤔 {self.role.value}: LLM is thinking...", end="", flush=True)
                                     elif thinking_started and chars_received % 100 == 0:
                                         print(".", end="", flush=True)
@@ -543,11 +581,14 @@ class BaseAgent:
         """
         temp = temperature if temperature is not None else self.settings.llm_temperature
 
-        try:
-            resp = httpx.post(
-                f"{self.settings.ollama_url}/api/chat",
-                json={
-                    "model": self.settings.ollama_model,
+        max_attempts = 3
+        backoff = 1
+        for attempt in range(1, max_attempts + 1):
+            try:
+                resp = httpx.post(
+                    f"{self.settings.ollama_url}/api/chat",
+                    json={
+                        "model": self.settings.ollama_model,
                     "messages": messages,
                     "stream": False,
                     "options": {
