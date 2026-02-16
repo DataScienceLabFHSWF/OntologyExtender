@@ -210,6 +210,124 @@ class OntoURLReporter:
             model_name=model,
         )
 
+    def generate_html_summary(self, our_results: dict[str, dict[str, dict[str, float]]], model: str, strategy: str) -> dict[str, Path]:
+        """Generate an HTML summary for one model/strategy including charts.
+
+        Writes:
+          - `comparison_table.md` (already written by generate_comparison_table)
+          - `ontourl_summary.html` embedding charts and the comparison table
+          - radar + bar charts (PNG)
+        """
+        outdir = self.output_dir / model.replace("/", "_").replace(":", "_") / strategy
+        outdir.mkdir(parents=True, exist_ok=True)
+
+        # Build capability profile
+        profile = self.build_capability_profile(our_results.get(model, {}).get(strategy, {}), model)
+
+        # Create radar chart (understanding, reasoning, learning)
+        try:
+            import matplotlib.pyplot as plt
+            import numpy as np
+        except Exception:
+            return {}
+
+        caps = [profile.understanding_avg, profile.reasoning_avg, profile.learning_avg]
+        labels = ["Understanding", "Reasoning", "Learning"]
+        angles = np.linspace(0, 2 * np.pi, len(caps), endpoint=False).tolist()
+        caps += caps[:1]
+        angles += angles[:1]
+
+        fig, ax = plt.subplots(figsize=(5, 4), subplot_kw=dict(polar=True))
+        ax.plot(angles, caps, 'o-', linewidth=2)
+        ax.fill(angles, caps, alpha=0.25)
+        ax.set_thetagrids(np.degrees(angles[:-1]), labels)
+        ax.set_ylim(0, 1)
+        radar_path = outdir / 'ontourl_radar.png'
+        fig.savefig(radar_path, dpi=200, bbox_inches='tight')
+        plt.close(fig)
+
+        # Bar chart for the 15 task scores
+        task_ids = [t.name.split('_')[0].upper() for t in [
+            OntoURLTask.U1_CLASS_DEFINITION,
+            OntoURLTask.U2_CLASS_RELATION,
+            OntoURLTask.U3_PROPERTY_DOMAIN,
+            OntoURLTask.U4_INSTANCE_CLASS,
+            OntoURLTask.U5_INSTANCE_DEFINITION,
+            OntoURLTask.R1_INFERRED_RELATION,
+            OntoURLTask.R2_CONSTRAINT,
+            OntoURLTask.R3_INSTANCE_CLASS_INFERRED,
+            OntoURLTask.R4_SWRL_BASED,
+            OntoURLTask.R5_DESCRIPTION_LOGIC,
+            OntoURLTask.L1_CLASS_DEF_GENERATION,
+            OntoURLTask.L2_HIERARCHY_CONSTRUCTION,
+            OntoURLTask.L3_PROPERTY_CONSTRUCTION,
+            OntoURLTask.L4_CONSTRAINT_CONSTRUCTION,
+            OntoURLTask.L5_ONTOLOGY_ALIGNMENT,
+        ]]
+
+        scores = []
+        for t in profile.task_scores:
+            # prefer accuracy/rouge/triple/tuple metrics (values already in 0..1)
+            if t.capability == OntoURLCapability.UNDERSTANDING or t.capability == OntoURLCapability.REASONING:
+                # try to pick the most representative field
+                val = t.accuracy or t.triple_f1 or t.tuple_f1 or t.rouge_l or 0.0
+            else:
+                val = t.rouge_l or t.triple_f1 or t.tuple_f1 or 0.0
+            scores.append(val)
+
+        # Fallback: if profile.task_scores missing, build from our_results if possible
+        if not scores or len(scores) != len(task_ids):
+            # try pulling metrics from our_results dict
+            metrics_map = our_results.get(model, {}).get(strategy, {})
+            scores = []
+            for tid in [
+                '1_1','1_2','1_3','1_4','1_5','2_1','2_2','2_3','2_4','2_5','3_1','3_2','3_3','3_4','3_5'
+            ]:
+                m = metrics_map.get(tid, {})
+                # choose a sensible metric
+                candidates = ['accuracy','rouge_l','triple_f1','tuple_f1']
+                v = 0.0
+                for c in candidates:
+                    if c in m:
+                        v = m[c]
+                        break
+                scores.append(v)
+
+        # create bar chart
+        fig, ax = plt.subplots(figsize=(10, 3))
+        x = range(len(task_ids))
+        ax.bar(x, scores, color='#2196F3')
+        ax.set_xticks(list(x))
+        ax.set_xticklabels(task_ids, rotation=45, ha='right')
+        ax.set_ylim(0, 1)
+        ax.set_title(f"OntoURL task scores — {model} / {strategy}")
+        bar_path = outdir / 'ontourl_tasks_bar.png'
+        fig.tight_layout()
+        fig.savefig(bar_path, dpi=200)
+        plt.close(fig)
+
+        # Generate HTML embedding the MD table and the charts
+        comparison_md = self.generate_comparison_table(our_results)
+        html_lines = [
+            '<html>',
+            '<head><meta charset="utf-8"><title>OntoURL summary</title></head>',
+            '<body>',
+            f'<h1>OntoURL summary — {model} / {strategy}</h1>',
+            '<h2>Capability profile</h2>',
+            f'<img src="{radar_path.name}" alt="radar" style="max-width:600px;">',
+            '<h2>Per-task scores</h2>',
+            f'<img src="{bar_path.name}" alt="tasks" style="max-width:900px;">',
+            '<h2>Comparison table</h2>',
+            '<pre>',
+            comparison_md,
+            '</pre>',
+            '</body></html>'
+        ]
+        html_path = outdir / 'ontourl_summary.html'
+        html_path.write_text('\n'.join(html_lines))
+
+        return {'html': html_path, 'radar': radar_path, 'bars': bar_path}
+
     def generate_comparison_table(
         self,
         our_results: dict[str, dict[str, dict[str, float]]],
@@ -280,8 +398,9 @@ class OntoURLReporter:
         # Format output
         if output_format == "csv":
             return self._format_csv(columns, rows)
-        return self._format_markdown(columns, rows)
+        table_md = self._format_markdown(columns, rows)
 
+        return table_md
     def _format_markdown(
         self,
         columns: list[tuple[str, str]],

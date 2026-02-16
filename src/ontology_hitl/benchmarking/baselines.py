@@ -93,9 +93,42 @@ class BaselineAdapter(abc.ABC):
         subprocess.CalledProcessError
             If any setup command fails.
         """
-        raise NotImplementedError(
-            "TODO: iterate config.setup_commands, subprocess.run each"
+        for cmd in getattr(self.config, "setup_commands", []) or []:
+            logger.info("baseline_setup_cmd", system=self.config.system.value, cmd=cmd)
+            self._run_subprocess(cmd, cwd=self.config.repo_path)
+
+    def _run_subprocess(
+        self, command: str, cwd: Path | None = None, timeout: int | None = None
+    ) -> subprocess.CompletedProcess:
+        """Run a shell command as a subprocess with timeout.
+
+        Uses ``subprocess.run`` and returns the CompletedProcess instance.
+        Raises subprocess.CalledProcessError on non-zero exit.
+        """
+        _cwd = cwd or self.config.repo_path
+        _timeout = timeout or int(getattr(self.config, "timeout_seconds", 3600))
+        logger.debug("run_subprocess", command=command, cwd=str(_cwd), timeout=_timeout)
+        completed = subprocess.run(
+            command,
+            shell=True,
+            cwd=_cwd,
+            timeout=_timeout,
+            capture_output=True,
+            text=True,
+            env={**dict(), **(self.config.env_vars or {})},
         )
+        if completed.returncode != 0:
+            logger.error(
+                "subprocess_failed",
+                cmd=command,
+                returncode=completed.returncode,
+                stdout=completed.stdout[:1000],
+                stderr=completed.stderr[:1000],
+            )
+            raise subprocess.CalledProcessError(
+                returncode=completed.returncode, cmd=command, output=completed.stdout, stderr=completed.stderr
+            )
+        return completed
 
     def cleanup(self) -> None:
         """Post-run cleanup: remove temp files, stop background processes.

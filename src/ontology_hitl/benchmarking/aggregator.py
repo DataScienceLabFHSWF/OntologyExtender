@@ -142,9 +142,70 @@ class ResultsAggregator:
         ValueError
             If no results have been added.
         """
-        raise NotImplementedError(
-            "TODO: group results by system, average metrics across test cases"
-        )
+        if not self.results:
+            raise ValueError("No results to aggregate")
+        table: dict[str, dict[str, float]] = {}
+        # group by system
+        by_system: dict[str, list[BenchmarkResult]] = {}
+        for r in self.results:
+            by_system.setdefault(r.system.value, []).append(r)
+
+        for system, results in by_system.items():
+            # average metrics across test cases
+            sums = {
+                "semantic_correctness": 0.0,
+                "hallucination_rate": 0.0,
+                "cq_coverage": 0.0,
+                "hierarchy_quality": 0.0,
+                "domain_compliance": 0.0,
+                "expert_acceptance": 0.0,
+                "composite_score": 0.0,
+                # Extended evaluations
+                "semantic_match_concept": 0.0,  # normalized 0..1 (match_percentage/100)
+                "semantic_match_triple": 0.0,
+                "owlunit_pass_rate": 0.0,
+                "ontourl_overall": 0.0,
+            }
+            for res in results:
+                m = res.metrics
+                sums["semantic_correctness"] += m.semantic_correctness
+                sums["hallucination_rate"] += m.hallucination_rate
+                sums["cq_coverage"] += m.cq_coverage
+                sums["hierarchy_quality"] += m.hierarchy_quality
+                sums["domain_compliance"] += m.domain_compliance
+                sums["expert_acceptance"] += m.expert_acceptance
+                sums["composite_score"] += m.composite_score
+
+                # Extended: semantic match (concept)
+                try:
+                    smc = m.semantic_match_concept.match_percentage / 100.0 if m.semantic_match_concept else 0.0
+                except Exception:
+                    smc = 0.0
+                sums["semantic_match_concept"] += smc
+
+                # Extended: semantic match (triple)
+                try:
+                    smt = m.semantic_match_triple.match_percentage / 100.0 if m.semantic_match_triple else 0.0
+                except Exception:
+                    smt = 0.0
+                sums["semantic_match_triple"] += smt
+
+                # Extended: OWLUnit overall pass rate
+                try:
+                    op = m.owlunit_suite.pass_rate if m.owlunit_suite else 0.0
+                except Exception:
+                    op = 0.0
+                sums["owlunit_pass_rate"] += op
+
+                # Extended: OntoURL overall average (if available)
+                try:
+                    ont = m.ontourl_profile.overall_avg if m.ontourl_profile else 0.0
+                except Exception:
+                    ont = 0.0
+                sums["ontourl_overall"] += ont
+            n = len(results)
+            table[system] = {k: (v / n) for k, v in sums.items()}
+        return table
 
     def build_per_level_table(
         self, level: ReductionLevel
@@ -247,19 +308,22 @@ class ResultsAggregator:
         -------
         str
             Markdown table suitable for README or paper draft.
-
-        Example Output
-        --------------
-        ::
-
-            | System   | Semantic | Halluc. | CQ Cov. | Hier. | Domain | Expert | Composite |
-            |----------|----------|---------|---------|-------|--------|--------|-----------|
-            | CogAgent | 0.92     | 0.03    | 0.87    | 0.85  | 0.95   | 0.88   | 0.89      |
-            | LLM4ACOE | 0.70     | 0.15    | 0.78    | 0.40  | 0.60   | 0.65   | 0.65      |
         """
-        raise NotImplementedError(
-            "TODO: build markdown table string from dict"
-        )
+        if not table:
+            return ""
+        # use first system to determine columns (stable order)
+        systems = sorted(table.keys())
+        first = table[systems[0]]
+        cols = [k for k in first.keys()]
+        # header
+        header = "| System | " + " | ".join(cols) + " |\n"
+        sep = "|---" + "|---" * len(cols) + "|\n"
+        rows = [header, sep]
+        for sys in systems:
+            vals = table[sys]
+            row = f"| {sys} | " + " | ".join(f"{vals.get(c, 0.0):.3f}" for c in cols) + " |\n"
+            rows.append(row)
+        return "".join(rows)
 
     def to_csv(self, table: dict[str, dict[str, float]], path: Path) -> None:
         """Write a comparison table to a CSV file.
@@ -269,9 +333,17 @@ class ResultsAggregator:
         table : dict[str, dict[str, float]]
         path : Path
         """
-        raise NotImplementedError(
-            "TODO: csv.DictWriter with system as first column"
-        )
+        if not table:
+            path.write_text("")
+            return
+        systems = sorted(table.keys())
+        cols = list(next(iter(table.values())).keys())
+        with path.open("w", newline='') as fh:
+            writer = csv.writer(fh)
+            writer.writerow(["system"] + cols)
+            for sys in systems:
+                vals = table[sys]
+                writer.writerow([sys] + [f"{vals.get(c, 0.0):.6f}" for c in cols])
 
     def to_json(self, data: Any, path: Path) -> None:
         """Write data to a JSON file with pretty formatting.
@@ -282,6 +354,41 @@ class ResultsAggregator:
             JSON-serialisable data.
         path : Path
         """
-        raise NotImplementedError(
-            "TODO: json.dump with indent=2"
-        )
+        path.write_text(json.dumps(data, indent=2, default=str))
+
+    def export_all(self) -> dict[str, Path]:
+        """Export all tables to JSON, CSV, and Markdown files.
+
+        Creates the following files in ``output_dir``:
+          - ``master_comparison.json``
+          - ``master_comparison.csv``
+          - ``master_comparison.md``
+          - ``per_level_50pct.json``  (and 75/90/95)
+          - ``ranking.json``
+          - ``delta_vs_llm4acoe.json``
+          - ``all_results.json``   (raw results for reproducibility)
+
+        Returns
+        -------
+        dict[str, Path]
+            Mapping from file description to path.
+        """
+        outdir = Path(self.output_dir)
+        outdir.mkdir(parents=True, exist_ok=True)
+        master = self.build_master_table()
+        json_path = outdir / "master_comparison.json"
+        csv_path = outdir / "master_comparison.csv"
+        md_path = outdir / "master_comparison.md"
+        self.to_json(master, json_path)
+        self.to_csv(master, csv_path)
+        # serialise Pydantic BenchmarkResult objects
+        serialisable = [r.model_dump() for r in self.results]
+        self.to_json(serialisable, outdir / "all_results.json")
+        md = self.to_markdown(master)
+        md_path.write_text(md)
+        return {
+            "master_json": json_path,
+            "master_csv": csv_path,
+            "master_md": md_path,
+            "all_results": outdir / "all_results.json",
+        }

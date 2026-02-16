@@ -3,9 +3,19 @@
 from __future__ import annotations
 
 import json
+import warnings
 from pathlib import Path
 
 import pytest
+
+# Silence noisy pyparsing/rdflib deprecation warnings produced during
+# SPARQL parsing in rdflib (third-party dependency). Prefer explicit
+# suppression over changing vendor code.
+try:
+    from pyparsing import PyparsingDeprecationWarning  # type: ignore
+    warnings.filterwarnings("ignore", category=PyparsingDeprecationWarning)
+except Exception:
+    warnings.filterwarnings("ignore", category=DeprecationWarning, module="rdflib.plugins.sparql.*")
 
 from ontology_hitl.core.models import (
     ExtractedEntitySummary,

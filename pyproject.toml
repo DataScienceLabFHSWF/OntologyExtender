@@ -68,6 +68,10 @@ dev = [
     "ruff>=0.5",
     "mypy>=1.10",
     "pre-commit>=3.7",
+    # Optional benchmarking / plotting (not required for CI core path)
+    "sentence-transformers>=2.2",
+    "matplotlib>=3.7",
+    "pandas>=2.0",
 ]
 all = ["ontology-hitl[web,dev]"]
 
@@ -93,3 +97,14 @@ warn_unused_configs = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+filterwarnings = [
+  "ignore:.*setParseAction.*:DeprecationWarning",
+  "ignore:.*leaveWhitespace.*:DeprecationWarning",
+  "ignore:.*setName.*:DeprecationWarning",
+  "ignore:.*addParseAction.*:DeprecationWarning",
+  "ignore:.*delimitedList.*:DeprecationWarning",
+  "ignore:.*parseString.*:DeprecationWarning",
+  "ignore::pyparsing.util.PyparsingDeprecationWarning",
+  "ignore:cannot collect test class 'TestCase' because it has a __init__ constructor:pytest.PytestCollectionWarning",
+  "ignore:Can't initialize NVML:UserWarning",
+]

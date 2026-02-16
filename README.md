@@ -132,8 +132,25 @@ Full derivation: [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 | `llama3.2:3b` | 3.2B | Small baseline |
 | `nemotron-3-nano` | ~8B | Practical deployment |
 | `qwen3-next` | 79.7B | Maximum capability |
+| `qwen3-embedding` | embedding model | Ollama embedding model (used as fallback for semantic matching) |
 
 All served locally via Ollama (`localhost:18135`).
+
+Note: the benchmarking pipeline prefers `sentence-transformers` for
+TamingHallucinations semantic matching when available; when not, the
+framework falls back to Ollama `/api/embed` using the configured
+`semantic_embedding_model` (default: `qwen3-embedding`). Pull the
+embedding image into the local Ollama instance with:
+
+```bash
+# using the repo's Ollama container
+docker exec ollama-ontology-extender ollama pull qwen3-embedding
+```
+
+Or use `docker compose up -d` to start the Ollama service and then
+`docker exec ... ollama pull ...` as above. The embedding model is a
+runtime-only optional dependency (no Python package required).
+
 
 ## Experiments
 
@@ -155,10 +172,14 @@ Key settings in `.env`:
 ```bash
 HITL_OLLAMA_URL=http://localhost:18135
 HITL_OLLAMA_MODEL=qwen3-next
+HITL_SEMANTIC_EMBEDDING_MODEL=qwen3-embedding  # Ollama embedding model used as fallback
 HITL_QDRANT_URL=http://localhost:6333
 HITL_QDRANT_COLLECTION=documents
 HITL_CQ_ANSWERABILITY_TARGET=0.80
 ```
+
+CI note: the GitHub Actions CI job can optionally pull the configured Ollama
+embedding model if you set the repository-variable `HITL_PULL_OLLAMA_EMBED=true`.
 
 ### Tracing (optional)
 
