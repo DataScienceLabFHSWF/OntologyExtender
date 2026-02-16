@@ -354,13 +354,13 @@ class DebateStrategy(OntoURLStrategy):
 
 | Strategy | U1–U5 | R1–R5 | L1 | L2–L4 | L5 |
 |---|---|---|---|---|---|
-| `vanilla_zero` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `vanilla_2shot` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `vanilla_4shot` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `cot` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `engineer` | ❌ | ❌ | ✅ | ✅ | ✅ |
-| `multi_turn` | ❌ | ❌ | ❌ | ✅ | ❌ |
-| `debate` | ❌ | ❌ | ❌ | ✅ | ❌ |
+| `vanilla_zero` | Yes | Yes | Yes | Yes | Yes |
+| `vanilla_2shot` | Yes | Yes | Yes | Yes | Yes |
+| `vanilla_4shot` | Yes | Yes | Yes | Yes | Yes |
+| `cot` | Yes | Yes | Yes | Yes | Yes |
+| `engineer` | No | No | Yes | Yes | Yes |
+| `multi_turn` | No | No | No | Yes | No |
+| `debate` | No | No | No | Yes | No |
 
 ---
 

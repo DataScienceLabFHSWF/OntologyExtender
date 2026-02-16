@@ -54,6 +54,13 @@ class DebateStrategist:
     """Implements different philosophical debate strategies."""
 
     def __init__(self, strategy: DebateStrategy = DebateStrategy.CONSENSUS_BUILDING):
+        """Initialize debate strategist with a specific strategy.
+        
+        Parameters
+        ----------
+        strategy : DebateStrategy, optional
+            The debate strategy to use (defaults to CONSENSUS_BUILDING)
+        """
         self.strategy = strategy
 
     def orchestrate_debate(

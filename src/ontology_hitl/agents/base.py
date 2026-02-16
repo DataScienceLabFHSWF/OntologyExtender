@@ -244,6 +244,13 @@ class Debate:
     max_rounds: int = 2
 
     def add_message(self, msg: AgentMessage) -> None:
+        """Add an agent message to the debate conversation.
+        
+        Parameters
+        ----------
+        msg : AgentMessage
+            The message to append to the debate
+        """
         self.messages.append(msg)
 
     @property
@@ -315,6 +322,15 @@ class BaseAgent:
         settings: Settings | None = None,
         system_prompt: str = "",
     ) -> None:
+        """Initialize the agent with settings and system prompt.
+        
+        Parameters
+        ----------
+        settings : Settings | None, optional
+            Configuration settings (defaults to Settings() if None)
+        system_prompt : str, optional
+            The system prompt that defines the agent's role and expertise
+        """
         self.settings = settings or Settings()
         self.system_prompt = system_prompt
         self._response_cache: dict[str, dict[str, Any]] = {}  # Simple in-memory cache

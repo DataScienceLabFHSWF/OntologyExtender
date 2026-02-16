@@ -412,43 +412,43 @@ All modules are implemented. Stale `TODO` markers remain in ~12 files
 
 | Package | Module | Status | Description |
 |---------|--------|--------|-------------|
-| **agents/** | `base.py` | ✅ | BaseAgent, AgentMessage, Debate, DebateOutcome |
-| | `ontology_engineer.py` | ✅ | Proposer with 7 phase-specific prompts |
-| | `domain_expert.py` | ✅ | Hermeneutic reviewer with document grounding |
-| | `critic.py` | ✅ | Falsificationist reviewer with CQ checking |
-| | `team.py` | ✅ | 3-agent debate orchestration, 7 context builders |
-| | `epistemics.py` | ✅ | Epistemic framework constants |
-| | `debate_strategies.py` | ✅ | 5 strategies (dialectical, Socratic, Delphi, abductive, consensus) |
-| | `moderator.py` | ✅ | Deterministic strategy selection, grounding, drift detection |
-| **core/** | `loop_orchestrator.py` | ✅ | Iterative convergence loop with W&B |
-| | `config.py` | ✅ | Pydantic Settings with `HITL_` env prefix |
-| | `models.py` | ✅ | 11 data models (ProposedClass, GapCandidate, etc.) |
-| | `protocols.py` | ✅ | 4 Protocol interfaces |
-| | `feedback_protocol.py` | ✅ | FeedbackMetrics, ConvergenceReport, LoopMode |
-| **methodology/** | `pipeline.py` | ✅ | 7-phase multi-agent pipeline |
-| | `ontology101.py` | ✅ | Phase enum, OntologyScope, ClassHierarchy, etc. |
-| | `validation_rules.py` | ✅ | 8 structural validation rules |
-| **discovery/** | `gap_analyzer.py` | ✅ | SPARQL + embedding gap analysis |
-| | `class_generator.py` | ✅ | LLM class generation with JSON parsing |
-| | `relation_generator.py` | ✅ | LLM relation suggestion with SPARQL context |
-| | `entity_linker.py` | ✅ | Module B — Wikidata/BFO/EMMO/schema.org/SAREF |
-| | `embedding_advisor.py` | ✅ | Module C — Ollama embedding parent advisor |
-| | `ensemble_strategy.py` | ✅ | Module E — Weighted ensemble strategy |
-| **schema/** | `manager.py` | ✅ | OWL export with rdflib, CQ JSON export |
-| | `seed_manager.py` | ✅ | Module A — Extension-by-inheritance |
-| | `shacl_generator.py` | ✅ | SHACL shapes + optional pyshacl validation |
-| | `version_manager.py` | ✅ | Fuseki Graph Store Protocol operations |
-| **evaluation/** | `cq_evaluator.py` | ✅ | Structural + LLM-to-SPARQL CQ evaluation |
-| | `completeness.py` | ✅ | Two-stage entity coverage (exact + embedding) |
-| | `ontology_quality.py` | ✅ | 5-perspective quality + HermiT reasoner (owlready2) |
-| | `provenance.py` | ✅ | Module D — PROV-O evidence chain tracking |
-| | `feedback_learner.py` | ✅ | Module F — Few-shot learning from HITL decisions |
-| **review/** | `cli.py` | ✅ | Rich/Typer interactive review with resume |
-| | `web.py` | ✅ | Streamlit dashboard |
-| | `feedback.py` | ✅ | Decision persistence, agreement rates |
-| **sources/** | `qdrant_source.py` | ✅ | Document chunk retrieval |
-| | `cq_generator.py` | ✅ | CQ generation from documents via LLM |
-| **mapping/** | `yarrrml_generator.py` | ✅ | YARRRML/RML mapping rules |
+| **agents/** | `base.py` | Implemented | BaseAgent, AgentMessage, Debate, DebateOutcome |
+| | `ontology_engineer.py` | Implemented | Proposer with 7 phase-specific prompts |
+| | `domain_expert.py` | Implemented | Hermeneutic reviewer with document grounding |
+| | `critic.py` | Implemented | Falsificationist reviewer with CQ checking |
+| | `team.py` | Implemented | 3-agent debate orchestration, 7 context builders |
+| | `epistemics.py` | Implemented | Epistemic framework constants |
+| | `debate_strategies.py` | Implemented | 5 strategies (dialectical, Socratic, Delphi, abductive, consensus) |
+| | `moderator.py` | Implemented | Deterministic strategy selection, grounding, drift detection |
+| **core/** | `loop_orchestrator.py` | Implemented | Iterative convergence loop with W&B |
+| | `config.py` | Implemented | Pydantic Settings with `HITL_` env prefix |
+| | `models.py` | Implemented | 11 data models (ProposedClass, GapCandidate, etc.) |
+| | `protocols.py` | Implemented | 4 Protocol interfaces |
+| | `feedback_protocol.py` | Implemented | FeedbackMetrics, ConvergenceReport, LoopMode |
+| **methodology/** | `pipeline.py` | Implemented | 7-phase multi-agent pipeline |
+| | `ontology101.py` | Implemented | Phase enum, OntologyScope, ClassHierarchy, etc. |
+| | `validation_rules.py` | Implemented | 8 structural validation rules |
+| **discovery/** | `gap_analyzer.py` | Implemented | SPARQL + embedding gap analysis |
+| | `class_generator.py` | Implemented | LLM class generation with JSON parsing |
+| | `relation_generator.py` | Implemented | LLM relation suggestion with SPARQL context |
+| | `entity_linker.py` | Implemented | Module B — Wikidata/BFO/EMMO/schema.org/SAREF |
+| | `embedding_advisor.py` | Implemented | Module C — Ollama embedding parent advisor |
+| | `ensemble_strategy.py` | Implemented | Module E — Weighted ensemble strategy |
+| **schema/** | `manager.py` | Implemented | OWL export with rdflib, CQ JSON export |
+| | `seed_manager.py` | Implemented | Module A — Extension-by-inheritance |
+| | `shacl_generator.py` | Implemented | SHACL shapes + optional pyshacl validation |
+| | `version_manager.py` | Implemented | Fuseki Graph Store Protocol operations |
+| **evaluation/** | `cq_evaluator.py` | Implemented | Structural + LLM-to-SPARQL CQ evaluation |
+| | `completeness.py` | Implemented | Two-stage entity coverage (exact + embedding) |
+| | `ontology_quality.py` | Implemented | 5-perspective quality + HermiT reasoner (owlready2) |
+| | `provenance.py` | Implemented | Module D — PROV-O evidence chain tracking |
+| | `feedback_learner.py` | Implemented | Module F — Few-shot learning from HITL decisions |
+| **review/** | `cli.py` | Implemented | Rich/Typer interactive review with resume |
+| | `web.py` | Implemented | Streamlit dashboard |
+| | `feedback.py` | Implemented | Decision persistence, agreement rates |
+| **sources/** | `qdrant_source.py` | Implemented | Document chunk retrieval |
+| | `cq_generator.py` | Implemented | CQ generation from documents via LLM |
+| **mapping/** | `yarrrml_generator.py` | Implemented | YARRRML/RML mapping rules |
 
 ### Remaining Low-Priority Items
 

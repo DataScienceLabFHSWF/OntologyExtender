@@ -108,24 +108,28 @@ class GroundingReport:
 
     @property
     def grounding_ratio(self) -> float:
+        """Ratio of elements with citations to total elements."""
         if self.total_elements == 0:
             return 1.0
         return self.elements_with_citations / self.total_elements
 
     @property
     def cq_coverage_ratio(self) -> float:
+        """Ratio of elements serving competency questions to total elements."""
         if self.total_elements == 0:
             return 1.0
         return self.elements_serving_cqs / self.total_elements
 
     @property
     def connectivity_ratio(self) -> float:
+        """Ratio of elements connected to seed ontology to total elements."""
         if self.total_elements == 0:
             return 1.0
         return self.elements_connected_to_seed / self.total_elements
 
     @property
     def is_healthy(self) -> bool:
+        """Check if grounding report meets health thresholds (>= 0.85, 0.8, 0.9)."""
         return (
             self.grounding_ratio >= 0.85
             and self.cq_coverage_ratio >= 0.8
@@ -146,6 +150,7 @@ class DriftReport:
 
     @property
     def any_drift_detected(self) -> bool:
+        """Check if any drift pattern has been detected."""
         return any([
             self.hallucination_spiral,
             self.complexity_ratchet,

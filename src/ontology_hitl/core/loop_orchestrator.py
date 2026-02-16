@@ -79,6 +79,23 @@ class FeedbackLoopOrchestrator:
         max_debate_rounds: int = 2,
         experiment_name: str = "",
     ) -> None:
+        """Initialize the feedback loop orchestrator.
+        
+        Parameters
+        ----------
+        settings : Settings | None, optional
+            Configuration settings (uses defaults if None)
+        mode : LoopMode, optional
+            Loop operation mode (STANDALONE, HITL, or BENCHMARK)
+        max_iterations : int, optional
+            Maximum number of iterations (default 6)
+        convergence_threshold : float, optional
+            Threshold for convergence detection (default 0.02)
+        max_debate_rounds : int, optional
+            Maximum debate rounds per phase (default 2)
+        experiment_name : str, optional
+            Name for W&B experiment tracking
+        """
         self.settings = settings or Settings()
         self.mode = mode
         self.max_iterations = max_iterations
