@@ -377,16 +377,23 @@ class BaseAgent:
         if use_cache:
             cache_key = f"{hash(sys_prompt)}:{hash(user_prompt)}:{temp}"
             if cache_key in self._response_cache:
-                logger.debug("llm_cache_hit", agent=self.role.value, cache_key=cache_key[:16])
+                logger.debug("llm_cache_hit", agent=getattr(self, 'role', 'agent'), cache_key=cache_key[:16])
                 return self._response_cache[cache_key]
 
         max_attempts = 3
         backoff = 1
         for attempt in range(1, max_attempts + 1):
             try:
-                logger.debug("llm_call_start", agent=self.role.value, timeout=self.effective_llm_timeout_seconds, stream=stream_progress, attempt=attempt)
+                logger.debug(
+                    "llm_call_start",
+                    agent=getattr(self, 'role', 'agent'),
+                    timeout=self.effective_llm_timeout_seconds,
+                    stream=stream_progress,
+                    attempt=attempt,
+                )
+
+                # --- request (streaming or non-streaming) ---
                 if stream_progress:
-                    # Use streaming API to show progress
                     with httpx.stream(
                         "POST",
                         f"{self.settings.ollama_url}/api/chat",
@@ -397,30 +404,40 @@ class BaseAgent:
                                 {"role": "user", "content": user_prompt},
                             ],
                             "stream": True,
-                            "options": {
-                                "temperature": temp,
-                                "num_predict": 4096,
-                            },
+                            "options": {"temperature": temp, "num_predict": 4096},
                         },
                         timeout=self.effective_llm_timeout_seconds,
                     ) as resp:
                         resp.raise_for_status()
-                        content = ""
+                        content_parts: list[str] = []
                         thinking_started = False
                         chars_received = 0
-                        
+
                         for line in resp.iter_lines():
-                            if line.strip():
-                                try:
-                                    data = json.loads(line)
-                                    if "message" in data and "content" in data["message"]:
-                                        chunk = data["message"]["content"]
-                                        content += chunk
-                                        chars_received += len(chunk)
-                                        
-                                        # Show progress indicators
-                                        if "</think>" in content and not thinking_started:
-                                            thinking_started = True
+                            if not line.strip():
+                                continue
+                            try:
+                                data = json.loads(line)
+                            except json.JSONDecodeError:
+                                continue
+
+                            msg = data.get("message", {}) if isinstance(data, dict) else {}
+                            chunk = msg.get("content") if isinstance(msg, dict) else None
+                            if chunk:
+                                content_parts.append(chunk)
+                                chars_received += len(chunk)
+                                if "</think>" in chunk and not thinking_started:
+                                    thinking_started = True
+                                    print(f"🤔 {getattr(self, 'role', 'agent')}: LLM is thinking...", end="", flush=True)
+                                elif thinking_started and chars_received % 100 == 0:
+                                    print(".", end="", flush=True)
+
+                            if data.get("done", False):
+                                break
+
+                        content = "".join(content_parts)
+                        if thinking_started:
+                            print(" ✓", flush=True)
                 else:
                     resp = httpx.post(
                         f"{self.settings.ollama_url}/api/chat",
@@ -438,129 +455,86 @@ class BaseAgent:
                     resp.raise_for_status()
                     content = resp.json().get("message", {}).get("content", "")
 
-                # Parse thinking blocks if present and cache
+                # --- normalize and extract JSON if present ---
                 if "</think>" in content:
-                    content = content.split("</think>")[-1]
+                    content = content.split("</think>")[-1].strip()
 
-                parsed = {"content": content}
+                clean_text = re.sub(r"[\x00-\x1f\x7f-\x9f]", "", content)
+
+                # Prefer fenced JSON blocks
+                result = None
+                if "```json" in clean_text:
+                    try:
+                        json_block = clean_text.split("```json", 1)[1].split("```", 1)[0]
+                        result = json.loads(json_block)
+                    except Exception:
+                        result = None
+                elif "```" in clean_text:
+                    parts = clean_text.split("```")
+                    if len(parts) >= 3:
+                        try:
+                            result = json.loads(parts[1])
+                        except Exception:
+                            result = None
+
+                # Find first balanced JSON object/array in text
+                if result is None:
+                    def _find_json_objects(text: str) -> list[object]:
+                        objs: list[object] = []
+                        starts = [i for i, c in enumerate(text) if c in "[{"]
+                        for start in starts:
+                            stack: list[str] = []
+                            for i in range(start, len(text)):
+                                ch = text[i]
+                                if ch in "[{":
+                                    stack.append(ch)
+                                elif ch in "]}":
+                                    if not stack:
+                                        break
+                                    opening = stack.pop()
+                                    if (opening == '{' and ch == '}') or (opening == '[' and ch == ']'):
+                                        if not stack:
+                                            candidate = text[start : i + 1]
+                                            try:
+                                                objs.append(json.loads(candidate))
+                                            except json.JSONDecodeError:
+                                                try:
+                                                    candidate_fixed = re.sub(r',(\s*[}\]])', r"\1", candidate)
+                                                    objs.append(json.loads(candidate_fixed))
+                                                except Exception:
+                                                    pass
+                                            break
+                                    else:
+                                        break
+                        return objs
+
+                    json_objs = _find_json_objects(clean_text)
+                    if json_objs:
+                        result = json_objs[0]
+
+                # Final fallbacks
+                if result is None:
+                    try:
+                        result = json.loads(clean_text)
+                    except Exception:
+                        result = {"content": content}
+
                 if use_cache:
-                    self._response_cache[cache_key] = parsed
-                return parsed
+                    self._response_cache[cache_key] = result
+                    logger.debug("llm_cache_stored", agent=getattr(self, 'role', 'agent'), cache_key=cache_key[:16])
+
+                return result
+
             except Exception as e:
-                logger.warning("llm_call_error", agent=self.role.value, error=str(e), attempt=attempt)
+                logger.warning("llm_call_error", agent=getattr(self, 'role', 'agent'), error=str(e), attempt=attempt)
                 if attempt >= max_attempts:
-                    logger.error("llm_call_failed_max_attempts", agent=self.role.value)
+                    logger.error("llm_call_failed_max_attempts", agent=getattr(self, 'role', 'agent'))
                     return None
-                else:
-                    import time as _time
+                import time as _time
 
-                    _time.sleep(backoff)
-                    backoff *= 2
-                    continue                                        thinking_started = True
-                                        print(f"🤔 {self.role.value}: LLM is thinking...", end="", flush=True)
-                                    elif thinking_started and chars_received % 100 == 0:
-                                        print(".", end="", flush=True)
-                                        
-                                if data.get("done", False):
-                                    break
-                            except json.JSONDecodeError:
-                                continue
-                    
-                    if thinking_started:
-                        print(" ✓", flush=True)
-                        
-            else:
-                # Non-streaming fallback
-                resp = httpx.post(
-                    f"{self.settings.ollama_url}/api/chat",
-                    json={
-                        "model": self.settings.ollama_model,
-                        "messages": [
-                            {"role": "system", "content": sys_prompt},
-                            {"role": "user", "content": user_prompt},
-                        ],
-                        "stream": False,
-                        "options": {
-                            "temperature": temp,
-                            "num_predict": 4096,
-                        },
-                    },
-                    timeout=self.effective_llm_timeout_seconds,
-                )
-                resp.raise_for_status()
-                content = resp.json()["message"]["content"]
-
-            # Strip qwen3-next thinking tags
-            if "</think>" in content:
-                content = content.split("</think>", 1)[1].strip()
-
-            # Extract JSON from markdown code blocks if present
-            if "```json" in content:
-                content = content.split("```json", 1)[1].split("```", 1)[0]
-            elif "```" in content:
-                md_parts = content.split("```")
-                if len(md_parts) >= 3:
-                    content = md_parts[1]
-
-            # More robust JSON extraction using balanced brackets
-            def find_json_objects(text):
-                results = []
-                # Remove control characters that definitely break JSON
-                text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text)
-                
-                start_indices = [i for i, char in enumerate(text) if char in '{[']
-                for start in start_indices:
-                    stack = []
-                    for i in range(start, len(text)):
-                        char = text[i]
-                        if char in '{[':
-                            stack.append(text[start] if not stack else char)
-                        elif char in '}]':
-                            if not stack: break
-                            opening = stack.pop()
-                            if (opening == '{' and char == '}') or (opening == '[' and char == ']'):
-                                if not stack:
-                                    candidate = text[start:i+1]
-                                    try:
-                                        results.append(json.loads(candidate))
-                                    except json.JSONDecodeError:
-                                        # Handle common trailing comma issue
-                                        try:
-                                            results.append(json.loads(re.sub(r',(\s*[}\]])', r'\1', candidate)))
-                                        except json.JSONDecodeError:
-                                            pass
-                                    break
-                            else:
-                                break
-                return results
-
-            json_objects = find_json_objects(content)
-            if json_objects:
-                # Most ontology agents return a single dict or a list. 
-                # If we have multiple, the first one is usually the main response.
-                result = json_objects[0]
-            else:
-                # Last resort fallback
-                result = json.loads(content)
-
-            # LangSmith tracing is handled by the @ls_traceable decorator
-            # on this method — no manual Client.create_run() needed.
-
-            if use_cache:
-                self._response_cache[cache_key] = result
-                logger.debug("llm_cache_stored", agent=self.role.value, cache_key=cache_key[:16])
-
-            return result
-
-        except httpx.HTTPError as e:
-            logger.warning("llm_call_failed", agent=self.role.value, error=str(e))
-            return None
-        except (json.JSONDecodeError, KeyError, IndexError) as e:
-            logger.warning("llm_parse_failed",
-                          agent=self.role.value,
-                          error=str(e),
-                          raw_content=content[:500] if 'content' in locals() else "No content received")
-            return None
+                _time.sleep(backoff)
+                backoff *= 2
+                continue
 
     @ls_traceable(run_type="llm", name="BaseAgent.call_llm_multi_turn")
     def call_llm_multi_turn(
@@ -589,43 +563,42 @@ class BaseAgent:
                     f"{self.settings.ollama_url}/api/chat",
                     json={
                         "model": self.settings.ollama_model,
-                    "messages": messages,
-                    "stream": False,
-                    "options": {
-                        "temperature": temp,
-                        "num_predict": 4096,
+                        "messages": messages,
+                        "stream": False,
+                        "options": {"temperature": temp, "num_predict": 4096},
                     },
-                },
-                timeout=self.effective_llm_timeout_seconds,
-            )
-            resp.raise_for_status()
-            content = resp.json()["message"]["content"]
+                    timeout=self.effective_llm_timeout_seconds,
+                )
+                resp.raise_for_status()
+                content = resp.json().get("message", {}).get("content", "")
 
-            if "</think>" in content:
-                content = content.split("</think>", 1)[1].strip()
+                if "</think>" in content:
+                    content = content.split("</think>", 1)[1].strip()
 
-            if "```json" in content:
-                content = content.split("```json", 1)[1].split("```", 1)[0]
-            elif "```" in content:
-                content = content.split("```", 1)[1].split("```", 1)[0]
+                if "```json" in content:
+                    content = content.split("```json", 1)[1].split("```", 1)[0]
+                elif "```" in content:
+                    content = content.split("```", 1)[1].split("```", 1)[0]
 
-            # Sanitize JSON content - remove control characters that break parsing
-            import re
-            content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)
+                # Sanitize JSON content - remove control characters that break parsing
+                import re
+                content = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', content)
 
-            parsed = json.loads(content)
+                parsed = json.loads(content)
 
-            # LangSmith tracing is handled by the @ls_traceable decorator
-            # on this method — no manual Client.create_run() needed.
+                # LangSmith tracing is handled by the @ls_traceable decorator
+                # on this method — no manual Client.create_run() needed.
 
-            return parsed
+                return parsed
 
-        except httpx.HTTPError as e:
-            logger.warning("llm_multi_turn_failed", agent=self.role.value, error=str(e))
-            return None
-        except (json.JSONDecodeError, KeyError, IndexError) as e:
-            logger.warning("llm_multi_turn_parse_failed", agent=self.role.value, error=str(e))
-            return None
+            except httpx.HTTPError as e:
+                logger.warning("llm_multi_turn_failed", agent=getattr(self, 'role', 'agent'), error=str(e))
+                return None
+
+            except (json.JSONDecodeError, KeyError, IndexError) as e:
+                logger.warning("llm_multi_turn_parse_failed", agent=getattr(self, 'role', 'agent'), error=str(e))
+                return None
+                
     def clear_response_cache(self) -> None:
         """Clear the LLM response cache."""
         cache_size = len(self._response_cache)

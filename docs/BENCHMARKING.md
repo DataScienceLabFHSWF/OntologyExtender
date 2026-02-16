@@ -87,8 +87,8 @@ reference ontologies using transformer-based semantic similarity.
 
 **Method:**
 - **Concept matching**: Embed concept label + definition using
-  `all-MiniLM-L6-v2`, compute cosine similarity matrix against reference.
-  Threshold ≥ 0.55 = match, below = hallucination.
+  `all-MiniLM-L6-v2` (preferred) or an Ollama embedding model (fallback),
+  compute cosine similarity matrix against reference. Threshold ≥ 0.55 = match.
 - **Triple matching**: Convert SPO triples to sentences
   (`"{subject} {predicate} {object}"`), embed, match against reference.
   Threshold ≥ 0.50.
@@ -101,6 +101,21 @@ reference ontologies using transformer-based semantic similarity.
 - `BenchmarkEvaluator.score_semantic_match_concepts()` and
   `score_semantic_match_triples()` implement the pipeline
 - Configurable thresholds and embedding model in `BenchmarkConfig`
+
+**Embedding options / fallback**
+- Preferred: `sentence-transformers` (local Python package) for fast,
+  reproducible embeddings (model configurable via
+  `BenchmarkConfig.semantic_match_model`).
+- Fallback: Ollama `/api/embed` using `BenchmarkConfig.semantic_embedding_model`
+  (default: `qwen3-embedding`) if `sentence-transformers` is not installed.
+- To pull the Ollama embedding model locally run:
+
+```bash
+docker exec ollama-ontology-extender ollama pull qwen3-embedding
+```
+
+This makes the Ollama embedding route available for CI/workstation setups
+that prefer hosting all models in the Ollama service.
 
 **Source:** [NadeenAhmad/TamingHallucinations](https://github.com/NadeenAhmad/TamingHallucinations) (MIT)
 

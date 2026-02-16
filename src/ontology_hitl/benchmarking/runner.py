@@ -102,6 +102,7 @@ class BenchmarkRunner:
             embedding_url=config.embedding_url,
             embedding_model=config.embedding_model,
             similarity_threshold=config.similarity_threshold,
+            semantic_embedding_model=getattr(config, 'semantic_embedding_model', None),
         )
         self.stats = StatisticalAnalyzer()
         self.reporter = ReportGenerator(

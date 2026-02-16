@@ -173,6 +173,8 @@ class TestCase(BaseModel):
     Competency questions that target the *removed* classes quantify
     whether a system can rediscover what was taken away.
 
+    __test__ = False
+
     Attributes
     ----------
     id : str
@@ -819,6 +821,8 @@ class BenchmarkConfig(BaseModel):
     semantic_match_model: str = "all-MiniLM-L6-v2"
     concept_match_threshold: float = 0.55
     triple_match_threshold: float = 0.50
+    # Ollama embedding model to use when sentence-transformers is unavailable
+    semantic_embedding_model: str = "qwen3-embedding"
     enable_ontourl_eval: bool = False
     ontourl_dataset_path: Path | None = None
     enable_owlunit: bool = False

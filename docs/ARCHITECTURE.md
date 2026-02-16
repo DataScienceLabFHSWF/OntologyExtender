@@ -529,6 +529,7 @@ def test_engineer_proposes():
 - [ ] `.env` configured with correct ports and model names
 - [ ] `docker compose up -d` — Ollama and Fuseki staging running
 - [ ] Ollama model pulled: `docker exec ollama-ontology-extender ollama pull qwen3:next`
+- [x] Ollama embedding model pulled: `docker exec ollama-ontology-extender ollama pull qwen3-embedding` (used as embedding fallback for semantic matching)
 - [ ] Seed ontology at `data/seed_ontology/plan-ontology-v1.0.owl`
 - [ ] Qdrant collection `documents` populated
 - [ ] `source .venv/bin/activate && pip install -e ".[dev]"`
