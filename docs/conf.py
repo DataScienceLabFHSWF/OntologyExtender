@@ -15,6 +15,7 @@ release = '1.0.0'
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx.ext.linkcode',
@@ -42,6 +43,10 @@ html_static_path = []
 autodoc_member_order = 'bysource'
 autodoc_typehints = 'description'
 autodoc_typehints_format = 'short'
+
+# Autosummary options
+autosummary_generate = True
+autosummary_generate_overwrite = False
 
 # Napoleon (Google-style docstrings)
 napoleon_google_docstring = True
