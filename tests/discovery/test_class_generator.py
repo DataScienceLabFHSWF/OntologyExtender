@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import pytest
+
 from ontology_hitl.discovery.class_generator import ClassDefinitionGenerator
 from ontology_hitl.core.models import GapCandidate
 
 
+@pytest.mark.slow
 class TestClassDefinitionGenerator:
     """Test class proposal generation."""
 

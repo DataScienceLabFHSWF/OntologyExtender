@@ -17,6 +17,7 @@ jobs:
     env:
       HITL_SEMANTIC_EMBEDDING_MODEL: qwen3-embedding
       HITL_PULL_OLLAMA_EMBED: 'false'
+      HITL_RUN_SLOW_TESTS: 'false'
 
     steps:
       - uses: actions/checkout@v4
@@ -51,9 +52,15 @@ jobs:
         run: |
           mypy src/
 
-      - name: Run tests
+      - name: Run tests (fast — exclude slow)
         run: |
-          pytest tests/ -v --tb=short --cov=src/ontology_hitl --cov-report=xml
+          pytest tests/ -v --tb=short --cov=src/ontology_hitl --cov-report=xml -m "not slow"
+
+      - name: Run slow tests (optional)
+        if: env.HITL_RUN_SLOW_TESTS == 'true'
+        run: |
+          echo "Running slow tests as requested"
+          pytest tests/ -v -m slow
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
