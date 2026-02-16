@@ -1,4 +1,4 @@
-.PHONY: install dev lint test format check gap proposals review export evaluate cycle
+.PHONY: install dev lint test format check docs docs-check gap proposals review export evaluate cycle
 
 # Setup
 install:
@@ -20,6 +20,13 @@ test:
 	pytest tests/ -v --tb=short
 
 check: lint test
+
+# Documentation
+docs:
+	cd docs && make html
+
+docs-check:
+	cd docs && make clean && make html > /dev/null 2>&1 && echo "Docs build successful" || (echo "Docs build failed" && exit 1)
 
 # Workflow steps
 gap:

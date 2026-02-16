@@ -174,6 +174,38 @@ WANDB_PROJECT=ontology-hitl       # W&B experiment tracking
 python -m pytest tests/ -v
 ```
 
+## Development
+
+### Setup with Pre-Commit Hooks
+
+For local development, we recommend setting up pre-commit hooks to validate code automatically:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+This runs linting, formatting, type checking, and documentation validation before each commit.
+
+### Build Documentation
+
+```bash
+make docs          # Build HTML documentation to docs/_build/html/
+make docs-check    # Validate docs build (for CI)
+open docs/_build/html/index.html
+```
+
+See [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) for details.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development workflow
+- Code quality standards
+- Pre-commit hooks setup
+- CI/CD pipeline details
+- Pull request process
+
 ## Documentation
 
 | Document | Content |
