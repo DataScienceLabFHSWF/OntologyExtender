@@ -52,6 +52,7 @@ from ontology_hitl.benchmarking.ontourl.strategies import (
     MultiTurnStrategy,
     DebateStrategy,
     SelfVerifyStrategy,
+    HCOMEStrategy,
 )
 from ontology_hitl.benchmarking.ontourl.reporter import OntoURLReporter
 
@@ -69,6 +70,7 @@ STRATEGY_REGISTRY: dict[str, type] = {
     "multi_turn": MultiTurnStrategy,
     "debate": DebateStrategy,
     "self_verify": SelfVerifyStrategy,
+    "hcome": HCOMEStrategy,
 }
 
 
@@ -90,6 +92,8 @@ def create_strategy(name: str, llm: OllamaAdapter) -> object:
         return DebateStrategy(llm)
     elif name == "self_verify":
         return SelfVerifyStrategy(llm)
+    elif name == "hcome":
+        return HCOMEStrategy(llm)
     else:
         raise ValueError(f"Unknown strategy: {name}. Available: {list(STRATEGY_REGISTRY.keys())}")
 
@@ -246,7 +250,7 @@ def run_benchmark(args: argparse.Namespace) -> None:
                         logger.warning("inference_error", split=split_id, idx=i, error=str(e))
 
                 predictions_raw.append(response)
-                ref = example.get("answer", "").strip()
+                ref = (example.get("answer") or "").strip()
                 references.append(ref)
 
                 # Build prediction record
