@@ -379,15 +379,49 @@ class FeedbackLoopOrchestrator:
     # ------------------------------------------------------------------
 
     def _fetch_document_excerpts(self, max_chunks: int = 50) -> list[str]:
-        """Fetch text chunks from Qdrant for the Ont-101 pipeline."""
+        """Fetch text chunks from Qdrant for the Ont-101 pipeline.
+
+        Honor optional environment flags for document filtering and
+        legal-document prioritization so callers can force a domain-only
+        corpus (e.g. `HITL_QDRANT_SOURCE_FILTER=SAR`).
+        """
         try:
+            import os
             from ontology_hitl.sources.qdrant_source import QdrantDocumentSource
+
+            # Env-controlled behaviour (defaults preserve existing behaviour)
+            src_filter = os.getenv("HITL_QDRANT_SOURCE_FILTER")
+            prioritize_legal_env = os.getenv("HITL_PRIORITIZE_LEGAL")
+            if prioritize_legal_env is None:
+                prioritize_legal = True
+            else:
+                prioritize_legal = prioritize_legal_env.lower() in ("1", "true", "yes")
+
+            # If a source filter is provided, disable legal-prioritization
+            # and filter results by payload `source` (case-insensitive).
+            if src_filter:
+                prioritize_legal = False
+
             source = QdrantDocumentSource(
                 qdrant_url=self.settings.qdrant_url,
+                collection=self.settings.qdrant_collection,
                 ollama_url=self.settings.ollama_url,
                 ollama_model=self.settings.ollama_model,
             )
-            chunks = source.fetch_chunks(limit=max_chunks, prioritize_legal=True)
+
+            chunks = source.fetch_chunks(limit=max_chunks, prioritize_legal=prioritize_legal)
+
+            # Apply optional source filter (e.g. 'SAR') on payload metadata
+            if src_filter:
+                sf = src_filter.strip().lower()
+                filtered = [c for c in chunks if str(c.metadata.get("source", "")).lower() == sf
+                            or sf in c.document_name.lower()]
+                if not filtered:
+                    logger.warning("qdrant_source_filter_no_matches", filter=src_filter, returned=len(chunks))
+                else:
+                    logger.info("qdrant_source_filter_applied", filter=src_filter, kept=len(filtered))
+                chunks = filtered or chunks
+
             return [c.text for c in chunks]
         except Exception as e:
             logger.warning("qdrant_fetch_failed", error=str(e))

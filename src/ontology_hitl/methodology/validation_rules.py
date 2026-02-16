@@ -149,11 +149,22 @@ def check_sibling_depth_consistency(
     uri_map = _build_uri_map(hierarchy.nodes)
     issues: list[ValidationIssue] = []
 
-    def _subtree_depth(uri: str) -> int:
+    def _subtree_depth(uri: str, seen: set[str] | None = None) -> int:
+        # Track visited nodes on the current recursion path to avoid infinite
+        # recursion in presence of cycles. If a cycle is detected on this
+        # path we treat the cyclic branch as a leaf (depth 0).
+        if seen is None:
+            seen = set()
+        if uri in seen:
+            return 0
+        seen = seen | {uri}
+
         kids = children_map.get(uri, [])
         if not kids:
             return 0
-        return 1 + max(_subtree_depth(k.uri) for k in kids)
+
+        depths = [ _subtree_depth(k.uri, seen) for k in kids ]
+        return 1 + max(depths)
 
     for node in hierarchy.nodes:
         kids = children_map.get(node.uri, [])

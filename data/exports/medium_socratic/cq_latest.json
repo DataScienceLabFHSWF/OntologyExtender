@@ -152,47 +152,5 @@
     "added_in_iteration": "v0",
     "sparql_template": null,
     "notes": "Requires Phase class and temporal relations"
-  },
-  {
-    "id": "cq_planningmethod_properties",
-    "class": "PlanningMethod",
-    "question": "What properties does a PlanningMethod have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_planningmethod_hierarchy",
-    "class": "PlanningMethod",
-    "question": "Which PlanningDomain instances are also PlanningMethod?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_conditionaleffect_properties",
-    "class": "ConditionalEffect",
-    "question": "What properties does a ConditionalEffect have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_conditionaleffect_hierarchy",
-    "class": "ConditionalEffect",
-    "question": "Which ActionEffect instances are also ConditionalEffect?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_metricgoal_properties",
-    "class": "MetricGoal",
-    "question": "What properties does a MetricGoal have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_metricgoal_hierarchy",
-    "class": "MetricGoal",
-    "question": "Which GoalState instances are also MetricGoal?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
   }
 ]

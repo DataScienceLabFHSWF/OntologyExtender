@@ -4,8 +4,8 @@
   "summary": {
     "total_iterations": 1,
     "entity_coverage": {
-      "initial": 1.0,
-      "final": 1.0,
+      "initial": 0.9473684210526315,
+      "final": 0.9473684210526315,
       "delta": 0.0
     },
     "cq_coverage": {
@@ -25,12 +25,12 @@
   "iterations": [
     {
       "iteration": 1,
-      "entity_coverage_pct": 1.0,
+      "entity_coverage_pct": 0.9473684210526315,
       "cq_coverage_pct": 0.0,
       "classes_added": 0,
-      "improvement": 1.0,
+      "improvement": 0.9473684210526315,
       "acceptance_rate": 1.0,
-      "timestamp": "2026-02-13T12:01:51.776901"
+      "timestamp": "2026-02-16T14:49:29.497626"
     }
   ]
 }

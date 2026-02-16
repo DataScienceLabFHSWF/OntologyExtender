@@ -14,6 +14,7 @@ from ontology_hitl.methodology.validation_rules import (
     check_disjointness_opportunities,
     check_naming_conventions,
     check_no_cycles,
+    check_sibling_depth_consistency,
     check_property_attachment,
     check_single_subclass,
     check_too_many_siblings,
@@ -112,6 +113,19 @@ class TestNoCycles:
         ])
         issues = check_no_cycles(h)
         assert len(issues) == 0
+
+    def test_subtree_depth_handles_cycle_gracefully(self):
+        """Ensure sibling-depth computation does not RecursionError on cycles."""
+        h = _make_hierarchy([
+            {"label": "A", "uri": "plan:A", "parent_uri": "plan:B"},
+            {"label": "B", "uri": "plan:B", "parent_uri": "plan:A"},
+            {"label": "Sibling1", "uri": "plan:Sibling1", "parent_uri": "plan:Root"},
+            {"label": "Sibling2", "uri": "plan:Sibling2", "parent_uri": "plan:Root"},
+            {"label": "Root", "uri": "plan:Root"},
+        ])
+        # Should not raise; may return empty list or info-level issues
+        issues = check_sibling_depth_consistency(h)
+        assert isinstance(issues, list)
 
 
 # ── Rule 5: Naming ────────────────────────────────────────────────

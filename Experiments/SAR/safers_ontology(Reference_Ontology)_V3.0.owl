@@ -1,0 +1,2081 @@
+<?xml version="1.0"?>
+<Ontology xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="http://www.semanticweb.org/certh/safers"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     ontologyIRI="http://www.semanticweb.org/certh/safers">
+    <Prefix name="" IRI="http://www.semanticweb.org/certh/safers"/>
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="xml" IRI="http://www.w3.org/XML/1998/namespace"/>
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+    <Declaration>
+        <Class IRI="#AirQuality"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Aircraft"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Alert"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Animal"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Anomaly"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Asset"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Audio"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Bulldozer"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Car"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Citizen"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#CivilProtection"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Classification"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Communication"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Dataset"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Department"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Detection"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#DropWaterMission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#DroughtAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#DuffMoistureAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#EvacuationMission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#FWI"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#FWIAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#FineFuelMoistureAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Fire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#FirebreakMission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Firefighter"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ForestEngine"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ForestFire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#FuelBreakMission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#GroundSituation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#HighlyVulnerableObject"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Human"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Humidity"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Image"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Impact"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ImpactType"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Incident"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#IncidentType"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Infrastructure"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#LandFire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#LivingBeing"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Location"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Map"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#MediaItem"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#MediaURIs"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#MedicalService"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#MetereologyClimate"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Mission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Observation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PersonAbleToProvideSupport"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PersonUnableToProvideSupport"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PhysicalEnvironment"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Point"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PolicyMakers"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Precipitation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#PrescribedBurning"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Property"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ProvidingShelterMission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Public"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Recommendation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ReconnaissanceMission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Report"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Satellite"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Sensor"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Stakeholder"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Team"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Temperature"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Text"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Topography"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#TrainedVolunteer"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#TrainingMission"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#UrbanFire"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Vegetation"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Vehicle"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#Video"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#WaterQuality"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#WeatherConditionParameter"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#WeatherForecast"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#WindSpeed"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ZoneCleaningMission"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#activates"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#belongTo"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#containsDetection"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#containsMediaItem"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#derivedFrom"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#detectsIncident"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#enables"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasAffected"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasClassification"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasFireImpact"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasFireLocation"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasFireWeatherCondition"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasForeCastWeatherParameter"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasGeometry"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasHumidity"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasImpactType"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasIncidentImpact"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasIncidentLocation"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasIncidentType"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasLocation"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasLocationWeatherCondition"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasLocationWeatherForecast"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasMediaLocation"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasMediaURI"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasMeteorologyClimate"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasMeterologyWeatherCondition"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasMission"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasPrecipitation"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasRelatedIncident"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasReport"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasStakeholderLocation"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasTemperature"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasTopography"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasTopographyWeatherCondition"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasVegetation"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasVegetationWeatherCondition"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasWeatherConditionParameter"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasWeatherForecast"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hasWindSpeed"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#hazard"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#leads"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#leadsTo"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#madeBySatellite"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#madeBySensor"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#produces"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#producesIncidentData"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#producesMap"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#producesMediaData"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#producesSatelliteData"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#producesSensorData"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#producesTopographyData"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#producesVegetationData"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#publishes"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#refersToIncident"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#relatesToIncident"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#satelliteObserves"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#sensorObserves"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#travelWith"/>
+    </Declaration>
+    <Declaration>
+        <ObjectProperty IRI="#workForDepartment"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#containsInformation"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasCategory"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasCertainty"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasCommunicationEnd"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasCommunicationStart"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasDatasetDateTime"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasDatasource"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasDescription"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasDroughtAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasDuffMoistureAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasFWIAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasFineFuelMoistureAnomaly"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasFireEnd"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasFireStart"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasIncidentPriority"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasIncidentSeverity"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasInformation"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasLatitude"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasLocationID"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasLongitude"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasMediaDateTime"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasMediaSource"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasMissionEnd"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasMissionPriority"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasMissionStart"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasMissionStatus"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasObservationDateTime"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasObservationSource"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasRegion"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasScope"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasSeverity"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasSource"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasStakeholderActivity"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasStakeholderStatus"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasStatus"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasTimestamp"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasUrgency"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasValue"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasVehicleStatus"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasVulnerableObjectStatus"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#hasWeatherConditionTimestamp"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#fire1"/>
+    </Declaration>
+    <SubClassOf>
+        <Class IRI="#AirQuality"/>
+        <Class IRI="#Observation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Aircraft"/>
+        <Class IRI="#Vehicle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Animal"/>
+        <Class IRI="#LivingBeing"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Asset"/>
+        <Class IRI="#HighlyVulnerableObject"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Audio"/>
+        <Class IRI="#MediaItem"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Bulldozer"/>
+        <Class IRI="#Vehicle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Car"/>
+        <Class IRI="#Vehicle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Citizen"/>
+        <Class IRI="#Stakeholder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#CivilProtection"/>
+        <Class IRI="#Stakeholder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#DropWaterMission"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#DroughtAnomaly"/>
+        <Class IRI="#Anomaly"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#DuffMoistureAnomaly"/>
+        <Class IRI="#Anomaly"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#EvacuationMission"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#FWI"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#FWIAnomaly"/>
+        <Class IRI="#Anomaly"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#FineFuelMoistureAnomaly"/>
+        <Class IRI="#Anomaly"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#FirebreakMission"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Firefighter"/>
+        <Class IRI="#Stakeholder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ForestEngine"/>
+        <Class IRI="#Vehicle"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ForestFire"/>
+        <Class IRI="#Fire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#FuelBreakMission"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#GroundSituation"/>
+        <Class IRI="#Observation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Human"/>
+        <Class IRI="#LivingBeing"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Humidity"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Image"/>
+        <Class IRI="#MediaItem"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Infrastructure"/>
+        <Class IRI="#Asset"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#LandFire"/>
+        <Class IRI="#Fire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#LivingBeing"/>
+        <Class IRI="#HighlyVulnerableObject"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#MedicalService"/>
+        <Class IRI="#Stakeholder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#PersonAbleToProvideSupport"/>
+        <Class IRI="#Public"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#PersonUnableToProvideSupport"/>
+        <Class IRI="#Public"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#PolicyMakers"/>
+        <Class IRI="#Stakeholder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Precipitation"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#PrescribedBurning"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Property"/>
+        <Class IRI="#Asset"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ProvidingShelterMission"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Public"/>
+        <Class IRI="#Stakeholder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ReconnaissanceMission"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Temperature"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Text"/>
+        <Class IRI="#MediaItem"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#TrainedVolunteer"/>
+        <Class IRI="#Stakeholder"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#TrainingMission"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#UrbanFire"/>
+        <Class IRI="#Fire"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#Video"/>
+        <Class IRI="#MediaItem"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#WaterQuality"/>
+        <Class IRI="#Observation"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#WindSpeed"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ZoneCleaningMission"/>
+        <Class IRI="#Mission"/>
+    </SubClassOf>
+    <DisjointClasses>
+        <Class IRI="#Alert"/>
+        <Class IRI="#Classification"/>
+        <Class IRI="#Dataset"/>
+        <Class IRI="#Department"/>
+        <Class IRI="#Detection"/>
+        <Class IRI="#Fire"/>
+        <Class IRI="#HighlyVulnerableObject"/>
+        <Class IRI="#Impact"/>
+        <Class IRI="#ImpactType"/>
+        <Class IRI="#Incident"/>
+        <Class IRI="#IncidentType"/>
+        <Class IRI="#Location"/>
+        <Class IRI="#Map"/>
+        <Class IRI="#MediaItem"/>
+        <Class IRI="#MediaURIs"/>
+        <Class IRI="#MetereologyClimate"/>
+        <Class IRI="#Mission"/>
+        <Class IRI="#Observation"/>
+        <Class IRI="#PhysicalEnvironment"/>
+        <Class IRI="#Point"/>
+        <Class IRI="#Report"/>
+        <Class IRI="#Satellite"/>
+        <Class IRI="#Sensor"/>
+        <Class IRI="#Stakeholder"/>
+        <Class IRI="#Team"/>
+        <Class IRI="#Topography"/>
+        <Class IRI="#Vegetation"/>
+        <Class IRI="#Vehicle"/>
+        <Class IRI="#WeatherConditionParameter"/>
+        <Class IRI="#WeatherForecast"/>
+    </DisjointClasses>
+    <ClassAssertion>
+        <Class IRI="#Fire"/>
+        <NamedIndividual IRI="#fire1"/>
+    </ClassAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="#hasFireEnd"/>
+        <NamedIndividual IRI="#fire1"/>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#dateTime">2007-07-04T10:53:00</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="#hasFireStart"/>
+        <NamedIndividual IRI="#fire1"/>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#dateTime">2007-07-04T08:15:00</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="#hasLatitude"/>
+        <NamedIndividual IRI="#fire1"/>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#float">34.74</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="#hasLongitude"/>
+        <NamedIndividual IRI="#fire1"/>
+        <Literal datatypeIRI="http://www.w3.org/2001/XMLSchema#float">-119.75</Literal>
+    </DataPropertyAssertion>
+    <SymmetricObjectProperty>
+        <ObjectProperty IRI="#leadsTo"/>
+    </SymmetricObjectProperty>
+    <TransitiveObjectProperty>
+        <ObjectProperty IRI="#derivedFrom"/>
+    </TransitiveObjectProperty>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#activates"/>
+        <Class IRI="#Alert"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#activates"/>
+        <Class IRI="#Recommendation"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#belongTo"/>
+        <Class IRI="#Vehicle"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#containsDetection"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#containsMediaItem"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#derivedFrom"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#detectsIncident"/>
+        <Class IRI="#Observation"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#enables"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasAffected"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasAnomaly"/>
+        <Class IRI="#Point"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasClassification"/>
+        <Class IRI="#Detection"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasFireImpact"/>
+        <Class IRI="#Fire"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasFireLocation"/>
+        <Class IRI="#Fire"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasFireWeatherCondition"/>
+        <Class IRI="#Fire"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasForeCastWeatherParameter"/>
+        <Class IRI="#WeatherForecast"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasGeometry"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasHumidity"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasImpactType"/>
+        <Class IRI="#Impact"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasIncidentImpact"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasIncidentLocation"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasIncidentType"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasLocation"/>
+        <Class IRI="#Alert"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasLocation"/>
+        <Class IRI="#Point"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasLocation"/>
+        <Class IRI="#Recommendation"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasLocation"/>
+        <Class IRI="#Report"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasLocationWeatherCondition"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasLocationWeatherForecast"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasMediaLocation"/>
+        <Class IRI="#MediaItem"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasMediaURI"/>
+        <Class IRI="#Report"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasMeteorologyClimate"/>
+        <Class IRI="#PhysicalEnvironment"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasMeterologyWeatherCondition"/>
+        <Class IRI="#MetereologyClimate"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasMission"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasPrecipitation"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasRelatedIncident"/>
+        <Class IRI="#Fire"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasReport"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasStakeholderLocation"/>
+        <Class IRI="#Stakeholder"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasTemperature"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasTopography"/>
+        <Class IRI="#PhysicalEnvironment"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasTopographyWeatherCondition"/>
+        <Class IRI="#Topography"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasVegetation"/>
+        <Class IRI="#PhysicalEnvironment"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasVegetationWeatherCondition"/>
+        <Class IRI="#Vegetation"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasWeatherConditionParameter"/>
+        <Class IRI="#Point"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasWeatherForecast"/>
+        <Class IRI="#Point"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hasWindSpeed"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#hazard"/>
+        <Class IRI="#Fire"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#leads"/>
+        <Class IRI="#Stakeholder"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#leadsTo"/>
+        <Class IRI="#Anomaly"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#leadsTo"/>
+        <Class IRI="#Fire"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#madeBySatellite"/>
+        <Class IRI="#Observation"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#madeBySensor"/>
+        <Class IRI="#Observation"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#produces"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#producesIncidentData"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#producesMap"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#producesMediaData"/>
+        <Class IRI="#MediaItem"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#producesSatelliteData"/>
+        <Class IRI="#Satellite"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#producesSensorData"/>
+        <Class IRI="#Sensor"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#producesTopographyData"/>
+        <Class IRI="#Topography"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#producesVegetationData"/>
+        <Class IRI="#Vegetation"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#publishes"/>
+        <Class IRI="#Stakeholder"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#refersToIncident"/>
+        <Class IRI="#MediaItem"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#relatesToIncident"/>
+        <Class IRI="#Mission"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#satelliteObserves"/>
+        <Class IRI="#Satellite"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#sensorObserves"/>
+        <Class IRI="#Sensor"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#travelWith"/>
+        <Class IRI="#Stakeholder"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyDomain>
+        <ObjectProperty IRI="#workForDepartment"/>
+        <Class IRI="#Stakeholder"/>
+    </ObjectPropertyDomain>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#activates"/>
+        <Class IRI="#Communication"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#activates"/>
+        <Class IRI="#Mission"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#belongTo"/>
+        <Class IRI="#Department"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#containsDetection"/>
+        <Class IRI="#Detection"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#containsMediaItem"/>
+        <Class IRI="#MediaItem"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#derivedFrom"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#detectsIncident"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#enables"/>
+        <Class IRI="#Mission"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasAffected"/>
+        <Class IRI="#HighlyVulnerableObject"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasAnomaly"/>
+        <Class IRI="#Anomaly"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasClassification"/>
+        <Class IRI="#Classification"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasFireImpact"/>
+        <Class IRI="#Impact"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasFireLocation"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasFireWeatherCondition"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasForeCastWeatherParameter"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasGeometry"/>
+        <Class IRI="#Point"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasHumidity"/>
+        <Class IRI="#Humidity"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasImpactType"/>
+        <Class IRI="#ImpactType"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasIncidentImpact"/>
+        <Class IRI="#Impact"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasIncidentLocation"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasIncidentType"/>
+        <Class IRI="#IncidentType"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasLocation"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasLocationWeatherCondition"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasLocationWeatherForecast"/>
+        <Class IRI="#WeatherForecast"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasMediaLocation"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasMediaURI"/>
+        <Class IRI="#MediaURIs"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasMeteorologyClimate"/>
+        <Class IRI="#MetereologyClimate"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasMeterologyWeatherCondition"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasMission"/>
+        <Class IRI="#Mission"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasPrecipitation"/>
+        <Class IRI="#Precipitation"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasRelatedIncident"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasReport"/>
+        <Class IRI="#Report"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasStakeholderLocation"/>
+        <Class IRI="#Location"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasTemperature"/>
+        <Class IRI="#Temperature"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasTopography"/>
+        <Class IRI="#Topography"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasTopographyWeatherCondition"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasVegetation"/>
+        <Class IRI="#Vegetation"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasVegetationWeatherCondition"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasWeatherConditionParameter"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasWeatherForecast"/>
+        <Class IRI="#WeatherForecast"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hasWindSpeed"/>
+        <Class IRI="#WindSpeed"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#hazard"/>
+        <Class IRI="#PhysicalEnvironment"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#leads"/>
+        <Class IRI="#Team"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#leadsTo"/>
+        <Class IRI="#Fire"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#madeBySatellite"/>
+        <Class IRI="#Satellite"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#madeBySensor"/>
+        <Class IRI="#Sensor"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#produces"/>
+        <Class IRI="#Alert"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#producesIncidentData"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#producesMap"/>
+        <Class IRI="#Map"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#producesMediaData"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#producesSatelliteData"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#producesSensorData"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#producesTopographyData"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#producesVegetationData"/>
+        <Class IRI="#Dataset"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#publishes"/>
+        <Class IRI="#MediaItem"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#refersToIncident"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#relatesToIncident"/>
+        <Class IRI="#Incident"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#satelliteObserves"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#sensorObserves"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#travelWith"/>
+        <Class IRI="#Vehicle"/>
+    </ObjectPropertyRange>
+    <ObjectPropertyRange>
+        <ObjectProperty IRI="#workForDepartment"/>
+        <Class IRI="#Department"/>
+    </ObjectPropertyRange>
+    <SubDataPropertyOf>
+        <DataProperty IRI="#hasDroughtAnomaly"/>
+        <DataProperty abbreviatedIRI="owl:topDataProperty"/>
+    </SubDataPropertyOf>
+    <DataPropertyDomain>
+        <DataProperty IRI="#containsInformation"/>
+        <Class IRI="#Dataset"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasCategory"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasCategory"/>
+        <Class IRI="#Recommendation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasCertainty"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasCommunicationEnd"/>
+        <Class IRI="#Communication"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasCommunicationStart"/>
+        <Class IRI="#Communication"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDatasetDateTime"/>
+        <Class IRI="#Dataset"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDatasource"/>
+        <Class IRI="#Dataset"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDescription"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDescription"/>
+        <Class IRI="#Communication"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDescription"/>
+        <Class IRI="#Recommendation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDroughtAnomaly"/>
+        <Class IRI="#DroughtAnomaly"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDroughtAnomaly"/>
+        <Class IRI="#Point"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDuffMoistureAnomaly"/>
+        <Class IRI="#DuffMoistureAnomaly"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasDuffMoistureAnomaly"/>
+        <Class IRI="#Point"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasFWIAnomaly"/>
+        <Class IRI="#FWIAnomaly"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasFWIAnomaly"/>
+        <Class IRI="#Point"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasFineFuelMoistureAnomaly"/>
+        <Class IRI="#FineFuelMoistureAnomaly"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasFineFuelMoistureAnomaly"/>
+        <Class IRI="#Point"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasFireEnd"/>
+        <Class IRI="#Fire"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasFireStart"/>
+        <Class IRI="#Fire"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasIncidentPriority"/>
+        <Class IRI="#Incident"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasIncidentSeverity"/>
+        <Class IRI="#Incident"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasInformation"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasLatitude"/>
+        <Class IRI="#Location"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasLatitude"/>
+        <Class IRI="#Point"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasLocationID"/>
+        <Class IRI="#Point"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasLongitude"/>
+        <Class IRI="#Location"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasLongitude"/>
+        <Class IRI="#Point"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasMediaDateTime"/>
+        <Class IRI="#MediaItem"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasMediaSource"/>
+        <Class IRI="#MediaItem"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasMissionEnd"/>
+        <Class IRI="#Mission"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasMissionPriority"/>
+        <Class IRI="#Mission"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasMissionStart"/>
+        <Class IRI="#Mission"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasMissionStatus"/>
+        <Class IRI="#Mission"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasObservationDateTime"/>
+        <Class IRI="#Observation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasObservationSource"/>
+        <Class IRI="#Observation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasRegion"/>
+        <Class IRI="#Point"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasScope"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasScope"/>
+        <Class IRI="#Recommendation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasSeverity"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasSource"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasSource"/>
+        <Class IRI="#Recommendation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasStakeholderActivity"/>
+        <Class IRI="#Stakeholder"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasStakeholderStatus"/>
+        <Class IRI="#Stakeholder"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasStatus"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasStatus"/>
+        <Class IRI="#Recommendation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasTimestamp"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasTimestamp"/>
+        <Class IRI="#Recommendation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasUrgency"/>
+        <Class IRI="#Alert"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#DroughtAnomaly"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#DuffMoistureAnomaly"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#FWI"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#FWIAnomaly"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#FineFuelMoistureAnomaly"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#Humidity"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#Precipitation"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#Temperature"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasValue"/>
+        <Class IRI="#WindSpeed"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasVehicleStatus"/>
+        <Class IRI="#Vehicle"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasVulnerableObjectStatus"/>
+        <Class IRI="#HighlyVulnerableObject"/>
+    </DataPropertyDomain>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasWeatherConditionTimestamp"/>
+        <Class IRI="#WeatherConditionParameter"/>
+    </DataPropertyDomain>
+    <DataPropertyRange>
+        <DataProperty IRI="#containsInformation"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasCategory"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasCertainty"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasCommunicationEnd"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasCommunicationStart"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasDatasetDateTime"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasDatasource"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasDescription"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasDroughtAnomaly"/>
+        <Datatype abbreviatedIRI="xsd:double"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasDuffMoistureAnomaly"/>
+        <Datatype abbreviatedIRI="xsd:double"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasFWIAnomaly"/>
+        <Datatype abbreviatedIRI="xsd:double"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasFineFuelMoistureAnomaly"/>
+        <Datatype abbreviatedIRI="xsd:double"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasFireEnd"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasFireStart"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasIncidentPriority"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasIncidentSeverity"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasInformation"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasLatitude"/>
+        <Datatype abbreviatedIRI="xsd:float"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasLocationID"/>
+        <Datatype abbreviatedIRI="xsd:integer"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasLongitude"/>
+        <Datatype abbreviatedIRI="xsd:float"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasMediaDateTime"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasMediaSource"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasMissionEnd"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasMissionPriority"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasMissionStart"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasMissionStatus"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasObservationDateTime"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasObservationSource"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasRegion"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasScope"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasSeverity"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasSource"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasStakeholderActivity"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasStakeholderStatus"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasStatus"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasTimestamp"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasUrgency"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasValue"/>
+        <Datatype abbreviatedIRI="xsd:double"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasVehicleStatus"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasVulnerableObjectStatus"/>
+        <Datatype abbreviatedIRI="xsd:string"/>
+    </DataPropertyRange>
+    <DataPropertyRange>
+        <DataProperty IRI="#hasWeatherConditionTimestamp"/>
+        <Datatype abbreviatedIRI="xsd:dateTime"/>
+    </DataPropertyRange>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Aircraft</IRI>
+        <Literal>Represents any type of aircraft.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Alert</IRI>
+        <Literal>Represents alerts</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Animal</IRI>
+        <Literal>Represents animals in danger during a fire disaster.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Anomaly</IRI>
+        <Literal>Represents Anomalies</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Asset</IRI>
+        <Literal>Any non-living item of interest.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Car</IRI>
+        <Literal>Represents any type of car.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Classification</IRI>
+        <Literal>Respresents Classification</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Communication</IRI>
+        <Literal>Represents Communication</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Dataset</IRI>
+        <Literal>Represents all relevant information about the media item, the observation and sensor items, as well information from physical environment regarding the topography and the vegetation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Department</IRI>
+        <Literal>Represents the department where stakeholder works.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Detection</IRI>
+        <Literal>Represents detections in a dataset. Example A person trapped in the fire.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#DropWaterMission</IRI>
+        <Literal>Represents a mission type assigned to a rescue unit during a crisis for dropping water.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#DroughtAnomaly</IRI>
+        <Literal>Respresents Drought Anomaly</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#DuffMoistureAnomaly</IRI>
+        <Literal>Respresents Duff Moisture Anomaly</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#EvacuationMission</IRI>
+        <Literal>Represents a mission type assigned to a rescue unit during a crisis for evacuation.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#FWI</IRI>
+        <Literal>Represents FWI variable which each Location has</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#FWIAnomaly</IRI>
+        <Literal>Respresents FWI Anomaly</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#FineFuelMoistureAnomaly</IRI>
+        <Literal>Respresents Fine Fuel Moisture Anomaly</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Fire</IRI>
+        <Literal>Fire is an uncontrolled burning that has the potential to cause physical damage on human life, health, property or ecology.  this class represents the various types of fires, e.g. forest fire, land fire or urban fire, etc.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#FirebreakMission</IRI>
+        <Literal>Represents a mission type assigned to a rescue unit during a crisis for using or making an obstacle to the spread of fire, such as a strip of open space in a forest.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#ForestFire</IRI>
+        <Literal>Respresents Forest Fire</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#FuelBreakMission</IRI>
+        <Literal>Represent a fuel break mission.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#HighlyVulnerableObject</IRI>
+        <Literal>High possibility of loss resulting from the occurrence of the phenomenon.
+Any living being or object that needs to be protected from hazards.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Human</IRI>
+        <Literal>Represents human beings in danger.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Humidity</IRI>
+        <Literal>Represents humidity which each Location has</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Impact</IRI>
+        <Literal>Represents the impact of wildfire disasters and incidents.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#ImpactType</IRI>
+        <Literal>Represents the various types of impacts.e.g. injuries, damage to properties, fire propagation etc.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Incident</IRI>
+        <Literal>Represents the various incidents taking place during a wildfire disaster.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#IncidentType</IRI>
+        <Literal>Represents the various types of incidents, like e.g. burning forest, blocked streets, etc.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Infrastructure</IRI>
+        <Literal>Represents critical infrastructure that is in danger during a fire disaster.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#LandFire</IRI>
+        <Literal>Respresents Land Fire</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#LivingBeing</IRI>
+        <Literal>Any living being that is in danger during a natural disaster.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Location</IRI>
+        <Literal>Represents a location (point or area), indicated by latitude and longitude</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Map</IRI>
+        <Literal>Represents early warning and risk maps</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#MediaItem</IRI>
+        <Literal>Represents 4 domain specific media items which in SAFERS ontology are: text, images, videos and audio, all of them submitted from stakeholders during the occurrence of the crisis in social media posts or chatbots.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#MetereologyClimate</IRI>
+        <Literal>Represents meteorology climate of the burned area</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Mission</IRI>
+        <Literal>Represents a mission assigned to a rescue unit during a crisis.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Observation</IRI>
+        <Literal>Represents earth observation data.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#PhysicalEnvironment</IRI>
+        <Literal>Represents the burned area from the occurred wildfire</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Point</IRI>
+        <Literal>Respresents Point</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Precipitation</IRI>
+        <Literal>Represents precipitation which each Location has</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#PrescribedBurning</IRI>
+        <Literal>Respresents Prescribed Burning</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Property</IRI>
+        <Literal>Represents any type of private property.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#ProvidingShelterMission</IRI>
+        <Literal>Represents a mission type assigned to a rescue unit during a crisis for providing shelter.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Recommendation</IRI>
+        <Literal>Represents Recommendation</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#ReconnaissanceMission</IRI>
+        <Literal>Represents a mission type assigned to a rescue unit during a crisis for reconnaissance survey.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Report</IRI>
+        <Literal>Respresents Report</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Satellite</IRI>
+        <Literal>Represents the observations that made by satellite</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Sensor</IRI>
+        <Literal>Represents the observations that made by sensors</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Stakeholder</IRI>
+        <Literal>Represents a Data Management System User.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Team</IRI>
+        <Literal>Represents a team. Stakeholders belong or lead a team.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Temperature</IRI>
+        <Literal>Represents Temperature which each Location has</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Topography</IRI>
+        <Literal>Represents topography of  the burned area</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#TrainingMission</IRI>
+        <Literal>Represents a training mission</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#UrbanFire</IRI>
+        <Literal>Respresents Urban Fire</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Vegetation</IRI>
+        <Literal>Represents vegetation of the burned area</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#Vehicle</IRI>
+        <Literal>Represents any type of vehicle.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#WeatherConditionParameter</IRI>
+        <Literal>Represents specific weather condition parameters which each Location has</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#WeatherForecast</IRI>
+        <Literal>Represents weather forecast which each Location has</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#WindSpeed</IRI>
+        <Literal>Represents wind speed which each Location has</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#ZoneCleaningMission</IRI>
+        <Literal>Represents a mission type assigned to a rescue unit during a crisis for zone cleaning.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#hasFireEnd</IRI>
+        <Literal>Indicates the end of the fire disaster.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#hasFireLocation</IRI>
+        <Literal>Represents the location where a fire disaster takes place.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#hasFireStart</IRI>
+        <Literal>Indicates the start of the fire disaster.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#hasIncidentLocation</IRI>
+        <Literal>Represents the location where an incident occurs.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#hasIncidentPriority</IRI>
+        <Literal>Indicates the priority of the incident. Incidents involving humans in danger are of high priority.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#hasLatitude</IRI>
+        <Literal>Geographic latitude coordinates of a location.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <AbbreviatedIRI>owl:topObjectProperty</AbbreviatedIRI>
+        <Literal>relatesToMission</Literal>
+    </AnnotationAssertion>
+</Ontology>
+
+
+
+<!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->
+

@@ -154,30 +154,30 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_decommissioningandabandonmentpermit_properties",
-    "class": "DecommissioningAndAbandonmentPermit",
-    "question": "What properties does a DecommissioningAndAbandonmentPermit have?",
+    "id": "cq_nuclearpowerplantdecommissioningpermit_properties",
+    "class": "NuclearPowerPlantDecommissioningPermit",
+    "question": "What properties does a NuclearPowerPlantDecommissioningPermit have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_decommissioningandabandonmentpermit_hierarchy",
-    "class": "DecommissioningAndAbandonmentPermit",
-    "question": "Which None instances are also DecommissioningAndAbandonmentPermit?",
+    "id": "cq_nuclearpowerplantdecommissioningpermit_hierarchy",
+    "class": "NuclearPowerPlantDecommissioningPermit",
+    "question": "Which DomainConstant instances are also NuclearPowerPlantDecommissioningPermit?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planningprobleminstance_properties",
-    "class": "PlanningProblemInstance",
-    "question": "What properties does a PlanningProblemInstance have?",
+    "id": "cq_postdecommissioningoperation_properties",
+    "class": "PostDecommissioningOperation",
+    "question": "What properties does a PostDecommissioningOperation have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planningprobleminstance_hierarchy",
-    "class": "PlanningProblemInstance",
-    "question": "Which PlanningProblem instances are also PlanningProblemInstance?",
+    "id": "cq_postdecommissioningoperation_hierarchy",
+    "class": "PostDecommissioningOperation",
+    "question": "Which DomainConstant instances are also PostDecommissioningOperation?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
@@ -191,35 +191,21 @@
   {
     "id": "cq_actionprecondition_hierarchy",
     "class": "ActionPrecondition",
-    "question": "Which None instances are also ActionPrecondition?",
+    "question": "Which root instances are also ActionPrecondition?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_actioneffect_properties",
-    "class": "ActionEffect",
-    "question": "What properties does a ActionEffect have?",
+    "id": "cq_macroaction_properties",
+    "class": "MacroAction",
+    "question": "What properties does a MacroAction have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_actioneffect_hierarchy",
-    "class": "ActionEffect",
-    "question": "Which None instances are also ActionEffect?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_domainrequirement_properties",
-    "class": "DomainRequirement",
-    "question": "What properties does a DomainRequirement have?",
-    "expected_answer_type": "list",
-    "generated_during": "debate_phase"
-  },
-  {
-    "id": "cq_domainrequirement_hierarchy",
-    "class": "DomainRequirement",
-    "question": "Which None instances are also DomainRequirement?",
+    "id": "cq_macroaction_hierarchy",
+    "class": "MacroAction",
+    "question": "Which Action instances are also MacroAction?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
@@ -233,7 +219,7 @@
   {
     "id": "cq_planningproblem_hierarchy",
     "class": "PlanningProblem",
-    "question": "Which None instances are also PlanningProblem?",
+    "question": "Which root instances are also PlanningProblem?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
@@ -247,21 +233,21 @@
   {
     "id": "cq_planningdomain_hierarchy",
     "class": "PlanningDomain",
-    "question": "Which None instances are also PlanningDomain?",
+    "question": "Which root instances are also PlanningDomain?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planningprobleminstance_properties",
-    "class": "PlanningProblemInstance",
-    "question": "What properties does a PlanningProblemInstance have?",
+    "id": "cq_actioneffect_properties",
+    "class": "ActionEffect",
+    "question": "What properties does a ActionEffect have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_planningprobleminstance_hierarchy",
-    "class": "PlanningProblemInstance",
-    "question": "Which PlanningProblem instances are also PlanningProblemInstance?",
+    "id": "cq_actioneffect_hierarchy",
+    "class": "ActionEffect",
+    "question": "Which root instances are also ActionEffect?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

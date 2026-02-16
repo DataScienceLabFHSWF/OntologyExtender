@@ -154,86 +154,156 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_domainconstant_properties",
-    "class": "DomainConstant",
-    "question": "What properties does a DomainConstant have?",
+    "id": "cq_company_properties",
+    "class": "Company",
+    "question": "What properties does a Company have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_domainconstant_hierarchy",
-    "class": "DomainConstant",
-    "question": "Which ProblemObject instances are also DomainConstant?",
+    "id": "cq_company_hierarchy",
+    "class": "Company",
+    "question": "Which None instances are also Company?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_decommissioninganddismantlingpermit_properties",
-    "class": "DecommissioningAndDismantlingPermit",
-    "question": "What properties does a DecommissioningAndDismantlingPermit have?",
+    "id": "cq_organization_properties",
+    "class": "Organization",
+    "question": "What properties does a Organization have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_decommissioninganddismantlingpermit_hierarchy",
-    "class": "DecommissioningAndDismantlingPermit",
-    "question": "Which DomainConstant instances are also DecommissioningAndDismantlingPermit?",
+    "id": "cq_organization_hierarchy",
+    "class": "Organization",
+    "question": "Which None instances are also Organization?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_nuclearcompliancerequirement_properties",
-    "class": "NuclearComplianceRequirement",
-    "question": "What properties does a NuclearComplianceRequirement have?",
+    "id": "cq_step_properties",
+    "class": "Step",
+    "question": "What properties does a Step have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_nuclearcompliancerequirement_hierarchy",
-    "class": "NuclearComplianceRequirement",
-    "question": "Which DomainConstant instances are also NuclearComplianceRequirement?",
+    "id": "cq_step_hierarchy",
+    "class": "Step",
+    "question": "Which None instances are also Step?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_technicalcompliancerequirement_properties",
-    "class": "TechnicalComplianceRequirement",
-    "question": "What properties does a TechnicalComplianceRequirement have?",
+    "id": "cq_process_properties",
+    "class": "Process",
+    "question": "What properties does a Process have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_technicalcompliancerequirement_hierarchy",
-    "class": "TechnicalComplianceRequirement",
-    "question": "Which DomainConstant instances are also TechnicalComplianceRequirement?",
+    "id": "cq_process_hierarchy",
+    "class": "Process",
+    "question": "Which None instances are also Process?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_decommissioninganddismantlingpermit_properties",
-    "class": "DecommissioningAndDismantlingPermit",
-    "question": "What properties does a DecommissioningAndDismantlingPermit have?",
+    "id": "cq_ablauf_stilllegung_und_abbau_genehmigung_properties",
+    "class": "Ablauf Stilllegung und Abbau Genehmigung",
+    "question": "What properties does a Ablauf Stilllegung und Abbau Genehmigung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_decommissioninganddismantlingpermit_hierarchy",
-    "class": "DecommissioningAndDismantlingPermit",
-    "question": "Which DomainConstant instances are also DecommissioningAndDismantlingPermit?",
+    "id": "cq_ablauf_stilllegung_und_abbau_genehmigung_hierarchy",
+    "class": "Ablauf Stilllegung und Abbau Genehmigung",
+    "question": "Which Organization instances are also Ablauf Stilllegung und Abbau Genehmigung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_environmentalimpactassessment_properties",
-    "class": "EnvironmentalImpactAssessment",
-    "question": "What properties does a EnvironmentalImpactAssessment have?",
+    "id": "cq_fortsetzung_des_betriebs_properties",
+    "class": "Fortsetzung des Betriebs",
+    "question": "What properties does a Fortsetzung des Betriebs have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_environmentalimpactassessment_hierarchy",
-    "class": "EnvironmentalImpactAssessment",
-    "question": "Which DomainConstant instances are also EnvironmentalImpactAssessment?",
+    "id": "cq_fortsetzung_des_betriebs_hierarchy",
+    "class": "Fortsetzung des Betriebs",
+    "question": "Which Process instances are also Fortsetzung des Betriebs?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_errichtungs-_und_betriebsgenehmigung_properties",
+    "class": "Errichtungs- und Betriebsgenehmigung",
+    "question": "What properties does a Errichtungs- und Betriebsgenehmigung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_errichtungs-_und_betriebsgenehmigung_hierarchy",
+    "class": "Errichtungs- und Betriebsgenehmigung",
+    "question": "Which Organization instances are also Errichtungs- und Betriebsgenehmigung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_ma\u00dfnahmen,_die_erforderlich_sind,_um_das_kke_vollst\u00e4ndig_aus_der_atomrechtlichen_\u00fcberwachung_zu_entlassen_properties",
+    "class": "Ma\u00dfnahmen, die erforderlich sind, um das KKE vollst\u00e4ndig aus der atomrechtlichen \u00dcberwachung zu entlassen",
+    "question": "What properties does a Ma\u00dfnahmen, die erforderlich sind, um das KKE vollst\u00e4ndig aus der atomrechtlichen \u00dcberwachung zu entlassen have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_ma\u00dfnahmen,_die_erforderlich_sind,_um_das_kke_vollst\u00e4ndig_aus_der_atomrechtlichen_\u00fcberwachung_zu_entlassen_hierarchy",
+    "class": "Ma\u00dfnahmen, die erforderlich sind, um das KKE vollst\u00e4ndig aus der atomrechtlichen \u00dcberwachung zu entlassen",
+    "question": "Which Organization instances are also Ma\u00dfnahmen, die erforderlich sind, um das KKE vollst\u00e4ndig aus der atomrechtlichen \u00dcberwachung zu entlassen?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_person_properties",
+    "class": "Person",
+    "question": "What properties does a Person have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_person_hierarchy",
+    "class": "Person",
+    "question": "Which None instances are also Person?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_date_properties",
+    "class": "Date",
+    "question": "What properties does a Date have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_date_hierarchy",
+    "class": "Date",
+    "question": "Which None instances are also Date?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_plan_properties",
+    "class": "Plan",
+    "question": "What properties does a Plan have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_plan_hierarchy",
+    "class": "Plan",
+    "question": "Which None instances are also Plan?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }

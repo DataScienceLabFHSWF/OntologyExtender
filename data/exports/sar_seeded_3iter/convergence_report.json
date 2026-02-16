@@ -1,8 +1,8 @@
 {
-  "total_iterations": 1,
+  "total_iterations": 2,
   "mode": "standalone",
   "summary": {
-    "total_iterations": 1,
+    "total_iterations": 2,
     "entity_coverage": {
       "initial": 0.0,
       "final": 0.0,
@@ -18,8 +18,8 @@
       "final": 0.5,
       "delta": 0.0
     },
-    "converged_at": null,
-    "classes_added_total": 11,
+    "converged_at": 2,
+    "classes_added_total": 13,
     "acceptance_rate_avg": 1.0
   },
   "iterations": [
@@ -27,10 +27,19 @@
       "iteration": 1,
       "entity_coverage_pct": 0.0,
       "cq_coverage_pct": 1.0,
-      "classes_added": 11,
+      "classes_added": 0,
       "improvement": 0.0,
       "acceptance_rate": 1.0,
-      "timestamp": "2026-02-16T14:26:34.390723"
+      "timestamp": "2026-02-16T15:08:49.554699"
+    },
+    {
+      "iteration": 2,
+      "entity_coverage_pct": 0.0,
+      "cq_coverage_pct": 1.0,
+      "classes_added": 13,
+      "improvement": 0.0,
+      "acceptance_rate": 1.0,
+      "timestamp": "2026-02-16T15:14:28.244033"
     }
   ]
 }

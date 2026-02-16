@@ -154,212 +154,338 @@
     "notes": "Requires Phase class and temporal relations"
   },
   {
-    "id": "cq_legalrequirement_properties",
-    "class": "LegalRequirement",
-    "question": "What properties does a LegalRequirement have?",
+    "id": "cq_attenierungundentsorgung_properties",
+    "class": "AttenierungUndEntsorgung",
+    "question": "What properties does a AttenierungUndEntsorgung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_legalrequirement_hierarchy",
-    "class": "LegalRequirement",
-    "question": "Which None instances are also LegalRequirement?",
+    "id": "cq_attenierungundentsorgung_hierarchy",
+    "class": "AttenierungUndEntsorgung",
+    "question": "Which DomainConstant instances are also AttenierungUndEntsorgung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_environmentalstandard_properties",
-    "class": "EnvironmentalStandard",
-    "question": "What properties does a EnvironmentalStandard have?",
+    "id": "cq_genehmigungfuerdiestilllegungundabbau_properties",
+    "class": "GenehmigungFuerDieStilllegungUndAbbau",
+    "question": "What properties does a GenehmigungFuerDieStilllegungUndAbbau have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_environmentalstandard_hierarchy",
-    "class": "EnvironmentalStandard",
-    "question": "Which None instances are also EnvironmentalStandard?",
+    "id": "cq_genehmigungfuerdiestilllegungundabbau_hierarchy",
+    "class": "GenehmigungFuerDieStilllegungUndAbbau",
+    "question": "Which PlanningProblem instances are also GenehmigungFuerDieStilllegungUndAbbau?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_stakeholderexpectation_properties",
-    "class": "StakeholderExpectation",
-    "question": "What properties does a StakeholderExpectation have?",
+    "id": "cq_lizenzzurattenierungundentsorgung_properties",
+    "class": "LizenzZurAttenierungUndEntsorgung",
+    "question": "What properties does a LizenzZurAttenierungUndEntsorgung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_stakeholderexpectation_hierarchy",
-    "class": "StakeholderExpectation",
-    "question": "Which None instances are also StakeholderExpectation?",
+    "id": "cq_lizenzzurattenierungundentsorgung_hierarchy",
+    "class": "LizenzZurAttenierungUndEntsorgung",
+    "question": "Which DomainConstant instances are also LizenzZurAttenierungUndEntsorgung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_budgetconstraint_properties",
-    "class": "BudgetConstraint",
-    "question": "What properties does a BudgetConstraint have?",
+    "id": "cq_planningproblem_properties",
+    "class": "PlanningProblem",
+    "question": "What properties does a PlanningProblem have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_budgetconstraint_hierarchy",
-    "class": "BudgetConstraint",
-    "question": "Which None instances are also BudgetConstraint?",
+    "id": "cq_planningproblem_hierarchy",
+    "class": "PlanningProblem",
+    "question": "Which DomainConstant instances are also PlanningProblem?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_procedure_properties",
-    "class": "Procedure",
-    "question": "What properties does a Procedure have?",
+    "id": "cq_planningproblemtype_properties",
+    "class": "PlanningProblemType",
+    "question": "What properties does a PlanningProblemType have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_procedure_hierarchy",
-    "class": "Procedure",
-    "question": "Which None instances are also Procedure?",
+    "id": "cq_planningproblemtype_hierarchy",
+    "class": "PlanningProblemType",
+    "question": "Which DomainConstant instances are also PlanningProblemType?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_timeline_properties",
-    "class": "Timeline",
-    "question": "What properties does a Timeline have?",
+    "id": "cq_plannedaction_properties",
+    "class": "PlannedAction",
+    "question": "What properties does a PlannedAction have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_timeline_hierarchy",
-    "class": "Timeline",
-    "question": "Which None instances are also Timeline?",
+    "id": "cq_plannedaction_hierarchy",
+    "class": "PlannedAction",
+    "question": "Which DomainConstant instances are also PlannedAction?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_monitoringrequirement_properties",
-    "class": "MonitoringRequirement",
-    "question": "What properties does a MonitoringRequirement have?",
+    "id": "cq_planningprocess_properties",
+    "class": "PlanningProcess",
+    "question": "What properties does a PlanningProcess have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_monitoringrequirement_hierarchy",
-    "class": "MonitoringRequirement",
-    "question": "Which None instances are also MonitoringRequirement?",
+    "id": "cq_planningprocess_hierarchy",
+    "class": "PlanningProcess",
+    "question": "Which DomainConstant instances are also PlanningProcess?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_safetyprotocol_properties",
-    "class": "SafetyProtocol",
-    "question": "What properties does a SafetyProtocol have?",
+    "id": "cq_planningscenario_properties",
+    "class": "PlanningScenario",
+    "question": "What properties does a PlanningScenario have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_safetyprotocol_hierarchy",
-    "class": "SafetyProtocol",
-    "question": "Which None instances are also SafetyProtocol?",
+    "id": "cq_planningscenario_hierarchy",
+    "class": "PlanningScenario",
+    "question": "Which DomainConstant instances are also PlanningScenario?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_legalrequirement_properties",
-    "class": "LegalRequirement",
-    "question": "What properties does a LegalRequirement have?",
+    "id": "cq_problemobject_properties",
+    "class": "ProblemObject",
+    "question": "What properties does a ProblemObject have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_legalrequirement_hierarchy",
-    "class": "LegalRequirement",
-    "question": "Which None instances are also LegalRequirement?",
+    "id": "cq_problemobject_hierarchy",
+    "class": "ProblemObject",
+    "question": "Which DomainConstant instances are also ProblemObject?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_stakeholderexpectation_properties",
-    "class": "StakeholderExpectation",
-    "question": "What properties does a StakeholderExpectation have?",
+    "id": "cq_regierung_properties",
+    "class": "Regierung",
+    "question": "What properties does a Regierung have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_stakeholderexpectation_hierarchy",
-    "class": "StakeholderExpectation",
-    "question": "Which None instances are also StakeholderExpectation?",
+    "id": "cq_regierung_hierarchy",
+    "class": "Regierung",
+    "question": "Which DomainConstant instances are also Regierung?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_budgetconstraint_properties",
-    "class": "BudgetConstraint",
-    "question": "What properties does a BudgetConstraint have?",
+    "id": "cq_firmen_properties",
+    "class": "Firmen",
+    "question": "What properties does a Firmen have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_budgetconstraint_hierarchy",
-    "class": "BudgetConstraint",
-    "question": "Which None instances are also BudgetConstraint?",
+    "id": "cq_firmen_hierarchy",
+    "class": "Firmen",
+    "question": "Which DomainConstant instances are also Firmen?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_procedure_properties",
-    "class": "Procedure",
-    "question": "What properties does a Procedure have?",
+    "id": "cq_technik_properties",
+    "class": "Technik",
+    "question": "What properties does a Technik have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_procedure_hierarchy",
-    "class": "Procedure",
-    "question": "Which None instances are also Procedure?",
+    "id": "cq_technik_hierarchy",
+    "class": "Technik",
+    "question": "Which DomainConstant instances are also Technik?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_timeline_properties",
-    "class": "Timeline",
-    "question": "What properties does a Timeline have?",
+    "id": "cq_verfahren_properties",
+    "class": "Verfahren",
+    "question": "What properties does a Verfahren have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_timeline_hierarchy",
-    "class": "Timeline",
-    "question": "Which None instances are also Timeline?",
+    "id": "cq_verfahren_hierarchy",
+    "class": "Verfahren",
+    "question": "Which DomainConstant instances are also Verfahren?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_monitoringrequirement_properties",
-    "class": "MonitoringRequirement",
-    "question": "What properties does a MonitoringRequirement have?",
+    "id": "cq_sicherheit_properties",
+    "class": "Sicherheit",
+    "question": "What properties does a Sicherheit have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_monitoringrequirement_hierarchy",
-    "class": "MonitoringRequirement",
-    "question": "Which None instances are also MonitoringRequirement?",
+    "id": "cq_sicherheit_hierarchy",
+    "class": "Sicherheit",
+    "question": "Which DomainConstant instances are also Sicherheit?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_safetyprotocol_properties",
-    "class": "SafetyProtocol",
-    "question": "What properties does a SafetyProtocol have?",
+    "id": "cq_umwelt_properties",
+    "class": "Umwelt",
+    "question": "What properties does a Umwelt have?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   },
   {
-    "id": "cq_safetyprotocol_hierarchy",
-    "class": "SafetyProtocol",
-    "question": "Which None instances are also SafetyProtocol?",
+    "id": "cq_umwelt_hierarchy",
+    "class": "Umwelt",
+    "question": "Which DomainConstant instances are also Umwelt?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_wirtschaft_properties",
+    "class": "Wirtschaft",
+    "question": "What properties does a Wirtschaft have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_wirtschaft_hierarchy",
+    "class": "Wirtschaft",
+    "question": "Which DomainConstant instances are also Wirtschaft?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_gesellschaft_properties",
+    "class": "Gesellschaft",
+    "question": "What properties does a Gesellschaft have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_gesellschaft_hierarchy",
+    "class": "Gesellschaft",
+    "question": "Which DomainConstant instances are also Gesellschaft?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_atomgesetz_properties",
+    "class": "Atomgesetz",
+    "question": "What properties does a Atomgesetz have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_atomgesetz_hierarchy",
+    "class": "Atomgesetz",
+    "question": "Which DomainConstant instances are also Atomgesetz?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_befehl_properties",
+    "class": "Befehl",
+    "question": "What properties does a Befehl have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_befehl_hierarchy",
+    "class": "Befehl",
+    "question": "Which DomainConstant instances are also Befehl?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_schutzma\u00dfnahmen_properties",
+    "class": "Schutzma\u00dfnahmen",
+    "question": "What properties does a Schutzma\u00dfnahmen have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_schutzma\u00dfnahmen_hierarchy",
+    "class": "Schutzma\u00dfnahmen",
+    "question": "Which DomainConstant instances are also Schutzma\u00dfnahmen?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_finanzierung_properties",
+    "class": "Finanzierung",
+    "question": "What properties does a Finanzierung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_finanzierung_hierarchy",
+    "class": "Finanzierung",
+    "question": "Which DomainConstant instances are also Finanzierung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_beteiligung_properties",
+    "class": "Beteiligung",
+    "question": "What properties does a Beteiligung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_beteiligung_hierarchy",
+    "class": "Beteiligung",
+    "question": "Which DomainConstant instances are also Beteiligung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_instandhaltung_properties",
+    "class": "Instandhaltung",
+    "question": "What properties does a Instandhaltung have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_instandhaltung_hierarchy",
+    "class": "Instandhaltung",
+    "question": "Which DomainConstant instances are also Instandhaltung?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_befehl_properties",
+    "class": "Befehl",
+    "question": "What properties does a Befehl have?",
+    "expected_answer_type": "list",
+    "generated_during": "debate_phase"
+  },
+  {
+    "id": "cq_befehl_hierarchy",
+    "class": "Befehl",
+    "question": "Which DomainConstant instances are also Befehl?",
     "expected_answer_type": "list",
     "generated_during": "debate_phase"
   }
