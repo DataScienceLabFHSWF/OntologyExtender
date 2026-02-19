@@ -101,7 +101,7 @@ def llm_call(
             "stream": False,
             "options": {"temperature": temperature, "num_predict": 1024},
         },
-        timeout=120.0,
+        timeout=600.0,
     )
     resp.raise_for_status()
     text = resp.json()["message"]["content"]
