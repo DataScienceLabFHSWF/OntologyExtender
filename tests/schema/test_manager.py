@@ -37,8 +37,25 @@ class TestOntologySchemaManager:
         assert len(accepted) == 1
         assert accepted[0].label == "Facility"
 
-    def test_export_owl_not_implemented(self, tmp_path: Path) -> None:
-        """Test that OWL export raises NotImplementedError."""
-        manager = OntologySchemaManager(seed_ontology_path="dummy.owl")
-        with pytest.raises(NotImplementedError):
-            manager.export_owl(tmp_path / "out.owl")
+    def test_export_owl_writes_file(self, tmp_path: Path) -> None:
+        """Exported OWL should be created and contain minimal RDF structure.
+
+        The previous test expected a ``NotImplementedError``; the feature has
+        been implemented so we now supply a tiny dummy seed ontology and verify
+        that ``export_owl`` succeeds without error and produces a file with an
+        RDF root element.
+        """
+        # create minimal seed ontology so rdflib can parse it
+        seed = tmp_path / "seed.owl"
+        seed.write_text(
+            '<?xml version="1.0"?>\n'
+            '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n'
+            '</rdf:RDF>'
+        )
+        manager = OntologySchemaManager(seed_ontology_path=seed)
+        # no accepted classes at start
+        manager.export_owl(tmp_path / "out.owl")
+        out = tmp_path / "out.owl"
+        assert out.exists(), "OWL export file was not created"
+        content = out.read_text()
+        assert "rdf:RDF" in content

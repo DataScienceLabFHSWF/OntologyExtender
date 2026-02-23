@@ -72,15 +72,31 @@ class OntologyExtension(BaseModel):
     new_properties: List[OntologyProperty] = Field(description="New properties to add to the ontology")
 
 
-class BaselineStrategy:
-    """Abstract base for different baseline strategies."""
-    
+from abc import ABC, abstractmethod
+
+
+class BaselineStrategy(ABC):
+    """Abstract base for different baseline strategies.
+
+    Subclasses *must* implement ``extend_ontology``; using ABC enforces this
+    at import time and keeps the intent explicit. The original implementation
+    raised a bare ``NotImplementedError`` which served as a stub; removing the
+    runtime error lets type checkers and readers know the class is abstract.
+    """
+
     def __init__(self, baseline: 'LLMOnlyBaseline'):
         self.baseline = baseline
-    
+
+    @abstractmethod
     def extend_ontology(self) -> Graph:
-        """Implement the specific extension strategy."""
-        raise NotImplementedError
+        """Implement the specific extension strategy.
+
+        Returns
+        -------
+        Graph
+            RDF graph representing the extensions produced by this strategy.
+        """
+        ...
 
 
 class NaiveStrategy(BaselineStrategy):

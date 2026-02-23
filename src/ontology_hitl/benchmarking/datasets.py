@@ -278,8 +278,8 @@ class DatasetManager:
 
         Raises
         ------
-        NotImplementedError
-            Dataset-specific download logic is not yet implemented.
+        IOError
+            If the download or clone operation fails.
         """
         info = self.get_info(dataset_id)
         dest = self.cache_dir / dataset_id
@@ -361,8 +361,8 @@ class DatasetManager:
 
         Raises
         ------
-        NotImplementedError
-            Loader not yet implemented.
+        Exception
+            If the dataset cannot be loaded (e.g. missing or invalid content).
 
         Notes
         -----
@@ -418,8 +418,8 @@ class DatasetManager:
 
         Raises
         ------
-        NotImplementedError
-            Loader not yet implemented.
+        Exception
+            If the repository structure is missing or files cannot be read.
         """
         base = repo_path or (self.cache_dir / "TamingHallucinations")
         base = Path(base)
@@ -511,10 +511,9 @@ class DatasetManager:
 
         Raises
         ------
-        NotImplementedError
-            Loader not yet implemented.
-        """
-        base = repo_path or (self.cache_dir / "ontology-benchmark")
+        Exception
+            If the repository structure is missing or files cannot be read.
+        """        base = repo_path or (self.cache_dir / "ontology-benchmark")
         base = Path(base)
 
         result: dict[str, Any] = {
