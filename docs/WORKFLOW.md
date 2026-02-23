@@ -177,6 +177,144 @@ make export V=v1
 make evaluate V=v1
 ```
 
+## Gap Detection Pipeline (Production / Coupled Mode Only)
+
+> **Important**: The gap analyzer is a *production-only* component used
+> exclusively in the coupled KGB pipeline for domain-specific experiments
+> (e.g., nuclear decommissioning).  Benchmarking tests (OntoURL,
+> TamingHallucinations, Plu et al.) do **not** build knowledge graphs and
+> therefore never invoke the gap analyzer — comparisons would be unfair
+> since baselines don't have the KG advantage.
+
+### What It Does
+
+The gap analyzer answers: *"Which real-world entity types appear in our
+documents but have no corresponding class in the current ontology?"*
+
+It bridges the KnowledgeGraphBuilder (KGB) extraction output and the
+OntologyExtender by comparing extracted entity types against the seed
+ontology's class hierarchy.
+
+### How Gaps Are Found — Step by Step
+
+```
+  KGB Checkpoint                  Fuseki (Seed Ontology)
+  ┌────────────────┐              ┌───────────────────┐
+  │ extraction_    │              │  SPARQL query:     │
+  │ checkpoint.json│              │  SELECT ?class     │
+  │                │              │  WHERE {           │
+  │ entities: [    │              │    ?class a        │
+  │   {type:       │              │      owl:Class .   │
+  │    "Facility"} │              │  }                 │
+  │   {type:       │              │  → ["Action",      │
+  │    "Permit"}   │              │     "Plan",        │
+  │   {type:       │              │     "Planner", …]  │
+  │    "Action"}   │              │                    │
+  │ ]              │              │                    │
+  └───────┬────────┘              └────────┬──────────┘
+          │                                │
+          └──────────┬─────────────────────┘
+                     │
+            ┌────────▼─────────┐
+            │  Classification  │
+            │                  │
+            │  1. Exact match  │
+            │     entity_type  │
+            │     ∈ classes?   │
+            │                  │
+            │  2. Embedding    │
+            │     similarity   │
+            │     ≥ 0.65?      │
+            │                  │
+            │  Match → COVERED │
+            │  No match → GAP  │
+            └────────┬─────────┘
+                     │
+            ┌────────▼─────────┐
+            │  Gap Candidates  │
+            │                  │
+            │  Group by type   │
+            │  Filter by       │
+            │    min_frequency │
+            │  Find closest    │
+            │    seed class    │
+            │  Compute         │
+            │    semantic dist │
+            └──────────────────┘
+```
+
+**Algorithm in detail:**
+
+1. **Load KGB Checkpoint** — Parse `extraction_checkpoint.json` from the
+   KnowledgeGraphBuilder.  Each entity has a `label`, `entity_type`,
+   `confidence`, and `evidence` spans linking back to source documents.
+
+2. **Query Ontology Classes** — Send `SELECT DISTINCT ?class ?label` SPARQL
+   to Fuseki (`http://localhost:3030/{dataset}/sparql`).  Extract `rdfs:label`
+   or fall back to local name from URI.
+
+3. **Classify Entities** — For each extracted entity:
+   - **Exact match**: If `entity_type.lower()` matches any ontology class
+     label (case-insensitive) → **covered**.
+   - **Semantic match**: Compute embedding via Ollama `/api/embed` for both
+     the entity type and every ontology class.  If cosine similarity ≥ 0.65
+     with any class → **covered** (logs the match).
+   - Otherwise → **uncovered** (gap candidate).
+
+4. **Build Gap Candidates** — Group uncovered entities by `entity_type`:
+   - Filter out types with frequency below `min_frequency` (default: 3)
+   - For each gap: find the closest seed class (lowest semantic distance)
+   - Sort by frequency descending → highest-impact gaps first
+
+5. **Output `GapReport`** with:
+   - Coverage statistics (total, covered, uncovered, coverage %)
+   - List of `GapCandidate` objects (type, frequency, closest seed class,
+     semantic distance, representative examples)
+
+### Services Used
+
+| Service | Purpose | Port |
+|---------|---------|------|
+| **Fuseki** | SPARQL query for `owl:Class` labels from seed ontology | 3030 |
+| **Ollama** | Text embeddings via `/api/embed` for semantic matching | 18135 |
+
+**Not used**: Neo4j.  The gap analyzer reads the *ontology* (Fuseki), not the
+knowledge graph.  Neo4j stores the extracted KG triples, which is a downstream
+concern for the GraphQAAgent.
+
+### When It Runs in the Pipeline
+
+```
+Coupled mode iteration:
+  1. Load KGB checkpoint        ← _load_checkpoint()
+  2. Run gap analysis           ← OntologyGapAnalyzer.analyze()
+  3. Feed gaps to Phase 3       ← uncovered types → term enumeration
+  4. Multi-agent debate (7 phases)
+  5. Export extended ontology
+  6. Trigger KGB re-extraction
+  7. Measure improvement → next iteration
+```
+
+In **standalone mode** (no KGB), entities come from Qdrant document
+excerpts directly — the gap analyzer is skipped, and the multi-agent
+pipeline discovers terms from raw text instead.
+
+### Usage
+
+```bash
+# Manual gap analysis
+python scripts/run_gap_analysis.py \
+    --checkpoint ../KnowledgeGraphBuilder/output/extraction_checkpoint.json \
+    --min-frequency 3 \
+    --output data/iterations/v1/gap_report.json
+
+# Automatic (coupled mode feedback loop)
+python scripts/run_feedback_loop.py --mode coupled \
+    --checkpoint ../KnowledgeGraphBuilder/output/extraction_checkpoint.json
+```
+
+---
+
 ## Convergence Criteria
 
 The feedback loop stops when:

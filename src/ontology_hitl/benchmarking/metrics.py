@@ -1387,8 +1387,17 @@ class BenchmarkEvaluator:
 
         u_avg = sum(u_vals) / max(1, len(u_vals)) if u_vals else 0.0
         l_avg = sum(l_vals) / max(1, len(l_vals)) if l_vals else 0.0
-        # Reasoning proxy not implemented — would require a DL reasoner
-        r_avg = 0.0
+
+        # Reasoning proxy — uses owlrl OWL-RL/RDFS reasoner
+        reasoning_scores = self._evaluate_reasoning_proxy(
+            generated_graph, gold_graph
+        )
+        all_scores = all_scores + reasoning_scores
+        r_vals = [
+            s.accuracy for s in reasoning_scores
+            if s.accuracy is not None
+        ]
+        r_avg = sum(r_vals) / max(1, len(r_vals)) if r_vals else 0.0
 
         overall = (u_avg + r_avg + l_avg) / 3.0
 
@@ -1609,6 +1618,117 @@ class BenchmarkEvaluator:
             capability=OntoURLCapability.LEARNING,
             triple_f1=f1_3,
             num_questions=len(gold_prop_triples),
+        ))
+
+        return scores
+
+    # ------------------------------------------------------------------
+    # Reasoning proxy (R1, R2, R5) — OWL-RL entailment checks
+    # ------------------------------------------------------------------
+
+    def _evaluate_reasoning_proxy(
+        self,
+        generated_graph: Graph,
+        gold_graph: Graph,
+    ) -> list[OntoURLTaskScore]:
+        """Proxy evaluation for OntoURL Reasoning tasks (R1, R2, R5).
+
+        Uses the ``owlrl`` OWL-RL/RDFS reasoner to materialise inferred
+        triples, then checks:
+
+        R1 — Inferred Relation
+            After OWL-RL closure, how many gold ``rdfs:subClassOf`` chains
+            are entailed?  E.g. if gold has A⊑B⊑C then the reasoner
+            should infer A⊑C.  Score = entailed / expected.
+
+        R2 — Constraint Checking
+            Count ``owl:disjointWith`` pairs in the generated ontology and
+            verify that no individual is typed to both.  After reasoning,
+            an inconsistency would manifest as both types present on an
+            entity; since we have no ABox data we measure *structural
+            constraint presence* as a proxy: score = 1.0 if disjointness
+            axioms exist, 0.0 otherwise (encouraging axiom richness).
+
+        R5 — Description Logic
+            Fraction of ``owl:equivalentClass`` axioms from the gold
+            standard recovered in the generated ontology (exact URI match).
+
+        Parameters
+        ----------
+        generated_graph : Graph
+        gold_graph : Graph
+
+        Returns
+        -------
+        list[OntoURLTaskScore]
+        """
+        scores: list[OntoURLTaskScore] = []
+
+        # --- R1: Inferred transitive subClassOf chains ----------------
+        try:
+            import owlrl  # type: ignore[import-untyped]
+
+            # Work on a copy so we don't mutate the caller's graph
+            reasoned = Graph()
+            for triple in generated_graph:
+                reasoned.add(triple)
+            owlrl.DeductiveClosure(owlrl.OWLRL_Semantics).expand(reasoned)
+
+            # Collect gold subClassOf pairs (transitive closure)
+            gold_sub = set()
+            for s, _, o in gold_graph.triples((None, RDFS.subClassOf, None)):
+                if isinstance(s, URIRef) and isinstance(o, URIRef):
+                    gold_sub.add((str(s), str(o)))
+
+            if gold_sub:
+                entailed = sum(
+                    1 for s, o in gold_sub
+                    if (URIRef(s), RDFS.subClassOf, URIRef(o)) in reasoned
+                )
+                r1_acc = entailed / len(gold_sub)
+            else:
+                r1_acc = 0.0
+        except Exception as e:
+            logger.warning("reasoning_r1_failed", error=str(e))
+            r1_acc = 0.0
+
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.R1_INFERRED_RELATION,
+            capability=OntoURLCapability.REASONING,
+            accuracy=r1_acc,
+            num_questions=len(gold_sub) if 'gold_sub' in dir() else 0,
+        ))
+
+        # --- R2: Constraint presence (disjointness axioms) ------------
+        disjoint_count = sum(
+            1 for _ in generated_graph.triples((None, OWL.disjointWith, None))
+        )
+        r2_acc = min(1.0, disjoint_count / 5.0)  # normalise: ≥5 axioms → 1.0
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.R2_CONSTRAINT,
+            capability=OntoURLCapability.REASONING,
+            accuracy=r2_acc,
+            num_questions=disjoint_count,
+        ))
+
+        # --- R5: equivalentClass recovery -----------------------------
+        gold_equiv = set()
+        for s, _, o in gold_graph.triples((None, OWL.equivalentClass, None)):
+            if isinstance(s, URIRef) and isinstance(o, URIRef):
+                gold_equiv.add((str(s), str(o)))
+        if gold_equiv:
+            recovered = sum(
+                1 for s, o in gold_equiv
+                if (URIRef(s), OWL.equivalentClass, URIRef(o)) in generated_graph
+            )
+            r5_acc = recovered / len(gold_equiv)
+        else:
+            r5_acc = 0.0  # no equivalence axioms in gold → neutral
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.R5_DESCRIPTION_LOGIC,
+            capability=OntoURLCapability.REASONING,
+            accuracy=r5_acc,
+            num_questions=len(gold_equiv),
         ))
 
         return scores

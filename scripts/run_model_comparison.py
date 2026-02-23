@@ -302,11 +302,9 @@ class OntologyStructuralMetrics:
     def compute_class_metrics(self) -> Dict:
         """Compute class-level metrics (count, delta from seed).
 
-        Implementation notes for the implementor:
-        - Use rdflib to load both seed and extended OWL
-        - Count classes via: set(g.subjects(RDF.type, OWL.Class))
-        - Filter out blank nodes and OWL built-in classes
-        - Delta = extended_count - seed_count
+        Uses rdflib to compare the extended and seed OWL graphs.
+        Counts ``owl:Class`` and ``rdfs:Class`` instances, filtering out
+        blank nodes and OWL built-in classes.
         """
         extended_graph = Graph()
         seed_graph = Graph()
@@ -335,13 +333,9 @@ class OntologyStructuralMetrics:
     def compute_hierarchy_metrics(self) -> Dict:
         """Compute hierarchy depth and branching factor metrics.
 
-        Implementation notes for the implementor:
-        - Build a tree from rdfs:subClassOf edges
-        - BFS from owl:Thing to compute depth of each class
-        - Depth distribution: min, max, mean, median, stdev
-        - Branching factor: for each non-leaf, count children
-        - Leaf-to-internal ratio: |leaves| / |all classes|
-        - Orphan classes: no parent (except owl:Thing) AND no children
+        Builds a tree from ``rdfs:subClassOf`` edges and runs BFS from
+        ``owl:Thing`` to measure depth distribution, branching factors,
+        leaf-to-internal ratio, and orphan classes.
 
         These metrics directly address Plu et al. (2025) finding that
         LLM ontologies are too flat. A good ontology should have:
@@ -433,13 +427,9 @@ class OntologyStructuralMetrics:
     def compute_property_metrics(self) -> Dict:
         """Compute property-level metrics (count, connectivity, completeness).
 
-        Implementation notes for the implementor:
-        - Count object properties: set(g.subjects(RDF.type, OWL.ObjectProperty))
-        - Count datatype properties: set(g.subjects(RDF.type, OWL.DatatypeProperty))
-        - Property connectivity = total_properties / total_classes
-        - Domain/range completeness = properties_with_both / total_properties
-        - Classes with zero properties: classes not appearing in any
-          rdfs:domain or rdfs:range
+        Counts object and datatype properties, measures property-to-class
+        connectivity ratio, domain/range completeness, and identifies classes
+        with zero properties.
 
         These metrics address Zhao et al. (ESWC 2025) finding about
         weak relational modeling in LLM ontologies.
@@ -516,12 +506,9 @@ class OntologyStructuralMetrics:
     def compute_axiom_metrics(self) -> Dict:
         """Compute axiom-level metrics (disjointness, equivalence, cardinality).
 
-        Implementation notes for the implementor:
-        - Disjointness: count owl:disjointWith triples
-        - Equivalence: count owl:equivalentClass triples
-        - Cardinality: count owl:minCardinality, owl:maxCardinality,
-          owl:cardinality, owl:qualifiedCardinality restrictions
-        - Also count owl:allValuesFrom, owl:someValuesFrom restrictions
+        Counts ``owl:disjointWith``, ``owl:equivalentClass``, cardinality
+        restrictions (``minCardinality``, ``maxCardinality``, etc.), and
+        value restrictions (``allValuesFrom``, ``someValuesFrom``).
         """
         extended_graph = Graph()
         extended_graph.parse(str(self.owl_path), format="xml")
