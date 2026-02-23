@@ -23,8 +23,7 @@ logger = structlog.get_logger(__name__)
 
 # CQ difficulty heuristic: questions about single entities = 1-2,
 # questions about relations = 3-4, questions requiring inference = 5
-SYSTEM_PROMPT = """You are an ontology engineer. Given document excerpts from the
-nuclear decommissioning domain, generate competency questions (CQs) that a
+_SYSTEM_PROMPT_TEMPLATE = """You are an ontology engineer. Given document excerpts{domain_clause}, generate competency questions (CQs) that a
 well-designed ontology should be able to answer.
 
 Each CQ must include:
@@ -36,6 +35,9 @@ Each CQ must include:
 - priority: 1 (high) or 2 (normal)
 
 Return a JSON array of CQ objects. Generate 3-5 CQs per batch of text."""
+
+# Backwards-compat alias (domain-agnostic)
+SYSTEM_PROMPT = _SYSTEM_PROMPT_TEMPLATE.format(domain_clause="")
 
 
 class CQGenerator:
@@ -63,10 +65,14 @@ class CQGenerator:
         qdrant_source: QdrantDocumentSource | None = None,
         ollama_url: str = "http://localhost:18135",
         ollama_model: str = "qwen3-next",
+        domain_name: str = "",
     ) -> None:
         self.qdrant_source = qdrant_source or QdrantDocumentSource()
         self.ollama_url = ollama_url.rstrip("/")
         self.ollama_model = ollama_model
+        self._domain_name = domain_name
+        domain_clause = f" from the {domain_name} domain" if domain_name else ""
+        self._system_prompt = _SYSTEM_PROMPT_TEMPLATE.format(domain_clause=domain_clause)
 
     def generate(
         self,
@@ -170,7 +176,7 @@ class CQGenerator:
         )
         prompt = (
             f"Based on these document excerpts, generate competency questions "
-            f"that a nuclear decommissioning ontology should answer.\n\n"
+            f"that a{' ' + self._domain_name if self._domain_name else 'n'} ontology should answer.\n\n"
             f"{texts}\n\n"
             f"Return a JSON array of CQ objects with: id, question, "
             f"expected_entity_types, expected_relations, difficulty, priority."
@@ -182,7 +188,7 @@ class CQGenerator:
                 json={
                     "model": self.ollama_model,
                     "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "system", "content": self._system_prompt},
                         {"role": "user", "content": prompt},
                     ],
                     "stream": False,

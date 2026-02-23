@@ -366,7 +366,7 @@ Return JSON:
   "facets": [
     {{
       "property_name": "status",
-      "on_class": "DecommissioningProject",
+      "on_class": "Project",
       "min_count": 1,
       "max_count": 1,
       "value_type": "xsd:string",

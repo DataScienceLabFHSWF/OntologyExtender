@@ -1,0 +1,177 @@
+{
+  "phase": "7_instances",
+  "verdict": "escalated",
+  "rounds": 2,
+  "resolved_issues": [
+    "Accuracy: hasProjectTimeline \u2014 start_date and end_date are not standardised date formats (e.g. YYYY-MM-DD)",
+    "Accuracy: digitalArtifact.accessControl.type \u2014 accessControl is a binary property, not an enumeration of types",
+    "Missing: Project Status (importance: high)",
+    "Missing: Team Member Role (importance: medium)",
+    "Rename: 'hasProjectTimeline' \u2192 'hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime'"
+  ],
+  "escalated_questions": [
+    {
+      "question": "Rename: 'digitalArtifact.accessControl.type' \u2192 'accessControlType (enum: Public, Private, Restricted)'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [STRUCTURE]: hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime \u2014 The property name does not follow Ont-101 naming conventions (PascalCase).; fix: Rename to 'hasProjectTimelineStartDateTime' and 'hasProjectTimelineEndDateTime'.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [STRUCTURE]: accessControlType (enum: Public, Private, Restricted) \u2014 The property name does not follow Ont-101 naming conventions (PascalCase).; fix: Rename to 'accessControlType'.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [REDUNDANCY]: ['hasProjectTimeline', 'hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime'] \u2014 ; fix: ",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: hasProjectTimeline, hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime \u2014 Redundant property name",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [naming]: The naming conventions for properties and classes are not consistent. Consider using PascalCase for property names and camelCase for class names.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "CQs not covered: CQ_001, CQ_003, CQ_006, CQ_008",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: isSearchedBy \u2014 The term 'isSearchedBy' does not match the domain's usage.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: stores \u2014 The term 'stores' does not match the domain's usage. It should be 'isStoredIn'.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: DigitalArtifactStorageUnit (importance: high)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: IntellectualPropertyRestrictedDigitalArtifactType (importance: medium)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'isSearchedBy' \u2192 'isStoredIn'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'stores' \u2192 'isStoredIn'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [NAME_CONVENTION]: hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime \u2014 Naming convention inconsistent with Ont-101 rules (should be PascalCase); fix: Rename to 'hasProjectTimelineStartDateTimeAndHasProjectTimelineEndDateTime'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [NAME_CONVENTION]: digitalArtifact.accessControl.type \u2014 Naming convention inconsistent with Ont-101 rules (should be PascalCase); fix: Rename to 'accessControlType(enum: Public, Private, Restricted)'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [NAME_CONVENTION]: isSearchedBy \u2014 Naming convention inconsistent with Ont-101 rules (should be PascalCase); fix: Rename to 'isStoredIn'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [NAME_CONVENTION]: stores \u2014 Naming convention inconsistent with Ont-101 rules (should be PascalCase); fix: Rename to 'isStoredIn'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime, stores \u2014 Duplicate concepts under different names",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: digitalArtifact.accessControl.type, accessControlType(enum: Public, Private, Restricted) \u2014 Near-duplicate concepts with similar meanings",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [DEFINITION_STYLE]: Definition style inconsistent (some definitions are in natural language, while others are in formal ontology notation)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [ATTACHMENT_LEVEL]: Attachment level inconsistent (some properties have a high attachment level, while others do not)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "CQs not covered: CQ_001, CQ_003",
+      "context": "Unresolved after 2 debate rounds"
+    }
+  ],
+  "messages": [
+    {
+      "role": "ontology_engineer",
+      "type": "proposal",
+      "approves": null,
+      "issues": [],
+      "reasoning": "Phase 7_instances: initial proposal based on Ont-101 rules"
+    },
+    {
+      "role": "domain_expert",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Accuracy: hasProjectTimeline \u2014 start_date and end_date are not standardised date formats (e.g. YYYY-MM-DD)",
+        "Accuracy: digitalArtifact.accessControl.type \u2014 accessControl is a binary property, not an enumeration of types",
+        "Missing: Project Status (importance: high)",
+        "Missing: Team Member Role (importance: medium)",
+        "Rename: 'hasProjectTimeline' \u2192 'hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime'",
+        "Rename: 'digitalArtifact.accessControl.type' \u2192 'accessControlType (enum: Public, Private, Restricted)'"
+      ],
+      "reasoning": "The proposal has some accuracy issues and missing concepts. However, it is a good start, and with some corrections, it can be improved."
+    },
+    {
+      "role": "critic",
+      "type": "review",
+      "approves": true,
+      "issues": [
+        "Structure [STRUCTURE]: hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime \u2014 The property name does not follow Ont-101 naming conventions (PascalCase).; fix: Rename to 'hasProjectTimelineStartDateTime' and 'hasProjectTimelineEndDateTime'.",
+        "Structure [STRUCTURE]: accessControlType (enum: Public, Private, Restricted) \u2014 The property name does not follow Ont-101 naming conventions (PascalCase).; fix: Rename to 'accessControlType'.",
+        "Structure [REDUNDANCY]: ['hasProjectTimeline', 'hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime'] \u2014 ; fix: ",
+        "Redundancy: hasProjectTimeline, hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime \u2014 Redundant property name",
+        "Consistency [naming]: The naming conventions for properties and classes are not consistent. Consider using PascalCase for property names and camelCase for class names.",
+        "CQs not covered: CQ_001, CQ_003, CQ_006, CQ_008"
+      ],
+      "reasoning": "The proposal is mostly well-structured, but there are some issues with naming conventions and redundancy."
+    },
+    {
+      "role": "ontology_engineer",
+      "type": "revision",
+      "approves": null,
+      "issues": [],
+      "reasoning": "Revised based on 2 reviews. Addressed: Accuracy: hasProjectTimeline \u2014 start_date and end_date are not standardised date formats (e.g. YYYY-MM-DD); Accuracy: digitalArtifact.accessControl.type \u2014 accessControl is a binary property, not an enumeration of types; Missing: Project Status (importance: high); Missing: Team Member Role (importance: medium); Rename: 'hasProjectTimeline' \u2192 'hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime'"
+    },
+    {
+      "role": "domain_expert",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Accuracy: isSearchedBy \u2014 The term 'isSearchedBy' does not match the domain's usage.",
+        "Accuracy: stores \u2014 The term 'stores' does not match the domain's usage. It should be 'isStoredIn'.",
+        "Missing: DigitalArtifactStorageUnit (importance: high)",
+        "Missing: IntellectualPropertyRestrictedDigitalArtifactType (importance: medium)",
+        "Rename: 'isSearchedBy' \u2192 'isStoredIn'",
+        "Rename: 'stores' \u2192 'isStoredIn'"
+      ],
+      "reasoning": "The proposal has some accuracy issues and missing concepts, but it shows a good understanding of the domain. Further refinement is needed."
+    },
+    {
+      "role": "critic",
+      "type": "review",
+      "approves": true,
+      "issues": [
+        "Structure [NAME_CONVENTION]: hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime \u2014 Naming convention inconsistent with Ont-101 rules (should be PascalCase); fix: Rename to 'hasProjectTimelineStartDateTimeAndHasProjectTimelineEndDateTime'",
+        "Structure [NAME_CONVENTION]: digitalArtifact.accessControl.type \u2014 Naming convention inconsistent with Ont-101 rules (should be PascalCase); fix: Rename to 'accessControlType(enum: Public, Private, Restricted)'",
+        "Structure [NAME_CONVENTION]: isSearchedBy \u2014 Naming convention inconsistent with Ont-101 rules (should be PascalCase); fix: Rename to 'isStoredIn'",
+        "Structure [NAME_CONVENTION]: stores \u2014 Naming convention inconsistent with Ont-101 rules (should be PascalCase); fix: Rename to 'isStoredIn'",
+        "Redundancy: hasProjectTimelineStartDateTime and hasProjectTimelineEndDateTime, stores \u2014 Duplicate concepts under different names",
+        "Redundancy: digitalArtifact.accessControl.type, accessControlType(enum: Public, Private, Restricted) \u2014 Near-duplicate concepts with similar meanings",
+        "Consistency [DEFINITION_STYLE]: Definition style inconsistent (some definitions are in natural language, while others are in formal ontology notation)",
+        "Consistency [ATTACHMENT_LEVEL]: Attachment level inconsistent (some properties have a high attachment level, while others do not)",
+        "CQs not covered: CQ_001, CQ_003"
+      ],
+      "reasoning": "The proposal has some structural issues, but overall it is well-structured and consistent. Further refinement is needed to address the identified issues."
+    }
+  ]
+}

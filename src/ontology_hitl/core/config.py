@@ -99,6 +99,16 @@ class Settings(BaseSettings):
     # Provenance (module D)
     provenance_enabled: bool = True
 
+    # Legal enrichment (LawGraph / lawgraph Qdrant collection)
+    legal_enrichment_enabled: bool = True
+
+    # Domain configuration
+    # Used in fallback definitions, CQ generation, and entity extraction
+    # prompts. Set to empty string for domain-agnostic operation (e.g.
+    # OntoURL benchmark).  Examples: "nuclear decommissioning",
+    # "pizza", "music".
+    domain_name: str = ""
+
     # Paths
     seed_ontology_path: str = "data/seed_ontology/plan-ontology-v1.0.owl"
     iterations_dir: str = "data/iterations"

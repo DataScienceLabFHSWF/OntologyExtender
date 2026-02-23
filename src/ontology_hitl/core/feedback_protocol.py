@@ -117,6 +117,9 @@ class FeedbackMetrics:
     proposals_accepted: int = 0
     acceptance_rate: float = 0.0
 
+    # Human-in-the-loop escalation signal (questions surfaced for review)
+    questions_for_review: int = 0
+
     # Convergence signal: once improvement per iteration drops below
     # this threshold, the loop can recommend stopping
     improvement_over_previous: float = 0.0
@@ -181,6 +184,9 @@ class ConvergenceReport:
                 self.converged_at_iteration = m.iteration
                 break
 
+        total_escalations = sum(m.questions_for_review for m in self.metrics_per_iteration)
+        avg_escalations = total_escalations / len(self.metrics_per_iteration)
+
         return {
             "total_iterations": self.total_iterations,
             "entity_coverage": {
@@ -206,4 +212,8 @@ class ConvergenceReport:
                 sum(m.acceptance_rate for m in self.metrics_per_iteration)
                 / len(self.metrics_per_iteration)
             ),
+            "escalations": {
+                "total": total_escalations,
+                "avg_per_iteration": avg_escalations,
+            },
         }

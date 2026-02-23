@@ -144,10 +144,88 @@ class StatisticalAnalyzer:
             If the number of CogAgent and baseline results differ
             (not matched pairs).
         """
-        raise NotImplementedError(
-            "TODO: for each metric, extract paired scores, "
-            "call paired_t_test + bootstrap_ci + cohens_d"
-        )
+        if len(cogagent_results) != len(baseline_results):
+            raise ValueError(
+                f"Mismatched result counts: CogAgent={len(cogagent_results)}, "
+                f"{baseline_name}={len(baseline_results)}"
+            )
+
+        n = len(cogagent_results)
+        report: dict[str, Any] = {
+            "overall": {
+                "n_test_cases": n,
+                "alpha": self.alpha,
+                "baseline_name": baseline_name,
+                "any_significant": False,
+            },
+            "per_metric": {},
+        }
+
+        any_sig = False
+        for metric in _METRIC_FIELDS:
+            cog_scores = self._extract_metric_scores(cogagent_results, metric)
+            bas_scores = self._extract_metric_scores(baseline_results, metric)
+
+            cog_mean = float(np.mean(cog_scores))
+            cog_std = float(np.std(cog_scores, ddof=1)) if n > 1 else 0.0
+            bas_mean = float(np.mean(bas_scores))
+            bas_std = float(np.std(bas_scores, ddof=1)) if n > 1 else 0.0
+
+            # For hallucination_rate, lower is better — invert for
+            # improvement interpretation
+            improvement_pct = 0.0
+            if bas_mean != 0:
+                if metric == "hallucination_rate":
+                    improvement_pct = (bas_mean - cog_mean) / abs(bas_mean) * 100
+                else:
+                    improvement_pct = (cog_mean - bas_mean) / abs(bas_mean) * 100
+
+            # Statistical tests
+            p_value = 1.0
+            t_stat = 0.0
+            if n >= 2:
+                try:
+                    t_stat, p_value = self.paired_t_test(cog_scores, bas_scores)
+                except Exception:
+                    pass
+
+            mean_diff, ci_lower, ci_upper = 0.0, 0.0, 0.0
+            if n >= 2:
+                try:
+                    mean_diff, ci_lower, ci_upper = self.bootstrap_confidence_interval(
+                        cog_scores, bas_scores
+                    )
+                except Exception:
+                    pass
+
+            d_val, d_interp = 0.0, "negligible"
+            if n >= 2:
+                try:
+                    d_val, d_interp = self.cohens_d(cog_scores, bas_scores)
+                except Exception:
+                    pass
+
+            significant = p_value < self.alpha
+            if significant:
+                any_sig = True
+
+            report["per_metric"][metric] = {
+                "cogagent_mean": round(cog_mean, 4),
+                "cogagent_std": round(cog_std, 4),
+                "baseline_mean": round(bas_mean, 4),
+                "baseline_std": round(bas_std, 4),
+                "t_statistic": round(t_stat, 4),
+                "p_value": round(p_value, 6),
+                "significant": significant,
+                "cohens_d": round(d_val, 4),
+                "effect_size": d_interp,
+                "ci_lower": round(ci_lower, 4),
+                "ci_upper": round(ci_upper, 4),
+                "improvement_pct": round(improvement_pct, 2),
+            }
+
+        report["overall"]["any_significant"] = any_sig
+        return report
 
     # ------------------------------------------------------------------
     # Individual tests
@@ -178,9 +256,12 @@ class StatisticalAnalyzer:
         With only 4 test cases, the t-test has low power —
         use bootstrap CI as a complement.
         """
-        raise NotImplementedError(
-            "TODO: scipy.stats.ttest_rel(scores_a, scores_b)"
-        )
+        from scipy.stats import ttest_rel
+
+        a = np.array(scores_a, dtype=float)
+        b = np.array(scores_b, dtype=float)
+        t_stat, p_val = ttest_rel(a, b)
+        return float(t_stat), float(p_val)
 
     def bootstrap_confidence_interval(
         self,
@@ -214,10 +295,19 @@ class StatisticalAnalyzer:
         If the CI excludes 0, the difference is significant at
         the given confidence level.
         """
-        raise NotImplementedError(
-            "TODO: resample with replacement, compute diff each time, "
-            "take percentile bounds"
-        )
+        a = np.array(scores_a, dtype=float)
+        b = np.array(scores_b, dtype=float)
+        diffs = a - b
+        n = len(diffs)
+        boot_diffs = np.empty(self.n_bootstrap)
+        for i in range(self.n_bootstrap):
+            idx = self._rng.randint(0, n, size=n)
+            boot_diffs[i] = np.mean(diffs[idx])
+        mean_diff = float(np.mean(boot_diffs))
+        alpha_tail = (1.0 - confidence) / 2.0
+        ci_lower = float(np.percentile(boot_diffs, 100 * alpha_tail))
+        ci_upper = float(np.percentile(boot_diffs, 100 * (1.0 - alpha_tail)))
+        return mean_diff, ci_lower, ci_upper
 
     def cohens_d(
         self, scores_a: list[float], scores_b: list[float]
@@ -237,9 +327,26 @@ class StatisticalAnalyzer:
             One of ``"negligible"`` (< 0.2), ``"small"`` (0.2–0.5),
             ``"medium"`` (0.5–0.8), ``"large"`` (≥ 0.8).
         """
-        raise NotImplementedError(
-            "TODO: d = mean(a - b) / pooled_std"
-        )
+        a = np.array(scores_a, dtype=float)
+        b = np.array(scores_b, dtype=float)
+        diff = a - b
+        mean_diff = float(np.mean(diff))
+        # Pooled standard deviation
+        n_a, n_b = len(a), len(b)
+        var_a = float(np.var(a, ddof=1)) if n_a > 1 else 0.0
+        var_b = float(np.var(b, ddof=1)) if n_b > 1 else 0.0
+        pooled_std = np.sqrt(((n_a - 1) * var_a + (n_b - 1) * var_b) / max(1, n_a + n_b - 2))
+        d = mean_diff / pooled_std if pooled_std > 0 else 0.0
+        abs_d = abs(d)
+        if abs_d >= 0.8:
+            interp = "large"
+        elif abs_d >= 0.5:
+            interp = "medium"
+        elif abs_d >= 0.2:
+            interp = "small"
+        else:
+            interp = "negligible"
+        return float(d), interp
 
     # ------------------------------------------------------------------
     # Helpers
@@ -261,6 +368,4 @@ class StatisticalAnalyzer:
         list[float]
             One value per result, in order.
         """
-        raise NotImplementedError(
-            "TODO: [getattr(r.metrics, metric) for r in results]"
-        )
+        return [float(getattr(r.metrics, metric, 0.0)) for r in results]

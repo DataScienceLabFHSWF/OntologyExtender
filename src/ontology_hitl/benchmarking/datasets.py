@@ -44,6 +44,7 @@ Dependencies
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -280,10 +281,66 @@ class DatasetManager:
         NotImplementedError
             Dataset-specific download logic is not yet implemented.
         """
-        raise NotImplementedError(
-            f"TODO: implement download for '{dataset_id}' from "
-            f"{DATASET_REGISTRY[dataset_id].source}"
-        )
+        info = self.get_info(dataset_id)
+        dest = self.cache_dir / dataset_id
+        dest.mkdir(parents=True, exist_ok=True)
+
+        if dataset_id == "ontourl":
+            # Download via HuggingFace datasets library
+            try:
+                from datasets import load_dataset  # type: ignore[import-untyped]
+
+                ds = load_dataset("XiaoZhang98/OntoURL", cache_dir=str(dest))
+                # Save a metadata marker
+                (dest / ".downloaded").write_text("ok")
+                logger.info("dataset_downloaded", id=dataset_id, path=str(dest))
+                return dest
+            except ImportError:
+                logger.warning(
+                    "huggingface_datasets_not_installed",
+                    msg="pip install datasets to download OntoURL",
+                )
+            except Exception as e:
+                logger.warning("download_failed", id=dataset_id, error=str(e))
+
+        elif dataset_id == "taming_hallucinations":
+            # Clone the repository
+            import subprocess
+
+            repo_url = info.source
+            try:
+                subprocess.run(
+                    ["git", "clone", "--depth", "1", repo_url, str(dest)],
+                    check=True,
+                    capture_output=True,
+                    timeout=120,
+                )
+                logger.info("dataset_downloaded", id=dataset_id, path=str(dest))
+                return dest
+            except Exception as e:
+                logger.warning("download_failed", id=dataset_id, error=str(e))
+
+        elif dataset_id == "plu_ontology_benchmark":
+            import subprocess
+
+            repo_url = info.source
+            try:
+                subprocess.run(
+                    ["git", "clone", "--depth", "1", repo_url, str(dest)],
+                    check=True,
+                    capture_output=True,
+                    timeout=120,
+                )
+                logger.info("dataset_downloaded", id=dataset_id, path=str(dest))
+                return dest
+            except Exception as e:
+                logger.warning("download_failed", id=dataset_id, error=str(e))
+
+        else:
+            logger.warning("download_not_supported", id=dataset_id)
+
+        # Return cache dir even on failure (may have partial data)
+        return dest
 
     def load_ontourl(self, local_path: Path | None = None) -> dict[str, Any]:
         """Load the OntoURL benchmark dataset.
@@ -364,9 +421,65 @@ class DatasetManager:
         NotImplementedError
             Loader not yet implemented.
         """
-        raise NotImplementedError(
-            "TODO: load concept JSONs and triple CSVs from repo_path"
-        )
+        base = repo_path or (self.cache_dir / "TamingHallucinations")
+        base = Path(base)
+
+        result: dict[str, Any] = {
+            "reference_concepts": {},
+            "reference_triples": [],
+            "llm_concepts": {},
+            "llm_triples": [],
+        }
+
+        # Load reference concepts (JSON files)
+        ref_concepts_dir = base / "data" / "bioportal_concepts"
+        if ref_concepts_dir.exists():
+            for jf in sorted(ref_concepts_dir.glob("*.json")):
+                try:
+                    data = json.loads(jf.read_text())
+                    result["reference_concepts"][jf.stem] = data
+                except Exception:
+                    pass
+
+        # Load reference triples (CSV files)
+        ref_triples_dir = base / "data" / "bioportal_triples"
+        if ref_triples_dir.exists():
+            import csv
+
+            for cf in sorted(ref_triples_dir.glob("*.csv")):
+                try:
+                    with cf.open("r", newline="") as fh:
+                        reader = csv.DictReader(fh)
+                        for row in reader:
+                            result["reference_triples"].append(row)
+                except Exception:
+                    pass
+
+        # Load LLM-generated concepts
+        llm_concepts_dir = base / "data" / "llm_concepts"
+        if llm_concepts_dir.exists():
+            for jf in sorted(llm_concepts_dir.glob("*.json")):
+                try:
+                    data = json.loads(jf.read_text())
+                    result["llm_concepts"][jf.stem] = data
+                except Exception:
+                    pass
+
+        # Load LLM-generated triples
+        llm_triples_dir = base / "data" / "llm_triples"
+        if llm_triples_dir.exists():
+            import csv
+
+            for cf in sorted(llm_triples_dir.glob("*.csv")):
+                try:
+                    with cf.open("r", newline="") as fh:
+                        reader = csv.DictReader(fh)
+                        for row in reader:
+                            result["llm_triples"].append(row)
+                except Exception:
+                    pass
+
+        return result
 
     def load_plu_benchmark(
         self, repo_path: Path | None = None
@@ -401,9 +514,44 @@ class DatasetManager:
         NotImplementedError
             Loader not yet implemented.
         """
-        raise NotImplementedError(
-            "TODO: load qualitative/quantitative evaluation data"
-        )
+        base = repo_path or (self.cache_dir / "ontology-benchmark")
+        base = Path(base)
+
+        result: dict[str, Any] = {
+            "qualitative": [],
+            "quantitative": [],
+        }
+
+        # Load qualitative evaluation data
+        qual_dir = base / "qualitative evaluation" / "Ontologies and source docs"
+        if not qual_dir.exists():
+            # Try alternative path layouts
+            qual_dir = base / "qualitative_evaluation"
+        if qual_dir.exists():
+            for txt_file in sorted(qual_dir.glob("*.txt")):
+                try:
+                    result["qualitative"].append({
+                        "name": txt_file.stem,
+                        "content": txt_file.read_text(errors="replace")[:10000],
+                    })
+                except Exception:
+                    pass
+
+        # Load quantitative evaluation data
+        quant_dir = base / "quantitative evaluation" / "documents"
+        if not quant_dir.exists():
+            quant_dir = base / "quantitative_evaluation" / "documents"
+        if quant_dir.exists():
+            for txt_file in sorted(quant_dir.glob("*.txt")):
+                try:
+                    result["quantitative"].append({
+                        "name": txt_file.stem,
+                        "content": txt_file.read_text(errors="replace")[:10000],
+                    })
+                except Exception:
+                    pass
+
+        return result
 
     def get_reference_ontology_sources(self) -> dict[str, list[dict[str, str]]]:
         """Get the OntoURL reference ontology catalogue.

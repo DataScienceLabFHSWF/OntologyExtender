@@ -183,32 +183,7 @@ class BaselineAdapter(abc.ABC):
     # Helpers
     # ------------------------------------------------------------------
 
-    def _run_subprocess(
-        self, command: str, cwd: Path | None = None, timeout: int | None = None
-    ) -> subprocess.CompletedProcess:
-        """Run a shell command as a subprocess with timeout.
-
-        Parameters
-        ----------
-        command : str
-            Shell command string.
-        cwd : Path | None
-            Working directory.  Defaults to ``config.repo_path``.
-        timeout : int | None
-            Seconds before SIGKILL.  Defaults to ``config.timeout_seconds``.
-
-        Returns
-        -------
-        subprocess.CompletedProcess
-
-        Raises
-        ------
-        subprocess.TimeoutExpired
-        subprocess.CalledProcessError
-        """
-        raise NotImplementedError(
-            "TODO: subprocess.run(command, shell=True, cwd=..., timeout=...)"
-        )
+    # _run_subprocess is inherited from the implementation above (L103).
 
 
 # =========================================================================
@@ -250,6 +225,10 @@ class CogAgentAdapter(BaselineAdapter):
         self.debate_strategy = debate_strategy
         self.auto_approve = auto_approve
 
+        # OntoURL benchmark domains are general (Pizza, Music, etc.)
+        # — always use neutral prompts without legal enrichment.
+        self._legal_enrichment = False
+
     def is_available(self) -> bool:
         """CogAgent is always available (it's our own system).
 
@@ -284,9 +263,85 @@ class CogAgentAdapter(BaselineAdapter):
             With ``classes_generated``, ``properties_generated``,
             ``output_ontology_path``, and ``wall_clock_seconds``.
         """
-        raise NotImplementedError(
-            "TODO: instantiate FeedbackLoopOrchestrator, run loop, "
-            "export results, count additions"
+        import shutil
+        import tempfile
+
+        from ontology_hitl.core.config import Settings
+        from ontology_hitl.core.loop_orchestrator import FeedbackLoopOrchestrator
+        from ontology_hitl.core.feedback_protocol import LoopMode
+
+        start = time.time()
+
+        # Create a temporary workspace for this test case run
+        work_dir = Path(tempfile.mkdtemp(prefix=f"cogagent_{test_case.reduction_level.value}_"))
+        iter_dir = work_dir / "iterations"
+        exports_dir = work_dir / "exports"
+        iter_dir.mkdir(parents=True, exist_ok=True)
+        exports_dir.mkdir(parents=True, exist_ok=True)
+
+        # Copy seed ontology into workspace
+        seed_dest = work_dir / "seed.owl"
+        shutil.copy2(test_case.seed_ontology_path, seed_dest)
+
+        # Configure settings for benchmarking
+        settings = Settings(
+            seed_ontology_path=str(seed_dest),
+            iterations_dir=str(iter_dir),
+            exports_dir=str(exports_dir),
+            legal_enrichment_enabled=self._legal_enrichment,
+        )
+
+        try:
+            orchestrator = FeedbackLoopOrchestrator(
+                settings=settings,
+                mode=LoopMode.STANDALONE,
+                max_iterations=self.iterations,
+                max_debate_rounds=2,
+            )
+            orchestrator.run(auto_review=self.auto_approve)
+        except Exception as e:
+            logger.warning("cogagent_run_failed", error=str(e))
+
+        # Find the output ontology
+        output_path: Path | None = None
+        for ext in ("*.owl", "*.ttl", "*.rdf"):
+            found = list(exports_dir.glob(ext))
+            if found:
+                output_path = found[0]
+                break
+
+        # Count classes / properties in output vs seed
+        classes_gen = 0
+        props_gen = 0
+        if output_path and output_path.exists():
+            try:
+                from rdflib import Graph as RdfGraph, OWL as OWL_, RDF as RDF_
+                out_g = RdfGraph()
+                out_g.parse(str(output_path))
+                seed_g = RdfGraph()
+                seed_g.parse(str(seed_dest))
+                out_classes = set(out_g.subjects(RDF_.type, OWL_.Class))
+                seed_classes = set(seed_g.subjects(RDF_.type, OWL_.Class))
+                classes_gen = len(out_classes - seed_classes)
+                out_props = set(out_g.subjects(RDF_.type, OWL_.ObjectProperty)) | set(
+                    out_g.subjects(RDF_.type, OWL_.DatatypeProperty)
+                )
+                seed_props = set(seed_g.subjects(RDF_.type, OWL_.ObjectProperty)) | set(
+                    seed_g.subjects(RDF_.type, OWL_.DatatypeProperty)
+                )
+                props_gen = len(out_props - seed_props)
+            except Exception:
+                pass
+
+        elapsed = time.time() - start
+        return BenchmarkResult(
+            system=BaselineSystem.COGAGENT,
+            test_case_id=test_case.id,
+            reduction_level=test_case.reduction_level,
+            wall_clock_seconds=elapsed,
+            output_ontology_path=output_path,
+            classes_generated=classes_gen,
+            properties_generated=props_gen,
         )
 
 
@@ -341,10 +396,10 @@ class AgentOMAdapter(BaselineAdapter):
             ``True`` if repo exists at ``config.repo_path`` and
             ``run_config.py`` is present.
         """
-        raise NotImplementedError(
-            "TODO: check repo_path exists, run_config.py present, "
-            "optionally test psql connection"
-        )
+        if not self.config.repo_path:
+            return False
+        repo = Path(self.config.repo_path)
+        return repo.exists() and (repo / "run_config.py").exists()
 
     def run(self, test_case: TestCase) -> BenchmarkResult:
         """Run Agent-OM matching between reduced seed and gold standard.
@@ -368,8 +423,46 @@ class AgentOMAdapter(BaselineAdapter):
             With matched classes interpreted as ``classes_generated``,
             and raw Agent-OM metrics in ``raw_output``.
         """
-        raise NotImplementedError(
-            "TODO: prepare alignment input, run Agent-OM, parse result.csv"
+        start = time.time()
+        source_path, target_path = self._prepare_alignment_input(test_case)
+
+        # Execute Agent-OM
+        cmd = (
+            f"{self.config.python_executable} run_config.py "
+            f"--source {source_path} --target {target_path} "
+            f"--threshold {self.similarity_threshold}"
+        )
+        try:
+            self._run_subprocess(cmd, cwd=self.config.repo_path)
+        except Exception as e:
+            logger.error("agent_om_execution_failed", error=str(e))
+            return BenchmarkResult(
+                system=BaselineSystem.AGENT_OM,
+                test_case_id=test_case.id,
+                reduction_level=test_case.reduction_level,
+                wall_clock_seconds=time.time() - start,
+                error=str(e),
+            )
+
+        # Parse results
+        result_csv = Path(self.config.repo_path) / "result.csv"
+        raw: dict[str, Any] = {}
+        classes_recovered = 0
+        if result_csv.exists():
+            raw = self._parse_agent_om_results(result_csv)
+            # Number of matched classes ≈ recovered gold-standard classes
+            classes_recovered = int(raw.get("matched_count", 0))
+
+        elapsed = time.time() - start
+        output_path = result_csv if result_csv.exists() else None
+        return BenchmarkResult(
+            system=BaselineSystem.AGENT_OM,
+            test_case_id=test_case.id,
+            reduction_level=test_case.reduction_level,
+            wall_clock_seconds=elapsed,
+            output_ontology_path=output_path,
+            classes_generated=classes_recovered,
+            raw_output=raw,
         )
 
     def _prepare_alignment_input(
@@ -391,9 +484,20 @@ class AgentOMAdapter(BaselineAdapter):
         tuple[Path, Path]
             (source_path, target_path) inside the Agent-OM repo.
         """
-        raise NotImplementedError(
-            "TODO: shutil.copy seed and gold to alignment dir"
-        )
+        import shutil
+
+        repo = Path(self.config.repo_path)  # type: ignore[arg-type]
+        task_name = test_case.id.replace(" ", "_")
+        alignment_dir = repo / "alignment" / task_name
+        alignment_dir.mkdir(parents=True, exist_ok=True)
+
+        source_path = alignment_dir / "source.owl"
+        target_path = alignment_dir / "target.owl"
+
+        shutil.copy2(test_case.seed_ontology_path, source_path)
+        shutil.copy2(test_case.gold_standard_path, target_path)
+
+        return source_path, target_path
 
     def _parse_agent_om_results(self, result_csv: Path) -> dict[str, float]:
         """Parse Agent-OM's result.csv into a metrics dict.
@@ -409,9 +513,33 @@ class AgentOMAdapter(BaselineAdapter):
         dict[str, float]
             Keys: ``precision``, ``recall``, ``f_measure``.
         """
-        raise NotImplementedError(
-            "TODO: csv.reader on result.csv, extract metrics"
-        )
+        import csv
+
+        metrics: dict[str, float] = {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f_measure": 0.0,
+            "matched_count": 0,
+        }
+        try:
+            with result_csv.open("r", newline="") as fh:
+                reader = csv.DictReader(fh)
+                rows = list(reader)
+                if rows:
+                    last = rows[-1]  # Use the last / summary row
+                    for key in ("Precision", "precision"):
+                        if key in last:
+                            metrics["precision"] = float(last[key])
+                    for key in ("Recall", "recall"):
+                        if key in last:
+                            metrics["recall"] = float(last[key])
+                    for key in ("F-measure", "Fmeasure", "f_measure", "F1"):
+                        if key in last:
+                            metrics["f_measure"] = float(last[key])
+                    metrics["matched_count"] = len(rows)
+        except Exception as e:
+            logger.warning("parse_agent_om_failed", error=str(e))
+        return metrics
 
 
 # =========================================================================
@@ -460,9 +588,10 @@ class LLM4ACOEAdapter(BaselineAdapter):
         bool
             ``True`` if repo exists and ``LLM4ACOE.py`` is present.
         """
-        raise NotImplementedError(
-            "TODO: check repo_path / LLM4ACOE.py exists"
-        )
+        if not self.config.repo_path:
+            return False
+        repo = Path(self.config.repo_path)
+        return repo.exists() and (repo / "LLM4ACOE.py").exists()
 
     def run(self, test_case: TestCase) -> BenchmarkResult:
         """Run LLM4ACOE on a test case.
@@ -486,8 +615,56 @@ class LLM4ACOEAdapter(BaselineAdapter):
             With generated ontology path, class/property counts,
             and LLM4ACOE discussion transcript in ``raw_output``.
         """
-        raise NotImplementedError(
-            "TODO: prepare input, run LLM4ACOE.py, collect output"
+        import shutil
+
+        start = time.time()
+        repo = Path(self.config.repo_path)  # type: ignore[arg-type]
+
+        # Optionally patch for Ollama
+        if self.use_ollama:
+            try:
+                self._patch_for_ollama()
+            except Exception as e:
+                logger.warning("ollama_patch_failed", error=str(e))
+
+        # Copy seed ontology into LLM4ACOE's expected input
+        input_dir = repo / "input"
+        input_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(test_case.seed_ontology_path, input_dir / "seed.owl")
+
+        # Execute LLM4ACOE
+        cmd = f"{self.config.python_executable} LLM4ACOE.py"
+        try:
+            self._run_subprocess(cmd, cwd=repo)
+        except Exception as e:
+            return BenchmarkResult(
+                system=BaselineSystem.LLM4ACOE,
+                test_case_id=test_case.id,
+                reduction_level=test_case.reduction_level,
+                wall_clock_seconds=time.time() - start,
+                error=str(e),
+            )
+
+        # Parse output
+        experiment_dir = repo / "Experiments" / test_case.id
+        if not experiment_dir.exists():
+            # Try fallback — search for any Experiments subdirectory
+            candidates = list((repo / "Experiments").glob("*/")) if (repo / "Experiments").exists() else []
+            experiment_dir = candidates[-1] if candidates else repo / "output"
+
+        raw = self._parse_llm4acoe_output(experiment_dir)
+        output_path = raw.get("ontology_path")
+
+        elapsed = time.time() - start
+        return BenchmarkResult(
+            system=BaselineSystem.LLM4ACOE,
+            test_case_id=test_case.id,
+            reduction_level=test_case.reduction_level,
+            wall_clock_seconds=elapsed,
+            output_ontology_path=Path(output_path) if output_path else None,
+            classes_generated=raw.get("classes_count", 0),
+            properties_generated=raw.get("properties_count", 0),
+            raw_output=raw,
         )
 
     def _patch_for_ollama(self) -> None:
@@ -506,9 +683,28 @@ class LLM4ACOEAdapter(BaselineAdapter):
         script, not by modifying the baseline's source code directly
         (we want reproducibility and clean separation).
         """
-        raise NotImplementedError(
-            "TODO: create Ollama-compatible shim for OpenAI API"
+        import os
+
+        repo = Path(self.config.repo_path)  # type: ignore[arg-type]
+        ollama_url = (self.config.env_vars or {}).get(
+            "OLLAMA_URL", "http://localhost:18135"
         )
+
+        # Write a shim that sets env vars for openai-compatible endpoint
+        shim_content = f"""import os
+os.environ["OPENAI_API_BASE"] = "{ollama_url}/v1"
+os.environ["OPENAI_API_KEY"] = "ollama"
+"""
+        shim_path = repo / "_ollama_shim.py"
+        shim_path.write_text(shim_content)
+
+        # Prepend PYTHONSTARTUP so it runs before the main script
+        env = self.config.env_vars or {}
+        env["PYTHONSTARTUP"] = str(shim_path)
+        env["OPENAI_API_BASE"] = f"{ollama_url}/v1"
+        env["OPENAI_API_KEY"] = "ollama"
+        self.config.env_vars = env
+        logger.info("ollama_patch_applied", shim=str(shim_path))
 
     def _parse_llm4acoe_output(self, experiment_dir: Path) -> dict[str, Any]:
         """Parse LLM4ACOE's output directory for results.
@@ -526,9 +722,46 @@ class LLM4ACOEAdapter(BaselineAdapter):
         dict[str, Any]
             Parsed output including ontology path and metrics.
         """
-        raise NotImplementedError(
-            "TODO: glob for .owl/.ttl files, parse agent transcripts"
-        )
+        result: dict[str, Any] = {
+            "ontology_path": None,
+            "classes_count": 0,
+            "properties_count": 0,
+            "transcripts": [],
+        }
+
+        if not experiment_dir.exists():
+            return result
+
+        # Find generated ontology files
+        for ext in ("*.owl", "*.ttl", "*.rdf"):
+            found = list(experiment_dir.rglob(ext))
+            if found:
+                result["ontology_path"] = str(found[0])
+                # Count classes/properties
+                try:
+                    from rdflib import Graph as RdfGraph, OWL as OWL_, RDF as RDF_
+                    g = RdfGraph()
+                    g.parse(str(found[0]))
+                    result["classes_count"] = sum(
+                        1 for _ in g.subjects(RDF_.type, OWL_.Class)
+                    )
+                    result["properties_count"] = sum(
+                        1 for _ in g.subjects(RDF_.type, OWL_.ObjectProperty)
+                    ) + sum(
+                        1 for _ in g.subjects(RDF_.type, OWL_.DatatypeProperty)
+                    )
+                except Exception:
+                    pass
+                break
+
+        # Collect discussion transcripts
+        for txt in experiment_dir.rglob("*.txt"):
+            try:
+                result["transcripts"].append(txt.read_text()[:5000])
+            except Exception:
+                pass
+
+        return result
 
 
 # =========================================================================
@@ -572,9 +805,10 @@ class NLPWord2VecAdapter(BaselineAdapter):
         bool
             ``True`` if repo exists at ``config.repo_path``.
         """
-        raise NotImplementedError(
-            "TODO: check repo_path exists, main script present"
-        )
+        if not self.config.repo_path:
+            return False
+        repo = Path(self.config.repo_path)
+        return repo.exists()
 
     def run(self, test_case: TestCase) -> BenchmarkResult:
         """Run NLP-W2V ontology extension on a test case.
@@ -598,8 +832,72 @@ class NLPWord2VecAdapter(BaselineAdapter):
         BenchmarkResult
             With extended ontology, counts, and W2V-specific metadata.
         """
-        raise NotImplementedError(
-            "TODO: prepare corpus, run NLP-W2V pipeline, collect OWL output"
+        start = time.time()
+        repo = Path(self.config.repo_path)  # type: ignore[arg-type]
+
+        # Prepare corpus from test case source documents
+        corpus_path = self._prepare_corpus(test_case)
+
+        # Build the execution command
+        cmd = self.config.entry_command or (
+            f"{self.config.python_executable} main.py "
+            f"--seed {test_case.seed_ontology_path} "
+            f"--corpus {corpus_path} "
+            f"--embedding-dim {self.embedding_dim} "
+            f"--min-similarity {self.min_similarity}"
+        )
+
+        try:
+            self._run_subprocess(cmd, cwd=repo)
+        except Exception as e:
+            return BenchmarkResult(
+                system=BaselineSystem.NLP_W2V,
+                test_case_id=test_case.id,
+                reduction_level=test_case.reduction_level,
+                wall_clock_seconds=time.time() - start,
+                error=str(e),
+            )
+
+        # Find output ontology
+        output_path: Path | None = None
+        for ext in ("*.owl", "*.ttl", "*.rdf"):
+            found = list(repo.glob(f"output/{ext}")) or list(repo.glob(ext))
+            if found:
+                output_path = found[0]
+                break
+
+        classes_gen = 0
+        props_gen = 0
+        if output_path and output_path.exists():
+            try:
+                from rdflib import Graph as RdfGraph, OWL as OWL_, RDF as RDF_
+                g = RdfGraph()
+                g.parse(str(output_path))
+                seed_g = RdfGraph()
+                seed_g.parse(str(test_case.seed_ontology_path))
+                classes_gen = len(
+                    set(g.subjects(RDF_.type, OWL_.Class))
+                    - set(seed_g.subjects(RDF_.type, OWL_.Class))
+                )
+                props_gen = len(
+                    (set(g.subjects(RDF_.type, OWL_.ObjectProperty))
+                     | set(g.subjects(RDF_.type, OWL_.DatatypeProperty)))
+                    - (set(seed_g.subjects(RDF_.type, OWL_.ObjectProperty))
+                       | set(seed_g.subjects(RDF_.type, OWL_.DatatypeProperty)))
+                )
+            except Exception:
+                pass
+
+        elapsed = time.time() - start
+        return BenchmarkResult(
+            system=BaselineSystem.NLP_W2V,
+            test_case_id=test_case.id,
+            reduction_level=test_case.reduction_level,
+            wall_clock_seconds=elapsed,
+            output_ontology_path=output_path,
+            classes_generated=classes_gen,
+            properties_generated=props_gen,
+            raw_output={"embedding_dim": self.embedding_dim, "min_similarity": self.min_similarity},
         )
 
     def _prepare_corpus(self, test_case: TestCase) -> Path:
@@ -617,9 +915,33 @@ class NLPWord2VecAdapter(BaselineAdapter):
         Path
             Path to the prepared corpus file.
         """
-        raise NotImplementedError(
-            "TODO: extract text from source docs, write to corpus file"
-        )
+        repo = Path(self.config.repo_path)  # type: ignore[arg-type]
+        corpus_dir = repo / "corpus"
+        corpus_dir.mkdir(parents=True, exist_ok=True)
+        corpus_file = corpus_dir / f"{test_case.id}_corpus.txt"
+
+        # Gather text from source documents referenced in test_case metadata
+        texts: list[str] = []
+        source_docs = test_case.metadata.get("source_documents", [])
+        for doc_path in source_docs:
+            p = Path(doc_path)
+            if p.exists():
+                try:
+                    texts.append(p.read_text(errors="replace"))
+                except Exception:
+                    pass
+
+        # Fallback: use class/property labels as corpus if no docs available
+        if not texts:
+            for cls_uri in test_case.removed_classes:
+                local = cls_uri.split("#")[-1].split("/")[-1]
+                texts.append(local.replace("_", " "))
+            for prop_uri in test_case.removed_properties:
+                local = prop_uri.split("#")[-1].split("/")[-1]
+                texts.append(local.replace("_", " "))
+
+        corpus_file.write_text("\n\n".join(texts))
+        return corpus_file
 
 
 # =========================================================================

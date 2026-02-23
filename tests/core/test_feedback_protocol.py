@@ -35,16 +35,16 @@ class TestConvergenceReport:
         metrics = [
             FeedbackMetrics(iteration=1, entity_coverage_pct=0.30,
                             cq_coverage_pct=0.20, classes_added_this_iter=8,
-                            acceptance_rate=0.8, improvement_over_previous=0.30),
+                            acceptance_rate=0.8, improvement_over_previous=0.30, questions_for_review=2),
             FeedbackMetrics(iteration=2, entity_coverage_pct=0.55,
                             cq_coverage_pct=0.50, classes_added_this_iter=6,
-                            acceptance_rate=0.75, improvement_over_previous=0.25),
+                            acceptance_rate=0.75, improvement_over_previous=0.25, questions_for_review=3),
             FeedbackMetrics(iteration=3, entity_coverage_pct=0.70,
                             cq_coverage_pct=0.65, classes_added_this_iter=4,
-                            acceptance_rate=0.9, improvement_over_previous=0.15),
+                            acceptance_rate=0.9, improvement_over_previous=0.15, questions_for_review=1),
             FeedbackMetrics(iteration=4, entity_coverage_pct=0.71,
                             cq_coverage_pct=0.66, classes_added_this_iter=1,
-                            acceptance_rate=0.5, improvement_over_previous=0.01),
+                            acceptance_rate=0.5, improvement_over_previous=0.01, questions_for_review=0),
         ]
 
         report = ConvergenceReport(

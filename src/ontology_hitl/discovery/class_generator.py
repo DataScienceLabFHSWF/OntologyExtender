@@ -137,12 +137,14 @@ class ClassDefinitionGenerator:
         fuseki_url: str = "http://localhost:3030",
         dataset: str = "kgbuilder",
         temperature: float = 0.5,
+        domain_name: str = "",
     ) -> None:
         self.ollama_url = ollama_url.rstrip("/")
         self.model = model
         self.fuseki_url = fuseki_url.rstrip("/")
         self.dataset = dataset
         self.temperature = temperature
+        self._domain_name = domain_name
 
     # ── Public API ──────────────────────────────────────────────────
 
@@ -237,7 +239,7 @@ class ClassDefinitionGenerator:
             return ProposedClass(
                 id=proposal_id,
                 label=entity_type,
-                definition=f"A {entity_type} in the nuclear decommissioning domain.",
+                definition=f"A {entity_type} in the {self._domain_name + ' ' if self._domain_name else ''}domain.",
                 parent_uri="http://purl.org/2024/planning-ontology#DomainConstant",
                 parent_label="DomainConstant",
                 examples=examples,
@@ -265,7 +267,7 @@ class ClassDefinitionGenerator:
             return ProposedClass(
                 id=proposal_id,
                 label=entity_type,
-                definition=f"A {entity_type} in the nuclear decommissioning domain.",
+                definition=f"A {entity_type} in the {self._domain_name + ' ' if self._domain_name else ''}domain.",
                 parent_uri="http://purl.org/2024/planning-ontology#DomainConstant",
                 parent_label="DomainConstant",
                 examples=examples,

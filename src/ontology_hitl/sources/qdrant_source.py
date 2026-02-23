@@ -67,11 +67,13 @@ class QdrantDocumentSource:
         collection: str = "kgbuilder",
         ollama_url: str = "http://localhost:18135",
         ollama_model: str = "qwen3-next",
+        domain_name: str = "",
     ) -> None:
         self.qdrant_url = qdrant_url.rstrip("/")
         self.collection = collection
         self.ollama_url = ollama_url.rstrip("/")
         self.ollama_model = ollama_model
+        self._domain_name = domain_name
 
     # ------------------------------------------------------------------
     # Public: fetch raw chunks
@@ -259,7 +261,7 @@ class QdrantDocumentSource:
         import json as json_mod
 
         prompt = (
-            "Extract all domain-specific entities from this nuclear decommissioning "
+            f"Extract all domain-specific entities from this{' ' + self._domain_name if self._domain_name else ''} "
             "document chunk. For each entity, provide:\n"
             "- label: the entity mention as it appears in text\n"
             "- entity_type: a short CamelCase class name (e.g. Facility, Permit, "

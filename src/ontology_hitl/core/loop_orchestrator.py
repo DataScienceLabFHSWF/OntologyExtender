@@ -316,6 +316,7 @@ class FeedbackLoopOrchestrator:
             ontology_modularity_score=quality_scores.get("modularity", 0.0),
             ontology_expressiveness_score=quality_scores.get("expressiveness", 0.0),
             ontology_overall_quality_score=quality_scores.get("overall_quality_score", 0.0),
+            questions_for_review=n_questions,
         )
 
         logger.info(
@@ -325,13 +326,12 @@ class FeedbackLoopOrchestrator:
             properties=n_properties,
             cq_coverage=f"{cq_coverage:.0%}",
             questions_for_review=n_questions,
+            escalation_count=n_questions,
         )
 
         return metrics
 
-    def _assess_ontology_quality(
-        self, checkpoint_path: Path | None, ontology_path: Path | None
-    ) -> dict[str, float]:
+    def _assess_ontology_quality(self, checkpoint_path, ontology_path):
         """Assess ontology quality using scientific metrics."""
         try:
             from ontology_hitl.evaluation.ontology_quality import OntologyQualityAnalyzer
@@ -584,6 +584,7 @@ class FeedbackLoopOrchestrator:
                 "acceptance_rate": metrics.acceptance_rate,
                 "improvement": metrics.improvement_over_previous,
                 "total_entities": metrics.total_entities_extracted,
+                "questions_for_review": metrics.questions_for_review,
             })
         except Exception:
             pass

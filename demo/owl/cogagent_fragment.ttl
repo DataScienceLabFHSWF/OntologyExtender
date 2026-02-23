@@ -1,0 +1,32 @@
+@prefix ex: <http://example.org/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+ex:Project a owl:Class .
+ex:Team a owl:Class .
+ex:Team rdfs:subClassOf ex:Project .
+ex:Manager a owl:Class .
+ex:Manager rdfs:subClassOf ex:Team .
+ex:DigitalArtifactClassification a owl:Class .
+ex:Activity a owl:Class .
+ex:DigitalArtifactAccessControl a owl:Class .
+ex:DigitalArtifactAccessControl rdfs:subClassOf ex:DigitalArtifactClassification .
+ex:IntellectualPropertyRestrictedDigitalArtifactAccessControl a owl:Class .
+ex:IntellectualPropertyRestrictedDigitalArtifactAccessControl rdfs:subClassOf ex:DigitalArtifactClassification .
+ex:StorageLocation a owl:Class .
+ex:Server a owl:Class .
+ex:Server rdfs:subClassOf ex:StorageLocation .
+ex:SearchQuery a owl:Class .
+ex:PreservationPolicy a owl:Class .
+ex:PreservationMetadataFormat a owl:Class .
+ex:DigitalArtifact a owl:Class .
+ex:MetadataFormat a owl:Class .
+ex:AccessibilityStatement a owl:Class .
+ex:hasProjectTimeline a owl:ObjectProperty ; rdfs:domain ex:Project .
+ex:hasProjectResources a owl:ObjectProperty ; rdfs:domain ex:Project .
+ex:isFinished a owl:DatatypeProperty ; rdfs:domain ex:Activity .
+ex:isScheduled a owl:DatatypeProperty ; rdfs:domain ex:Activity .
+ex:componentPartOf a owl:ObjectProperty ; rdfs:domain ex:Component .

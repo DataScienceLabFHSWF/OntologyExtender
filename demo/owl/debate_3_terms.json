@@ -1,0 +1,197 @@
+{
+  "phase": "3_terms",
+  "verdict": "escalated",
+  "rounds": 2,
+  "resolved_issues": [
+    "Accuracy: Task \u2014 Synonyms 'job' and 'activity' are not commonly used in the domain.",
+    "Accuracy: Completed \u2014 Synonym 'finished' is not used in the domain.",
+    "Accuracy: Due \u2014 Synonym 'timed' is not commonly used in the domain.",
+    "Missing: Project Timeline (importance: high)",
+    "Missing: Project Resources (importance: medium)"
+  ],
+  "escalated_questions": [
+    {
+      "question": "Rename: 'Task' \u2192 'Activity'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'Completed' \u2192 'Finished'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'Due' \u2192 'Scheduled'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [REDUNDANCY]: ['Task', 'Activity'] \u2014 Duplicate or near-duplicate concepts: 'Task' and 'Activity' are synonyms, but their usage in the domain is not as common as expected.; fix: Rename 'Task' to 'Activity' and consider adding a new term for the more commonly used 'job'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [REDUNDANCY]: ['Completed', 'Finished'] \u2014 Duplicate or near-duplicate concepts: 'Completed' and 'Finished' are synonyms, but their usage in the domain is not as common as expected.; fix: Rename 'Completed' to 'Finished'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [REDUNDANCY]: ['Due', 'Scheduled'] \u2014 Duplicate or near-duplicate concepts: 'Due' and 'Scheduled' are synonyms, but their usage in the domain is not as common as expected.; fix: Rename 'Due' to 'Scheduled'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: Task, Activity \u2014 Duplicate concepts with similar meanings",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: Completed, Finished \u2014 Duplicate concepts with similar meanings",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: Due, Scheduled \u2014 Duplicate concepts with similar meanings",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [NAMING]: Inconsistent naming conventions: 'Task' and 'Activity' are used interchangeably, but their usage in the domain is not as common as expected.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "CQs not covered: CQ_001, CQ_003",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: Project Timeline \u2014 Misrepresents the concept of project timeline as a static entity when in reality it's a dynamic and evolving plan.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: Finished \u2014 Does not capture the nuances of activity completion, which may involve ongoing work or maintenance.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: Scheduled \u2014 Assumes a fixed deadline without considering the possibility of dependencies or changes to the project timeline.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: Project Scope (importance: high)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: Risk Management (importance: medium)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: Quality Assurance (importance: low)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'Project Timeline' \u2192 'Project Schedule'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'Finished' \u2192 'Completed'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'Scheduled' \u2192 'Due'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [single-child]: Project Resources \u2014 Class 'Project Resources' has only one child ('hasFormat'), violating Ont-101 rule of single-child classes.; fix: Rename or restructure the class to comply with Ont-101 rules.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [relation consistency]: Part of \u2014 Relation 'Part of' is not consistently named, as it appears in both singular and plural forms.; fix: Rename or restructure the relation to maintain consistent naming conventions.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: Task, Activity \u2014 Both 'Task' and 'Activity' are synonyms for the same concept, which can lead to redundancy in CQ coverage.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: Due, Scheduled \u2014 Both 'Due' and 'Scheduled' are related to deadlines, but their usage may not be entirely consistent across the domain.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [naming]: Relation 'Part of' is named inconsistently, as it appears in both singular and plural forms.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "CQs not covered: cq1, cq4",
+      "context": "Unresolved after 2 debate rounds"
+    }
+  ],
+  "messages": [
+    {
+      "role": "ontology_engineer",
+      "type": "proposal",
+      "approves": null,
+      "issues": [],
+      "reasoning": "Phase 3_terms: initial proposal based on Ont-101 rules"
+    },
+    {
+      "role": "domain_expert",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Accuracy: Task \u2014 Synonyms 'job' and 'activity' are not commonly used in the domain.",
+        "Accuracy: Completed \u2014 Synonym 'finished' is not used in the domain.",
+        "Accuracy: Due \u2014 Synonym 'timed' is not commonly used in the domain.",
+        "Missing: Project Timeline (importance: high)",
+        "Missing: Project Resources (importance: medium)",
+        "Rename: 'Task' \u2192 'Activity'",
+        "Rename: 'Completed' \u2192 'Finished'",
+        "Rename: 'Due' \u2192 'Scheduled'"
+      ],
+      "reasoning": "The proposed terms have some inaccuracies and missing concepts. However, they do capture the essence of the domain."
+    },
+    {
+      "role": "critic",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Structure [REDUNDANCY]: ['Task', 'Activity'] \u2014 Duplicate or near-duplicate concepts: 'Task' and 'Activity' are synonyms, but their usage in the domain is not as common as expected.; fix: Rename 'Task' to 'Activity' and consider adding a new term for the more commonly used 'job'",
+        "Structure [REDUNDANCY]: ['Completed', 'Finished'] \u2014 Duplicate or near-duplicate concepts: 'Completed' and 'Finished' are synonyms, but their usage in the domain is not as common as expected.; fix: Rename 'Completed' to 'Finished'",
+        "Structure [REDUNDANCY]: ['Due', 'Scheduled'] \u2014 Duplicate or near-duplicate concepts: 'Due' and 'Scheduled' are synonyms, but their usage in the domain is not as common as expected.; fix: Rename 'Due' to 'Scheduled'",
+        "Redundancy: Task, Activity \u2014 Duplicate concepts with similar meanings",
+        "Redundancy: Completed, Finished \u2014 Duplicate concepts with similar meanings",
+        "Redundancy: Due, Scheduled \u2014 Duplicate concepts with similar meanings",
+        "Consistency [NAMING]: Inconsistent naming conventions: 'Task' and 'Activity' are used interchangeably, but their usage in the domain is not as common as expected.",
+        "CQs not covered: CQ_001, CQ_003"
+      ],
+      "reasoning": "The proposal has some structural issues that need to be addressed before it can be considered complete. The scope creep is also a concern."
+    },
+    {
+      "role": "ontology_engineer",
+      "type": "revision",
+      "approves": null,
+      "issues": [],
+      "reasoning": "Revised based on 2 reviews. Addressed: Accuracy: Task \u2014 Synonyms 'job' and 'activity' are not commonly used in the domain.; Accuracy: Completed \u2014 Synonym 'finished' is not used in the domain.; Accuracy: Due \u2014 Synonym 'timed' is not commonly used in the domain.; Missing: Project Timeline (importance: high); Missing: Project Resources (importance: medium)"
+    },
+    {
+      "role": "domain_expert",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Accuracy: Project Timeline \u2014 Misrepresents the concept of project timeline as a static entity when in reality it's a dynamic and evolving plan.",
+        "Accuracy: Finished \u2014 Does not capture the nuances of activity completion, which may involve ongoing work or maintenance.",
+        "Accuracy: Scheduled \u2014 Assumes a fixed deadline without considering the possibility of dependencies or changes to the project timeline.",
+        "Missing: Project Scope (importance: high)",
+        "Missing: Risk Management (importance: medium)",
+        "Missing: Quality Assurance (importance: low)",
+        "Rename: 'Project Timeline' \u2192 'Project Schedule'",
+        "Rename: 'Finished' \u2192 'Completed'",
+        "Rename: 'Scheduled' \u2192 'Due'"
+      ],
+      "reasoning": "The proposed terms have some inaccuracies and lack important domain concepts. However, the suggested corrections address these issues."
+    },
+    {
+      "role": "critic",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Structure [single-child]: Project Resources \u2014 Class 'Project Resources' has only one child ('hasFormat'), violating Ont-101 rule of single-child classes.; fix: Rename or restructure the class to comply with Ont-101 rules.",
+        "Structure [relation consistency]: Part of \u2014 Relation 'Part of' is not consistently named, as it appears in both singular and plural forms.; fix: Rename or restructure the relation to maintain consistent naming conventions.",
+        "Redundancy: Task, Activity \u2014 Both 'Task' and 'Activity' are synonyms for the same concept, which can lead to redundancy in CQ coverage.",
+        "Redundancy: Due, Scheduled \u2014 Both 'Due' and 'Scheduled' are related to deadlines, but their usage may not be entirely consistent across the domain.",
+        "Consistency [naming]: Relation 'Part of' is named inconsistently, as it appears in both singular and plural forms.",
+        "CQs not covered: cq1, cq4"
+      ],
+      "reasoning": "The proposal attempts to cover too many concepts for this iteration, potentially leading to scope creep."
+    }
+  ]
+}

@@ -1363,9 +1363,42 @@ class BenchmarkEvaluator:
         For a full OntoURL evaluation, use their evaluation scripts:
         https://github.com/LastDance500/OntoURL
         """
-        raise NotImplementedError(
-            "TODO: load OntoURL dataset or build proxy tasks, "
-            "evaluate LLM, aggregate per-capability scores"
+        # Use proxy evaluation (generate tasks from our own data)
+        understanding_scores = self._evaluate_understanding_proxy(
+            generated_graph, gold_graph
+        )
+        learning_scores = self._evaluate_learning_proxy(
+            generated_graph, gold_graph
+        )
+
+        all_scores = understanding_scores + learning_scores
+
+        # Compute averages per capability level
+        u_vals = [
+            s.accuracy for s in understanding_scores
+            if s.accuracy is not None
+        ]
+        l_vals = []
+        for s in learning_scores:
+            if s.triple_f1 is not None:
+                l_vals.append(s.triple_f1)
+            elif s.rouge_l is not None:
+                l_vals.append(s.rouge_l)
+
+        u_avg = sum(u_vals) / max(1, len(u_vals)) if u_vals else 0.0
+        l_avg = sum(l_vals) / max(1, len(l_vals)) if l_vals else 0.0
+        # Reasoning proxy not implemented — would require a DL reasoner
+        r_avg = 0.0
+
+        overall = (u_avg + r_avg + l_avg) / 3.0
+
+        return OntoURLCapabilityProfile(
+            understanding_avg=u_avg,
+            reasoning_avg=r_avg,
+            learning_avg=l_avg,
+            task_scores=all_scores,
+            overall_avg=overall,
+            model_name=model_name,
         )
 
     def _evaluate_understanding_proxy(
@@ -1396,10 +1429,73 @@ class BenchmarkEvaluator:
         -------
         list[OntoURLTaskScore]
         """
-        raise NotImplementedError(
-            "TODO: generate MCQ-style questions from gold ontology, "
-            "check against generated graph"
-        )
+        scores: list[OntoURLTaskScore] = []
+        gen_labels = self._extract_class_labels(generated_graph)
+        gold_labels = self._extract_class_labels(gold_graph)
+
+        # U1: Class Definition — can we find generated classes that
+        #     match gold-standard definitions?
+        if gold_labels:
+            matched = sum(
+                1 for gl in gold_labels.values()
+                if any(gl.lower() == gn.lower() for gn in gen_labels.values())
+            )
+            acc = matched / max(1, len(gold_labels))
+        else:
+            acc = 0.0
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.U1_CLASS_DEFINITION,
+            capability=OntoURLCapability.UNDERSTANDING,
+            accuracy=acc,
+            num_questions=len(gold_labels),
+        ))
+
+        # U2: Class Relation — do subClassOf relations match?
+        gold_rels = set()
+        for s, p, o in gold_graph.triples((None, RDFS.subClassOf, None)):
+            if isinstance(s, URIRef) and isinstance(o, URIRef):
+                gold_rels.add((str(s), str(o)))
+        gen_rels = set()
+        for s, p, o in generated_graph.triples((None, RDFS.subClassOf, None)):
+            if isinstance(s, URIRef) and isinstance(o, URIRef):
+                gen_rels.add((str(s), str(o)))
+        if gold_rels:
+            overlap = len(gold_rels & gen_rels)
+            acc_u2 = overlap / max(1, len(gold_rels))
+        else:
+            acc_u2 = 0.0
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.U2_CLASS_RELATION,
+            capability=OntoURLCapability.UNDERSTANDING,
+            accuracy=acc_u2,
+            num_questions=len(gold_rels),
+        ))
+
+        # U3: Property Domain — check domain/range assignments
+        gold_props: dict[str, tuple[str, str]] = {}
+        for prop in gold_graph.subjects(RDF.type, OWL.ObjectProperty):
+            dom = gold_graph.value(prop, RDFS.domain)
+            rng = gold_graph.value(prop, RDFS.range)
+            gold_props[str(prop)] = (str(dom) if dom else "", str(rng) if rng else "")
+        gen_props: dict[str, tuple[str, str]] = {}
+        for prop in generated_graph.subjects(RDF.type, OWL.ObjectProperty):
+            dom = generated_graph.value(prop, RDFS.domain)
+            rng = generated_graph.value(prop, RDFS.range)
+            gen_props[str(prop)] = (str(dom) if dom else "", str(rng) if rng else "")
+
+        if gold_props:
+            correct = sum(1 for p, v in gold_props.items() if gen_props.get(p) == v)
+            acc_u3 = correct / max(1, len(gold_props))
+        else:
+            acc_u3 = 0.0
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.U3_PROPERTY_DOMAIN,
+            capability=OntoURLCapability.UNDERSTANDING,
+            accuracy=acc_u3,
+            num_questions=len(gold_props),
+        ))
+
+        return scores
 
     def _evaluate_learning_proxy(
         self,
@@ -1427,10 +1523,122 @@ class BenchmarkEvaluator:
         -------
         list[OntoURLTaskScore]
         """
-        raise NotImplementedError(
-            "TODO: compare generated definitions, hierarchy, properties "
-            "against gold using ROUGE-L and Triple-F1"
-        )
+        scores: list[OntoURLTaskScore] = []
+        gen_concepts = self._extract_concepts_with_definitions(generated_graph)
+        gold_concepts = self._extract_concepts_with_definitions(gold_graph)
+
+        # L1: Class Definition Generation — ROUGE-L of definitions
+        if gold_concepts:
+            rouge_scores: list[float] = []
+            for gold_lbl, gold_def in gold_concepts.items():
+                if not gold_def:
+                    continue
+                # Find matching generated concept
+                gen_def = gen_concepts.get(gold_lbl, "")
+                if not gen_def:
+                    # Try case-insensitive match
+                    for gl, gd in gen_concepts.items():
+                        if gl.lower() == gold_lbl.lower():
+                            gen_def = gd
+                            break
+                if gen_def and gold_def:
+                    # Simple ROUGE-L approximation: LCS ratio
+                    rouge_scores.append(self._rouge_l(gen_def, gold_def))
+                else:
+                    rouge_scores.append(0.0)
+            l1_score = sum(rouge_scores) / max(1, len(rouge_scores)) if rouge_scores else 0.0
+        else:
+            l1_score = 0.0
+
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.L1_CLASS_DEF_GENERATION,
+            capability=OntoURLCapability.LEARNING,
+            rouge_l=l1_score,
+            num_questions=len(gold_concepts),
+        ))
+
+        # L2: Hierarchy Construction — Triple-F1 for subClassOf triples
+        gold_hier = set()
+        for s, p, o in gold_graph.triples((None, RDFS.subClassOf, None)):
+            if isinstance(s, URIRef) and isinstance(o, URIRef):
+                gold_hier.add((str(s), str(o)))
+        gen_hier = set()
+        for s, p, o in generated_graph.triples((None, RDFS.subClassOf, None)):
+            if isinstance(s, URIRef) and isinstance(o, URIRef):
+                gen_hier.add((str(s), str(o)))
+
+        if gold_hier or gen_hier:
+            tp = len(gold_hier & gen_hier)
+            precision = tp / max(1, len(gen_hier))
+            recall = tp / max(1, len(gold_hier))
+            f1 = 2 * precision * recall / max(1e-9, precision + recall)
+        else:
+            f1 = 0.0
+
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.L2_HIERARCHY_CONSTRUCTION,
+            capability=OntoURLCapability.LEARNING,
+            triple_f1=f1,
+            num_questions=len(gold_hier),
+        ))
+
+        # L3: Property Relation Construction — Triple-F1 for domain/range
+        gold_prop_triples = set()
+        for prop in gold_graph.subjects(RDF.type, OWL.ObjectProperty):
+            dom = gold_graph.value(prop, RDFS.domain)
+            rng = gold_graph.value(prop, RDFS.range)
+            if dom and rng:
+                gold_prop_triples.add((str(prop), str(dom), str(rng)))
+        gen_prop_triples = set()
+        for prop in generated_graph.subjects(RDF.type, OWL.ObjectProperty):
+            dom = generated_graph.value(prop, RDFS.domain)
+            rng = generated_graph.value(prop, RDFS.range)
+            if dom and rng:
+                gen_prop_triples.add((str(prop), str(dom), str(rng)))
+
+        if gold_prop_triples or gen_prop_triples:
+            tp3 = len(gold_prop_triples & gen_prop_triples)
+            prec3 = tp3 / max(1, len(gen_prop_triples))
+            rec3 = tp3 / max(1, len(gold_prop_triples))
+            f1_3 = 2 * prec3 * rec3 / max(1e-9, prec3 + rec3)
+        else:
+            f1_3 = 0.0
+
+        scores.append(OntoURLTaskScore(
+            task=OntoURLTask.L3_PROPERTY_CONSTRUCTION,
+            capability=OntoURLCapability.LEARNING,
+            triple_f1=f1_3,
+            num_questions=len(gold_prop_triples),
+        ))
+
+        return scores
+
+    def _rouge_l(self, hypothesis: str, reference: str) -> float:
+        """Compute ROUGE-L F1 score between two strings.
+
+        Uses longest common subsequence (LCS) on word tokens.
+        """
+        hyp_tokens = hypothesis.lower().split()
+        ref_tokens = reference.lower().split()
+        m, n = len(hyp_tokens), len(ref_tokens)
+        if m == 0 or n == 0:
+            return 0.0
+
+        # LCS via DP
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                if hyp_tokens[i - 1] == ref_tokens[j - 1]:
+                    dp[i][j] = dp[i - 1][j - 1] + 1
+                else:
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+        lcs_len = dp[m][n]
+
+        precision = lcs_len / m
+        recall = lcs_len / n
+        if precision + recall == 0:
+            return 0.0
+        return 2 * precision * recall / (precision + recall)
 
     # ==================================================================
     # EXTENDED EVALUATION: OWLUnit Ontology Unit Testing

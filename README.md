@@ -239,6 +239,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 | [WORKFLOW.md](docs/WORKFLOW.md) | Operational workflow, convergence criteria |
 | [EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md) | Model comparison design |
 | [EXPERT_GUIDE.md](docs/EXPERT_GUIDE.md) | How to review proposals in HITL sessions |
+| [CHANGELOG.md](docs/CHANGELOG.md) | Daily changelog and experiment run notes |
 
 ## License
 

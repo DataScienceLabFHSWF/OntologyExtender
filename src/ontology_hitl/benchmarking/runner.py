@@ -494,16 +494,7 @@ class BenchmarkRunner:
         wandb.log({f"{result.system.value}/{result.test_case_id}/{k}": v for k, v in metrics.items()})
         logger.info("wandb_logged", system=result.system.value, test_case=result.test_case_id)
 
-    def _log_result_to_wandb(self, result: BenchmarkResult) -> None:
-        """Log a single result's metrics to W&B.
-
-        Parameters
-        ----------
-        result : BenchmarkResult
-        """
-        raise NotImplementedError(
-            "TODO: wandb.log with system/test_case prefix"
-        )
+    # Second _log_result_to_wandb removed — functional version above.
 
 
 # =========================================================================

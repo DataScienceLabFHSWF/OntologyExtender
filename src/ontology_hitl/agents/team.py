@@ -90,15 +90,18 @@ class AgentTeam:
         }
 
         # Create agents
-        law_collection = LawCollectionSource(
-            qdrant_url=self.settings.qdrant_url,
-            law_collection="lawgraph",  # Dedicated legal documents collection
-        )
-        law_graph = LawGraphSource(
-            graph_url=self.settings.neo4j_http_url,
-            graph_user=self.settings.neo4j_username,
-            graph_password=self.settings.neo4j_password,
-        )
+        law_collection: LawCollectionSource | None = None
+        law_graph: LawGraphSource | None = None
+        if self.settings.legal_enrichment_enabled:
+            law_collection = LawCollectionSource(
+                qdrant_url=self.settings.qdrant_url,
+                law_collection="lawgraph",  # Dedicated legal documents collection
+            )
+            law_graph = LawGraphSource(
+                graph_url=self.settings.neo4j_http_url,
+                graph_user=self.settings.neo4j_username,
+                graph_password=self.settings.neo4j_password,
+            )
         
         self.engineer = OntologyEngineerAgent(settings=self.settings)
         self.domain_expert = DomainExpertAgent(
@@ -261,7 +264,7 @@ class AgentTeam:
         seed_classes: str,
     ) -> str:
         """Build context for Phase 1: Scope."""
-        return f"""Domain documents (excerpts from Qdrant):
+        return f"""Domain documents (excerpts):
 
 {docs_text[:4000]}
 

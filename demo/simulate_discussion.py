@@ -2,7 +2,7 @@
 """Simulate and visualize multi-agent discussions for presentations.
 
 Two modes:
-  cogagent — Our system: separate Engineer/Expert/Critic agents + Moderator
+  cogagent — Our system: uses the REAL AgentTeam pipeline from src/
   hcome    — LC3 baseline: single-prompt sock puppet (KE/DE/KW)
 
 Usage:
@@ -12,6 +12,7 @@ Usage:
 """
 from __future__ import annotations
 
+import json
 import sys
 import time
 import re
@@ -22,6 +23,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import httpx
+
+from ontology_hitl.core.config import Settings
+from ontology_hitl.agents.team import AgentTeam
+from ontology_hitl.agents.base import AgentRole, DebateVerdict
+from ontology_hitl.methodology.ontology101 import Phase
 
 # ── Transcript logging ───────────────────────────────────────────────
 
@@ -47,6 +53,24 @@ C = {
     "reset":      "\033[0m",
     "bold":       "\033[1m",
     "dim":        "\033[2m",
+}
+
+_ROLE_COLORS = {
+    AgentRole.ONTOLOGY_ENGINEER: "engineer",
+    AgentRole.DOMAIN_EXPERT:     "expert",
+    AgentRole.CRITIC:            "critic",
+}
+
+_ROLE_LABELS = {
+    AgentRole.ONTOLOGY_ENGINEER: "Ontology Engineer",
+    AgentRole.DOMAIN_EXPERT:     "Domain Expert",
+    AgentRole.CRITIC:            "Critic",
+}
+
+_ROLE_STANCES = {
+    AgentRole.ONTOLOGY_ENGINEER: "Constructive Abduction",
+    AgentRole.DOMAIN_EXPERT:     "Hermeneutic Grounding",
+    AgentRole.CRITIC:            "Critical Falsification",
 }
 
 
@@ -80,7 +104,7 @@ def pause(label: str = "", seconds: float = 1.0):
     time.sleep(seconds)
 
 
-# ── Ollama helper ────────────────────────────────────────────────────
+# ── Ollama helper (only used for HCOME baseline) ────────────────────
 
 def llm_call(
     prompt: str,
@@ -110,137 +134,384 @@ def llm_call(
     return text
 
 
-# ── Demo 1: CogAgent (our multi-agent debate) ───────────────────────
+# ── Phase ↔ human label mapping ─────────────────────────────────────
 
-ENGINEER_SYSTEM = textwrap.dedent("""\
-    You are an Ontology Engineer following the Ont-101 methodology.
-    Your epistemic stance is Constructive Abduction (Peirce 1903):
-    propose the hypothesis that best explains the domain.
-    Output structured ontology artefacts: classes with superclasses,
-    object/data properties, domain/range, and constraints.
-    Use OWL Manchester Syntax where possible. Be precise and formal.""")
+_PHASE_LABELS = {
+    Phase.SCOPE:      "Scope & CQs",
+    Phase.REUSE:      "Reuse",
+    Phase.TERMS:      "Terms",
+    Phase.HIERARCHY:  "Hierarchy",
+    Phase.PROPERTIES: "Properties",
+    Phase.FACETS:     "Facets",
+    Phase.INSTANCES:  "Validation",
+}
 
-EXPERT_SYSTEM = textwrap.dedent("""\
-    You are a Domain Expert grounded in Hermeneutic analysis (Gadamer 1960).
-    Your role is to validate ontology proposals against real-world domain
-    knowledge. Check whether proposed classes and relationships accurately
-    reflect how the domain actually works. Cite specific domain facts.
-    Flag any concepts that are mischaracterized or missing.""")
 
-CRITIC_SYSTEM = textwrap.dedent("""\
-    You are a Structural Critic applying Critical Falsification (Popper 1934).
-    Your job is to actively try to BREAK the proposal: find naming
-    inconsistencies, redundant classes, missing disjointness axioms,
-    hierarchy depth problems, over-specification, or under-specification.
-    Also check: Can the proposed ontology answer the competency questions?
-    Be constructive but rigorous. Push back hard.""")
+# ── Build context for a phase (uses AgentTeam helpers) ───────────────
 
-def _phase_task_for(phase: str, topic: str) -> str:
-    """Return a short task prompt for the given Ont-101 phase."""
-    p = phase.lower()
-    if "scope" in p:
-        return (
-            f"Define the scope for '{topic}' and produce 3 competency questions (CQs) "
-            "that the ontology must answer. Be concise and testable."
+def _build_context_for_phase(
+    team: AgentTeam,
+    phase: Phase,
+    topic: str,
+    accumulated: dict,
+) -> str:
+    """Build the context string for a phase using AgentTeam builders.
+
+    For phases that depend on earlier results we pass accumulated data.
+    For a lightweight demo without a Qdrant corpus, we synthesize
+    minimal document text from the topic name.
+    """
+    docs_text = accumulated.get("docs_text", "")
+    seed_cls = accumulated.get("seed_cls", "(none)")
+    seed_props = accumulated.get("seed_props", "(none)")
+
+    if phase == Phase.SCOPE:
+        return team.build_scope_context(docs_text, seed_cls)
+
+    if phase == Phase.REUSE:
+        cqs_text = json.dumps(accumulated.get("cqs", [])[:10], indent=2)
+        term_preview = accumulated.get("term_preview", topic)
+        return team.build_reuse_context(seed_cls, seed_props, term_preview, cqs_text)
+
+    if phase == Phase.TERMS:
+        return team.build_terms_context(docs_text, seed_cls)
+
+    if phase == Phase.HIERARCHY:
+        class_terms = accumulated.get("class_terms", [topic])
+        cqs_text = json.dumps(accumulated.get("cqs", [])[:10], indent=2)
+        seed_hier = accumulated.get("seed_hier", "(no hierarchy provided)")
+        return team.build_hierarchy_context(seed_hier, class_terms, cqs_text)
+
+    if phase == Phase.PROPERTIES:
+        hier_text = json.dumps(accumulated.get("hierarchy_nodes", []), indent=2)
+        prop_terms = accumulated.get("prop_terms", [])
+        rel_terms = accumulated.get("rel_terms", [])
+        return team.build_properties_context(hier_text, prop_terms, rel_terms, docs_text)
+
+    if phase == Phase.FACETS:
+        props_text = json.dumps(accumulated.get("properties", []), indent=2)
+        hier_text = json.dumps(accumulated.get("hierarchy_nodes", []), indent=2)
+        return team.build_facets_context(props_text, hier_text)
+
+    if phase == Phase.INSTANCES:
+        classes_text = json.dumps(accumulated.get("hierarchy_nodes", []), indent=2)
+        props_text = json.dumps(accumulated.get("properties", []), indent=2)
+        facets_text = json.dumps(accumulated.get("facets", []), indent=2)
+        cqs_text = json.dumps(accumulated.get("cqs", [])[:15], indent=2)
+        return team.build_instances_context(
+            classes_text, props_text, facets_text, cqs_text, docs_text,
         )
-    if "reuse" in p:
-        return (
-            f"Identify existing ontologies/vocabularies that should be reused for '{topic}'. "
-            "Suggest mappings and justify reuse decisions."
-        )
-    if "terms" in p:
-        return (
-            f"List the top 6 domain terms for '{topic}' with short definitions and preferred labels."
-        )
-    if "hierarchy" in p:
-        return (
-            f"Propose the class hierarchy for '{topic}': immediate superclasses, rationale, "
-            "and any necessary disjointness axioms."
-        )
-    if "properties" in p:
-        return (
-            f"Propose key object/data properties for '{topic}' with domain/range and cardinality hints."
-        )
-    if "facets" in p:
-        return (
-            f"Suggest useful facets/value-sets or controlled vocabularies for '{topic}' properties."
-        )
-    if "validation" in p:
-        return (
-            f"Provide 3 SPARQL ASK style competency checks or OWLUnit-style tests to validate '{topic}'."
-        )
-    # fallback
-    return (
-        f"Work on phase '{phase}' for the topic '{topic}': produce a short, concrete deliverable."
-    )
+
+    return f"Work on phase '{phase.value}' for the topic '{topic}'."
 
 
-def run_cogagent_phase(topic: str, model: str, url: str, phase: str, rounds: int = 2):
-    """Run the standard multi-agent debate for one Ont-101 phase."""
-    banner(f"Phase: {phase}")
-    _log(f"\n=== Phase: {phase} ===")
+# ── Visualize a DebateOutcome ────────────────────────────────────────
 
-    task = _phase_task_for(phase, topic)
+def _format_content(content: dict | str | None) -> str:
+    """Render agent content as readable text."""
+    if content is None:
+        return "(empty)"
+    if isinstance(content, str):
+        return content
+    try:
+        return json.dumps(content, indent=2, default=str, ensure_ascii=False)
+    except Exception:
+        return str(content)
 
+
+def _display_debate(outcome, phase_label: str, topic: str):
+    """Pretty-print a real DebateOutcome with ANSI styling."""
+    banner(f"Phase: {phase_label}")
+    _log(f"\n=== Phase: {phase_label} ===")
+
+    # Moderator header
     print(styled("  ┌─ MODERATOR (deterministic) ─────────────────────┐", "bold"))
     print(styled("  │", "moderator"),
           styled(" Strategy selected: ", "moderator"),
           styled("Dialectical", "moderator", "bold"))
     print(styled("  │", "moderator"),
-          styled(f" Phase: {phase}", "moderator"))
+          styled(f" Phase: {phase_label}", "moderator"))
     print(styled("  │", "moderator"),
           styled(f" Topic: {topic}", "moderator"))
     print(styled("  │", "moderator"),
-          styled(f" Max rounds: {rounds}", "moderator"))
+          styled(f" Rounds: {outcome.rounds}", "moderator"))
     print(styled("  │", "moderator"),
           styled(" Grounding: document evidence required", "moderator"))
     print(styled("  └──────────────────────────────────────────────────┘", "bold"))
+    _log(f"  [MODERATOR] Phase: {phase_label} | Topic: {topic} | Rounds: {outcome.rounds}")
 
-    pause("Ontology Engineer is thinking...", 0.6)
+    # Show each agent message
+    round_num = 0
+    for msg in outcome.messages:
+        color = _ROLE_COLORS.get(msg.role, "reset")
+        label = _ROLE_LABELS.get(msg.role, msg.role.value)
+        stance = _ROLE_STANCES.get(msg.role, "")
 
-    # Thesis
-    print(styled("\n  ┌─ THESIS (proposal) ──────────────────────────────┐", "bold"))
-    proposal = llm_call(task, model=model, system=ENGINEER_SYSTEM, url=url)
-    _log(f"\n  [Ontology Engineer] ({phase})")
-    _log(proposal)
-    type_write(textwrap.fill(proposal, width=68), color="engineer", delay=0.004)
-    pause("Domain Expert is validating...", 0.6)
+        if msg.message_type == "proposal":
+            round_num += 1
+            print(styled(f"\n  ┌─ ROUND {round_num}: THESIS (proposal) ────────────────────┐", "bold"))
+            print(styled(f"  [{label}]", color, "bold"),
+                  styled(f" — {stance}", "dim"))
+            pause(f"{label} is thinking...", 0.4)
+        elif msg.message_type == "review":
+            header = "DOMAIN EXPERT REVIEW" if msg.role == AgentRole.DOMAIN_EXPERT else "ANTITHESIS (critique)"
+            print(styled(f"\n  ┌─ {header} ───────────────────────────┐", "bold"))
+            print(styled(f"  [{label}]", color, "bold"),
+                  styled(f" — {stance}", "dim"))
+            if msg.role == AgentRole.DOMAIN_EXPERT:
+                pause("Domain Expert is validating against domain knowledge...", 0.4)
+            else:
+                pause("Critic is looking for structural weaknesses...", 0.4)
+        elif msg.message_type == "revision":
+            round_num += 1
+            print(styled(f"\n  ┌─ ROUND {round_num}: SYNTHESIS (revision) ─────────────────┐", "bold"))
+            print(styled(f"  [{label}]", color, "bold"),
+                  styled(" — Addressing feedback", "dim"))
+            pause(f"{label} is revising...", 0.4)
 
-    # Expert
-    expert_review = llm_call(
-        f"Review this proposal for phase '{phase}':\n\n{proposal}\n\n"
-        f"Is it correct and complete? What is missing?",
-        model=model, system=EXPERT_SYSTEM, url=url,
+        content_text = _format_content(msg.content)
+        _log(f"\n  [{label}] ({msg.message_type})")
+        _log(content_text)
+        type_write(textwrap.fill(content_text[:2000], width=68), color=color, delay=0.003)
+
+        # Show issues if any
+        if msg.issues_raised:
+            for issue in msg.issues_raised[:5]:
+                print(styled(f"    ⚠ {issue[:120]}", color))
+
+        # Show approval status for reviews
+        if msg.message_type == "review" and msg.approves is not None:
+            status = "✓ APPROVED" if msg.approves else "✗ REJECTED"
+            print(styled(f"    {status}", color, "bold"))
+
+    # Verdict
+    verdict_text = {
+        DebateVerdict.CONSENSUS: "Consensus reached",
+        DebateVerdict.REVISED:   "Proposal revised and accepted",
+        DebateVerdict.PARTIAL:   "Partial agreement (some issues escalated)",
+        DebateVerdict.ESCALATED: "Escalated — needs human review",
+    }.get(outcome.verdict, outcome.verdict.value)
+
+    llm_calls = len(outcome.messages)
+    print(styled("\n  ┌─ VERDICT ────────────────────────────────────────┐", "bold"))
+    print(styled("  [Moderator]", "moderator", "bold"),
+          styled(f" {verdict_text} after {outcome.rounds} round(s) ({llm_calls} LLM calls).", "moderator"))
+    if outcome.resolved_issues:
+        print(styled(f"  [Moderator]", "moderator", "bold"),
+              styled(f" Resolved {len(outcome.resolved_issues)} issue(s).", "moderator"))
+    if outcome.escalated_questions:
+        print(styled(f"  [Moderator]", "moderator", "bold"),
+              styled(f" Escalated {len(outcome.escalated_questions)} question(s) for HITL:", "moderator"))
+        for q in outcome.escalated_questions[:10]:
+            q_text = q.question if hasattr(q, "question") else str(q)
+            print(styled(f"    → {q_text[:100]}", "moderator"))
+            _log(f"    → {q_text}")
+        if len(outcome.escalated_questions) > 10:
+            remaining = len(outcome.escalated_questions) - 10
+            print(styled(f"    ... and {remaining} more", "dim"))
+    print(styled("  └──────────────────────────────────────────────────┘", "bold"))
+    _log(f"  [Moderator] {verdict_text} — {llm_calls} LLM calls")
+
+
+# ── Accumulate results between phases ────────────────────────────────
+
+def _accumulate(accumulated: dict, phase: Phase, proposal: dict):
+    """Extract structured data from a phase outcome for downstream phases."""
+    if phase == Phase.SCOPE:
+        accumulated["cqs"] = proposal.get("competency_questions", [])
+
+    elif phase == Phase.TERMS:
+        terms = proposal.get("terms", [])
+        accumulated["class_terms"] = [
+            t["term"] for t in terms
+            if isinstance(t, dict) and t.get("category") == "class"
+        ]
+        accumulated["prop_terms"] = [
+            t["term"] for t in terms
+            if isinstance(t, dict) and t.get("category") == "property"
+        ]
+        accumulated["rel_terms"] = [
+            t["term"] for t in terms
+            if isinstance(t, dict) and t.get("category") == "relation"
+        ]
+
+    elif phase == Phase.HIERARCHY:
+        nodes = proposal.get("nodes", [])
+        accumulated["hierarchy_nodes"] = [
+            {"label": n.get("label", ""), "parent": n.get("parent_label", "")}
+            for n in nodes if isinstance(n, dict)
+        ]
+
+    elif phase == Phase.PROPERTIES:
+        props = proposal.get("properties", [])
+        accumulated["properties"] = [
+            {"name": p.get("name", ""), "on": p.get("attached_to_class", ""),
+             "type": p.get("property_type", "datatype")}
+            for p in props if isinstance(p, dict)
+        ]
+
+    elif phase == Phase.FACETS:
+        facets = proposal.get("facets", [])
+        accumulated["facets"] = [
+            {"prop": f.get("property_name", ""), "on": f.get("on_class", ""),
+             "min": f.get("min_count"), "max": f.get("max_count")}
+            for f in facets if isinstance(f, dict)
+        ]
+
+
+# ── Domain presets ───────────────────────────────────────────────────
+
+_DOMAIN_PRESETS: dict[str, dict] = {
+    "pizza": {
+        "topic": "Pizza",
+        "document_context": (
+            "Pizza is a popular baked dish originating from Italy consisting of a round, flattened dough base "
+            "topped with tomato sauce, cheese, and a variety of toppings (e.g. pepperoni, mushrooms, vegetables). "
+            "Key concepts include crust type (thin, thick, stuffed), sauce variants, cheese varieties, regional styles "
+            "(Neapolitan, New York, Sicilian), cooking methods (wood-fired, oven-baked), and serving/portioning. "
+            "Relevant metadata: allergens (gluten, dairy), dietary variants (vegetarian, vegan, gluten-free), "
+            "and common commercial attributes (size, slice count, SKU)."
+        ),
+        "legal_enrichment": False,
+        "description": "General demo — lightweight pizza document context (prevents hallucination)",
+    },
+    "sar": {
+        "topic": "Search and Rescue Operations",
+        "document_context": (
+            "Search and rescue (SAR) operations involve the search for and provision "
+            "of aid to people who are in distress or imminent danger. SAR operations "
+            "include mountain rescue, ground search, urban search and rescue (USAR), "
+            "maritime rescue, and combat search and rescue (CSAR). Key concepts include "
+            "incident command systems, resource management, casualty triage, evacuation "
+            "procedures, and inter-agency coordination."
+        ),
+        "legal_enrichment": True,
+        "description": "SAR domain — with legal enrichment (LC3 comparison)",
+    },
+    "nuclear": {
+        "topic": "Nuclear Decommissioning",
+        "document_context": (
+            "Nuclear decommissioning involves the administrative and technical actions "
+            "taken to safely shut down, dismantle, and manage the radioactive waste "
+            "from nuclear facilities. Key regulatory frameworks include the German "
+            "Atomgesetz (AtG), Strahlenschutzverordnung (StrlSchV), and European "
+            "nuclear safety directives. Concepts include Stilllegung, Rückbau, "
+            "Freigabe, Zwischen- und Endlagerung, and Umweltverträglichkeitsprüfung."
+        ),
+        "legal_enrichment": True,
+        "description": "Nuclear decommissioning — full legal+regulatory framework",
+    },
+}
+
+
+# ── Demo 1: CogAgent — uses the REAL pipeline ───────────────────────
+
+def _create_settings(
+    model: str, url: str, legal_enrichment: bool = False,
+) -> Settings:
+    """Create Settings configured for demo mode (no Qdrant/Fuseki required)."""
+    return Settings(
+        ollama_url=url,
+        ollama_model=model,
+        entity_linking_enabled=False,
+        embedding_advisor_enabled=False,
+        ensemble_enabled=False,
+        feedback_learning_enabled=False,
+        provenance_enabled=False,
+        wandb_enabled=False,
+        legal_enrichment_enabled=legal_enrichment,
     )
-    _log(f"\n  [Domain Expert] ({phase})")
-    _log(expert_review)
-    type_write(textwrap.fill(expert_review, width=68), color="expert", delay=0.004)
 
-    # Critic
-    critic_review = llm_call(
-        f"Critique the proposal for phase '{phase}':\n\n{proposal}\n\n"
-        f"Domain expert said:\n{expert_review}\n\nFind structural or modelling issues.",
-        model=model, system=CRITIC_SYSTEM, url=url,
+
+def run_cogagent_demo(
+    topic: str,
+    model: str,
+    url: str,
+    document_context: str = "",
+    legal_enrichment: bool = False,
+):
+    """Run a single Hierarchy-phase debate using the real AgentTeam."""
+    banner(f"CogAgent Multi-Agent Debate: \"{topic}\"")
+    _log(f"\n=== CogAgent Multi-Agent Debate: \"{topic}\" ===")
+
+    settings = _create_settings(model, url, legal_enrichment)
+    team = AgentTeam(
+        settings=settings,
+        document_context=document_context,
+        max_debate_rounds=2,
+        output_dir=Path("demo/owl"),
     )
-    _log(f"\n  [Critic] ({phase})")
-    _log(critic_review)
-    type_write(textwrap.fill(critic_review, width=68), color="critic", delay=0.004)
 
-    # Synthesis / revision
-    revision = llm_call(
-        f"Revise the proposal to address expert and critic feedback:\n\n{proposal}\n\n"
-        f"Expert: {expert_review}\nCritic: {critic_review}\n\nProduce the final deliverable for phase '{phase}'.",
-        model=model, system=ENGINEER_SYSTEM, url=url,
+    context = team.build_hierarchy_context(
+        seed_hierarchy="(no seed hierarchy)",
+        class_terms=[topic],
+        cqs_text="[]",
     )
-    _log(f"\n  [Ontology Engineer] Revision ({phase})")
-    _log(revision)
-    type_write(textwrap.fill(revision, width=68), color="engineer", delay=0.004)
+    outcome = team.run_debate(Phase.HIERARCHY, context)
 
-    print(styled("\n  [Moderator] Consensus reached for phase.", "moderator", "bold"))
-    _log(f"  [Moderator] Phase {phase}: CONSENSUS")
+    _display_debate(outcome, "Hierarchy", topic)
 
-    return revision
+    return outcome
 
+
+def run_full_pipeline_demo(
+    topic: str,
+    model: str,
+    url: str,
+    rounds_per_phase: int = 2,
+    document_context: str = "",
+    legal_enrichment: bool = False,
+):
+    """Run all 7 Ont-101 phases using the real AgentTeam pipeline."""
+    banner(f"CogAgent Full Pipeline: \"{topic}\"")
+    _log(f"\n=== CogAgent Full Pipeline: \"{topic}\" ===")
+
+    settings = _create_settings(model, url, legal_enrichment)
+    output_dir = Path("demo/owl")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    team = AgentTeam(
+        settings=settings,
+        document_context=document_context,
+        max_debate_rounds=rounds_per_phase,
+        output_dir=output_dir,
+    )
+
+    accumulated: dict = {
+        "docs_text": document_context,
+        "seed_cls": "(none)",
+        "seed_props": "(none)",
+        "seed_hier": "(no hierarchy provided)",
+        "term_preview": topic,
+    }
+
+    results: dict[str, dict] = {}
+
+    for phase in Phase:
+        phase_label = _PHASE_LABELS.get(phase, phase.value)
+        context = _build_context_for_phase(team, phase, topic, accumulated)
+
+        outcome = team.run_debate(phase, context)
+        team.save_debate(outcome)
+
+        _display_debate(outcome, phase_label, topic)
+
+        proposal = outcome.final_proposal
+        _accumulate(accumulated, phase, proposal)
+        results[phase_label] = proposal
+
+        if phase == Phase.SCOPE:
+            cqs = proposal.get("competency_questions", [])
+            team.set_competency_questions(cqs)
+
+        pause("Moving to next phase...", 0.6)
+
+    banner("Full pipeline complete")
+    _log("\n=== Full pipeline complete ===")
+    return results
+
+
+# ── OWL export helpers ───────────────────────────────────────────────
 
 def _format_ttl_prefixes() -> str:
     return (
@@ -252,101 +523,49 @@ def _format_ttl_prefixes() -> str:
     )
 
 
-def _guess_xsd_type(typename: str) -> str:
-    t = typename.lower()
-    if 'bool' in t:
-        return 'xsd:boolean'
-    if 'int' in t or 'num' in t or 'integer' in t:
-        return 'xsd:integer'
-    if 'float' in t or 'double' in t:
-        return 'xsd:double'
-    return 'xsd:string'
-
-
-def _synthesize_ttl_from_text(topic: str, text: str) -> str:
-    """Heuristic TTL synthesizer for demo purposes (best-effort)."""
+def _synthesize_ttl_from_proposal(topic: str, results: dict) -> str:
+    """Synthesize TTL from the structured JSON proposals."""
     prefixes = _format_ttl_prefixes()
-    classes = set()
-    props = []
-    subclasses = []
-
-    classes.add(topic)
-
-    # extract backtick-enclosed terms and capitalized tokens
-    for name in re.findall(r'`([A-Z][A-Za-z0-9_]+)`', text):
-        classes.add(name)
-
-    # detect explicit "A ⊆ B" or "A \u2286 B" patterns
-    for a, b in re.findall(r'([A-Z][A-Za-z0-9_]+)\s*(?:⊆|\\u2286|<=|subset of)\s*([A-Z][A-Za-z0-9_]+)', text):
-        subclasses.append((a, b))
-        classes.update([a, b])
-
-    # detect lines like "Pizza: hasCrust (Boolean)" or "- hasCrust (Boolean)"
-    for m in re.findall(r'(?:^|\n)\s*([A-Z][A-Za-z0-9_]*)?\s*[:\-]?\s*([a-zA-Z_][A-Za-z0-9_-]+)\s*\(?([A-Za-z]+)\)?', text):
-        domain_hint, prop, ptype = m
-        domain = domain_hint if domain_hint else topic
-        # ignore noise where group captured section headers
-        if prop.lower() in ('class', 'food', 'property', 'ontology'):
-            continue
-        props.append((prop, domain, ptype))
-
-    # fallback: look for explicit rdf:type owl:Class triples
-    triples = []
-    for line in text.splitlines():
-        if 'rdf:type' in line and 'owl:Class' in line:
-            triples.append(line.strip().rstrip('.'))
-
     ttl_lines = [prefixes]
 
-    # add class declarations
-    for c in sorted(classes):
-        ttl_lines.append(f"ex:{c} a owl:Class .")
+    hierarchy = results.get("Hierarchy", {})
+    nodes = hierarchy.get("nodes", []) if isinstance(hierarchy, dict) else []
+    for n in nodes:
+        if isinstance(n, dict):
+            label = n.get("label", "")
+            parent = n.get("parent_label", "")
+            if label:
+                ttl_lines.append(f"ex:{label} a owl:Class .")
+                if parent:
+                    ttl_lines.append(f"ex:{label} rdfs:subClassOf ex:{parent} .")
 
-    # add subclass triples
-    for child, parent in subclasses:
-        ttl_lines.append(f"ex:{child} rdfs:subClassOf ex:{parent} .")
+    props_phase = results.get("Properties", {})
+    props = props_phase.get("properties", []) if isinstance(props_phase, dict) else []
+    for p in props:
+        if isinstance(p, dict):
+            name = p.get("name", "")
+            domain = p.get("attached_to_class", "")
+            ptype = p.get("property_type", "datatype")
+            if name:
+                owl_type = "owl:ObjectProperty" if ptype == "object" else "owl:DatatypeProperty"
+                line = f"ex:{name} a {owl_type}"
+                if domain:
+                    line += f" ; rdfs:domain ex:{domain}"
+                ttl_lines.append(line + " .")
 
-    # add properties
-    for prop, domain, ptype in props:
-        xsd = _guess_xsd_type(ptype)
-        # treat as DatatypeProperty when type looks primitive
-        if xsd != 'xsd:string':
-            ttl_lines.append(f"ex:{prop} a owl:DatatypeProperty ; rdfs:domain ex:{domain} ; rdfs:range {xsd} .")
-        else:
-            # conservative: use DatatypeProperty for string-like
-            ttl_lines.append(f"ex:{prop} a owl:DatatypeProperty ; rdfs:domain ex:{domain} ; rdfs:range xsd:string .")
+    if len(ttl_lines) <= 1:
+        ttl_lines.append(f"ex:{topic} a owl:Class .")
 
-    # append any explicit triples found
-    for t in triples:
-        ttl_lines.append(t + ' .')
-
-    # include provenance as comment
-    ttl_lines.append('\n# Source (heuristic synthesis):')
-    ttl_lines.append('\n'.join(['# ' + l for l in text.splitlines()[:10]]))
-
-    return '\n'.join(ttl_lines)
-
-
-def _extract_owl_from_cog_results(topic: str, results: dict) -> str:
-    combined = '\n\n'.join(results.values())
-    # prefer fenced code blocks
-    m = re.search(r'```(?:owl|xml)?\n(.*?)```', combined, re.S | re.I)
-    if m:
-        return m.group(1).strip()
-
-    # else attempt heuristic synthesis
-    return _synthesize_ttl_from_text(topic, combined)
+    return "\n".join(ttl_lines)
 
 
 def _extract_owl_from_hcome_raw(topic: str, raw: str) -> str:
-    # look for [CONSENSUS] block
     m = re.search(r'\[CONSENSUS\]\s*:\s*(.*)', raw, re.S)
     consensus = m.group(1).strip() if m else raw
-    # prefer fenced code blocks in consensus
-    m2 = re.search(r'```(?:owl|xml)?\n(.*?)```', consensus, re.S | re.I)
+    m2 = re.search(r'```(?:owl|xml|turtle|ttl)?\n(.*?)```', consensus, re.S | re.I)
     if m2:
         return m2.group(1).strip()
-    return _synthesize_ttl_from_text(topic, consensus)
+    return f"{_format_ttl_prefixes()}ex:{topic} a owl:Class .\n"
 
 
 def _write_owl_file(path: str, content: str):
@@ -354,132 +573,6 @@ def _write_owl_file(path: str, content: str):
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(content + '\n', encoding='utf-8')
     _log(f"\n[OWL fragment written] {p}")
-
-
-def run_full_pipeline_demo(topic: str, model: str, url: str, rounds_per_phase: int = 2):
-    """Sequentially run Ont-101 phases using the multi-agent debate."""
-    phases = [
-        "Scope & CQs",
-        "Reuse",
-        "Terms",
-        "Hierarchy",
-        "Properties",
-        "Facets",
-        "Validation",
-    ]
-
-    results = {}
-    for ph in phases:
-        res = run_cogagent_phase(topic, model, url, ph, rounds=rounds_per_phase)
-        results[ph] = res
-        pause("Moving to next phase...", 0.6)
-
-    banner("Full pipeline complete")
-    _log("\n=== Full pipeline complete ===")
-    return results
-
-def run_cogagent_demo(topic: str, model: str, url: str):
-    """Simulate our full multi-agent debate pipeline."""
-    banner(f"CogAgent Multi-Agent Debate: \"{topic}\"")
-
-    task = (
-        f"Define the class '{topic}' in the context of an ontology. "
-        f"Propose its superclasses, key object and data properties, "
-        f"domain/range constraints, and disjointness axioms."
-    )
-
-    # ── Moderator: strategy selection ────────────────────────────────
-    print(styled("  ┌─ MODERATOR (deterministic) ─────────────────────┐", "bold"))
-    print(styled("  │", "moderator"),
-          styled(" Strategy selected: ", "moderator"),
-          styled("Dialectical", "moderator", "bold"),
-          styled(" (Hegel 1807)", "moderator"))
-    print(styled("  │", "moderator"),
-          styled(" Phase: Class Hierarchy", "moderator"))
-    print(styled("  │", "moderator"),
-          styled(f" Topic: {topic}", "moderator"))
-    print(styled("  │", "moderator"),
-          styled(" Max rounds: 2", "moderator"))
-    print(styled("  │", "moderator"),
-          styled(" Grounding: document evidence required", "moderator"))
-    print(styled("  └──────────────────────────────────────────────────┘", "bold"))
-    _log("  [MODERATOR] Strategy: Dialectical (Hegel 1807)")
-    _log(f"  [MODERATOR] Phase: Class Hierarchy | Topic: {topic} | Max rounds: 2")
-    pause("Ontology Engineer is thinking...", 1.0)
-
-    # ── Round 1: Engineer proposes ───────────────────────────────────
-    print(styled("\n  ┌─ ROUND 1: THESIS (proposal) ────────────────────┐", "bold"))
-    print(styled("  [Ontology Engineer]", "engineer", "bold"),
-          styled(" — Constructive Abduction", "dim"))
-    proposal = llm_call(task, model=model, system=ENGINEER_SYSTEM, url=url)
-    _log("\n  [Ontology Engineer] — Constructive Abduction")
-    _log(proposal)
-    type_write(textwrap.fill(proposal, width=68), color="engineer", delay=0.006)
-    pause("Domain Expert is validating against domain knowledge...", 1.0)
-
-    # ── Expert reviews ───────────────────────────────────────────────
-    print(styled("\n  ┌─ DOMAIN EXPERT REVIEW ───────────────────────────┐", "bold"))
-    print(styled("  [Domain Expert]", "expert", "bold"),
-          styled(" — Hermeneutic Grounding", "dim"))
-    expert_review = llm_call(
-        f"Review this ontology proposal for domain accuracy:\n\n{proposal}\n\n"
-        f"Is it factually correct? What domain knowledge is missing or wrong? "
-        f"Cite specific domain facts to support your assessment.",
-        model=model, system=EXPERT_SYSTEM, url=url,
-    )
-    _log("\n  [Domain Expert] — Hermeneutic Grounding")
-    _log(expert_review)
-    type_write(textwrap.fill(expert_review, width=68), color="expert", delay=0.006)
-    pause("Critic is looking for structural weaknesses...", 1.0)
-
-    # ── Critic reviews ───────────────────────────────────────────────
-    print(styled("\n  ┌─ ANTITHESIS (critique) ─────────────────────────┐", "bold"))
-    print(styled("  [Critic]", "critic", "bold"),
-          styled(" — Critical Falsification", "dim"))
-    critic_review = llm_call(
-        f"Critique this ontology proposal for structural quality:\n\n{proposal}\n\n"
-        f"The Domain Expert noted:\n{expert_review}\n\n"
-        f"Find structural problems: naming issues, hierarchy errors, "
-        f"missing disjointness, redundancy, CQ coverage gaps. Try to BREAK it.",
-        model=model, system=CRITIC_SYSTEM, url=url,
-    )
-    _log("\n  [Critic] — Critical Falsification")
-    _log(critic_review)
-    type_write(textwrap.fill(critic_review, width=68), color="critic", delay=0.006)
-
-    # ── Moderator check ──────────────────────────────────────────────
-    print(styled("\n  [Moderator]", "moderator", "bold"),
-          styled(" Issues raised by both reviewers. Requesting revision.", "moderator"))
-    pause("Ontology Engineer is revising...", 1.0)
-
-    # ── Round 2: Engineer revises (Synthesis) ────────────────────────
-    print(styled("\n  ┌─ ROUND 2: SYNTHESIS (revision) ─────────────────┐", "bold"))
-    print(styled("  [Ontology Engineer]", "engineer", "bold"),
-          styled(" — Addressing feedback", "dim"))
-    revision = llm_call(
-        f"You proposed:\n{proposal}\n\n"
-        f"Domain Expert feedback:\n{expert_review}\n\n"
-        f"Critic feedback:\n{critic_review}\n\n"
-        f"Revise your proposal to address ALL issues. Synthesize the thesis "
-        f"(your proposal) with the antithesis (critiques) into a stronger "
-        f"ontology fragment. Output the final corrected definition.",
-        model=model, system=ENGINEER_SYSTEM, url=url,
-    )
-    _log("\n  [Ontology Engineer] — Synthesis (revision)")
-    _log(revision)
-    type_write(textwrap.fill(revision, width=68), color="engineer", delay=0.006)
-
-    # ── Consensus ────────────────────────────────────────────────────
-    print(styled("\n  ┌─ VERDICT ────────────────────────────────────────┐", "bold"))
-    print(styled("  [Moderator]", "moderator", "bold"),
-          styled(" Consensus reached after 2 rounds (4 LLM calls).", "moderator"))
-    print(styled("  [Moderator]", "moderator", "bold"),
-          styled(" Verdict: ACCEPTED — moving to next Ont-101 phase.", "moderator"))
-    print(styled("  └──────────────────────────────────────────────────┘", "bold"))
-    _log("\n  [Moderator] Consensus reached after 2 rounds (4 LLM calls).")
-    _log("  [Moderator] Verdict: ACCEPTED")
-
-    return revision
 
 
 # ── Demo 2: HCOME sock puppet (LC3 baseline) ────────────────────────
@@ -519,7 +612,6 @@ def run_hcome_demo(topic: str, model: str, url: str):
     _log("\n  [HCOME — single LLM call, simulated roles]")
     _log(raw)
 
-    # Parse and display role-by-role with streaming effect
     parts = re.split(r'(\[(?:KE|DE|KW|CONSENSUS)\]:)', raw)
 
     role_map = {
@@ -557,6 +649,11 @@ def main():
         help="Which system to demonstrate (default: both)",
     )
     parser.add_argument(
+        "--domain", choices=list(_DOMAIN_PRESETS.keys()),
+        default=None,
+        help="Domain preset (overrides --topic; sets document context & legal enrichment)",
+    )
+    parser.add_argument(
         "--topic", default="Pizza",
         help="Ontology concept to define (e.g. 'Pizza', 'Alzheimer Disease')",
     )
@@ -582,10 +679,21 @@ def main():
     )
     args = parser.parse_args()
 
+    # Resolve domain preset
+    domain_preset = _DOMAIN_PRESETS.get(args.domain or "", {})
+    topic = domain_preset.get("topic", args.topic) if args.domain else args.topic
+    document_context = domain_preset.get("document_context", "")
+    legal_enrichment = domain_preset.get("legal_enrichment", False)
+    domain_desc = domain_preset.get("description", "custom")
+
     banner("CogAgent — Live Discussion Demo", char="═")
-    print(f"  Model: {args.model}")
-    print(f"  Topic: {args.topic}")
-    print(f"  Mode:  {args.mode}\n")
+    print(f"  Model:   {args.model}")
+    print(f"  Topic:   {topic}")
+    print(f"  Mode:    {args.mode}")
+    if args.domain:
+        print(f"  Domain:  {args.domain} ({domain_desc})")
+        print(f"  Legal:   {'enabled' if legal_enrichment else 'disabled'}")
+    print(f"  Source:  ontology_hitl.agents.team.AgentTeam (real pipeline)\n")
 
     try:
         cog_results = None
@@ -593,17 +701,26 @@ def main():
 
         if args.mode in ("cogagent", "both"):
             if getattr(args, "full_pipeline", False):
-                cog_results = run_full_pipeline_demo(args.topic, args.model, args.ollama_url, rounds_per_phase=args.rounds_per_phase)
+                cog_results = run_full_pipeline_demo(
+                    topic, args.model, args.ollama_url,
+                    rounds_per_phase=args.rounds_per_phase,
+                    document_context=document_context,
+                    legal_enrichment=legal_enrichment,
+                )
             else:
-                # single-phase demo returns a revision string; normalize into dict for downstream processing
-                rev = run_cogagent_demo(args.topic, args.model, args.ollama_url)
-                cog_results = {"Hierarchy": rev}
+                outcome = run_cogagent_demo(
+                    topic, args.model, args.ollama_url,
+                    document_context=document_context,
+                    legal_enrichment=legal_enrichment,
+                )
+                cog_results = {"Hierarchy": outcome.final_proposal}
 
         if args.mode == "both":
             banner("Side-by-Side Comparison", char="═")
-            print(styled("  ABOVE: CogAgent — 3 separate agents + moderator, 4 LLM calls", "bold"))
+            print(styled("  ABOVE: CogAgent — real AgentTeam pipeline", "bold"))
+            print(styled("         3 separate agents + deterministic moderator", "dim"))
             print(styled("         Each agent has a distinct epistemic stance", "dim"))
-            print(styled("         Moderator enforces grounding + selects strategy", "dim"))
+            print(styled("         System prompts from src/ontology_hitl/agents/", "dim"))
             print()
             print(styled("  BELOW: HCOME/LC3 — 1 prompt, 1 LLM call, simulated roles", "bold"))
             print(styled("         Same model pretending to be 3 people", "dim"))
@@ -611,19 +728,18 @@ def main():
             time.sleep(2)
 
         if args.mode in ("hcome", "both"):
-            hcome_raw = run_hcome_demo(args.topic, args.model, args.ollama_url)
+            hcome_raw = run_hcome_demo(topic, args.model, args.ollama_url)
 
-        # --- Export OWL fragments if we ran a full pipeline or both modes ---
         if getattr(args, "full_pipeline", False) and (cog_results or hcome_raw):
-            print(styled("\n  Exporting OWL fragments (heuristic)...", "dim"))
+            print(styled("\n  Exporting OWL fragments...", "dim"))
             if cog_results:
-                cog_owl = _extract_owl_from_cog_results(args.topic, cog_results)
+                cog_owl = _synthesize_ttl_from_proposal(topic, cog_results)
                 _write_owl_file("demo/owl/cogagent_fragment.ttl", cog_owl)
-                print(styled(f"  Wrote CogAgent OWL fragment to demo/owl/cogagent_fragment.ttl", "engineer"))
+                print(styled("  Wrote CogAgent OWL fragment to demo/owl/cogagent_fragment.ttl", "engineer"))
             if hcome_raw:
-                hcome_owl = _extract_owl_from_hcome_raw(args.topic, hcome_raw)
+                hcome_owl = _extract_owl_from_hcome_raw(topic, hcome_raw)
                 _write_owl_file("demo/owl/hcome_fragment.ttl", hcome_owl)
-                print(styled(f"  Wrote HCOME OWL fragment to demo/owl/hcome_fragment.ttl", "de"))
+                print(styled("  Wrote HCOME OWL fragment to demo/owl/hcome_fragment.ttl", "de"))
 
         banner("Demo Complete", char="═")
         if args.mode == "both":
@@ -638,7 +754,6 @@ def main():
     except KeyboardInterrupt:
         print(styled("\n  Demo interrupted.", "dim"))
 
-    # Write transcript
     if args.output and _transcript_lines:
         out_path = Path(args.output)
         out_path.parent.mkdir(parents=True, exist_ok=True)

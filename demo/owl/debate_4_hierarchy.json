@@ -1,0 +1,177 @@
+{
+  "phase": "4_hierarchy",
+  "verdict": "escalated",
+  "rounds": 2,
+  "resolved_issues": [
+    "Accuracy: DigitalArtifactType \u2014 The definition is too broad, as it encompasses various categories of digital artifacts.",
+    "Accuracy: AccessRestrictedDigitalArtifactType \u2014 The definition does not explicitly mention access restrictions.",
+    "Accuracy: IntellectualPropertyRestrictedDigitalArtifactType \u2014 The definition does not explicitly mention intellectual property restrictions.",
+    "Missing: Digital Artifact Classification (importance: high)",
+    "Missing: Digital Artifact Access Control (importance: medium)"
+  ],
+  "escalated_questions": [
+    {
+      "question": "Rename: 'plan:DigitalArtifactType' \u2192 'plan:DigitalArtifactClassification'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'AccessRestrictedDigitalArtifactType' \u2192 'AccessRestrictedDigitalArtifactAccessControl'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'IntellectualPropertyRestrictedDigitalArtifactType' \u2192 'IntellectualPropertyRestrictedDigitalArtifactAccessControl'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [CYCLES]: plan:DigitalArtifactType \u2014 The class 'plan:DigitalArtifactType' has a disjoint_with property with value 'AccessRestrictedDigitalArtifactType', which is not a sibling of 'plan:DigitalArtifactType'.; fix: Either remove the disjoint_with property or make 'AccessRestrictedDigitalArtifactType' a subclass of 'plan:DigitalArtifactType'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [CYCLES]: plan:IntellectualPropertyRestrictedDigitalArtifactType \u2014 The class 'plan:IntellectualPropertyRestrictedDigitalArtifactType' has a disjoint_with property with value 'AccessRestrictedDigitalArtifactType', which is not a sibling of 'plan:IntellectualPropertyRestrictedDigitalArtifactType'.; fix: Either remove the disjoint_with property or make 'AccessRestrictedDigitalArtifactType' a subclass of 'plan:IntellectualPropertyRestrictedDigitalArtifactType'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [CYCLES]: plan:AccessRestrictedDigitalArtifactType \u2014 The class 'plan:AccessRestrictedDigitalArtifactType' has a disjoint_with property with value 'IntellectualPropertyRestrictedDigitalArtifactType', which is not a sibling of 'plan:AccessRestrictedDigitalArtifactType'.; fix: Either remove the disjoint_with property or make 'IntellectualPropertyRestrictedDigitalArtifactType' a subclass of 'plan:AccessRestrictedDigitalArtifactType'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: AccessRestrictedDigitalArtifactType, IntellectualPropertyRestrictedDigitalArtifactType \u2014 These two classes have the same disjoint_with property with value 'DigitalArtifactType'. Consider merging them or making one a subclass of the other.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [NAMING]: The class 'plan:DigitalArtifactType' should be renamed to 'plan:DigitalArtifactClassification'.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [NAMING]: The class 'AccessRestrictedDigitalArtifactType' should be renamed to 'AccessRestrictedDigitalArtifactAccessControl'.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "CQs not covered: cq5, cq9",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: DigitalArtifactAccessControl \u2014 This term may be more accurately represented as 'AccessRestrictedDigitalArtifactAccessControl' or 'IntellectualPropertyRestrictedDigitalArtifactAccessControl', depending on the specific context.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: PreservationMetadataFormat \u2014 This term may be more accurately represented as a specific format, such as 'Dublin Core' or 'MODS'.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: DigitalArtifactValidation (importance: high)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: DigitalArtifactMigration (importance: medium)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'plan:Team' \u2192 'plan:ProjectTeam'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'plan:IntellectualPropertyRestrictedDigitalArtifactAccessControl' \u2192 'plan:IntellectualPropertyRestrictedDigitalArtifactAccessControlPolicy'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [REDUNDANCY]: plan:IntellectualPropertyRestrictedDigitalArtifactAccessControlPolicy \u2014 Duplicate concept with different name, plan:IntellectualPropertyRestrictedDigitalArtifactAccessControl should be used instead.; fix: Rename to plan:IntellectualPropertyRestrictedDigitalArtifactAccessControl",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [NAMING]: plan:Team \u2014 Name does not follow PascalCase convention, should be renamed to plan:ProjectTeam; fix: Rename to plan:ProjectTeam",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: AccessRestrictedDigitalArtifactType, IntellectualPropertyRestrictedDigitalArtifactType \u2014 Both concepts serve similar purposes, AccessRestrictedDigitalArtifactType should be used instead.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [NAMING]: Naming conventions are not consistent across the hierarchy.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [DEFINITION]: Definition style is not consistent, some definitions use more detail than others.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "CQs not covered: cq1, cq2, cq3, cq4, cq5, cq6, cq7, cq8, cq9, cq10",
+      "context": "Unresolved after 2 debate rounds"
+    }
+  ],
+  "messages": [
+    {
+      "role": "ontology_engineer",
+      "type": "proposal",
+      "approves": null,
+      "issues": [],
+      "reasoning": "Phase 4_hierarchy: initial proposal based on Ont-101 rules"
+    },
+    {
+      "role": "domain_expert",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Accuracy: DigitalArtifactType \u2014 The definition is too broad, as it encompasses various categories of digital artifacts.",
+        "Accuracy: AccessRestrictedDigitalArtifactType \u2014 The definition does not explicitly mention access restrictions.",
+        "Accuracy: IntellectualPropertyRestrictedDigitalArtifactType \u2014 The definition does not explicitly mention intellectual property restrictions.",
+        "Missing: Digital Artifact Classification (importance: high)",
+        "Missing: Digital Artifact Access Control (importance: medium)",
+        "Rename: 'plan:DigitalArtifactType' \u2192 'plan:DigitalArtifactClassification'",
+        "Rename: 'AccessRestrictedDigitalArtifactType' \u2192 'AccessRestrictedDigitalArtifactAccessControl'",
+        "Rename: 'IntellectualPropertyRestrictedDigitalArtifactType' \u2192 'IntellectualPropertyRestrictedDigitalArtifactAccessControl'"
+      ],
+      "reasoning": "The proposal provides a good starting point, but requires further refinement to accurately represent domain concepts."
+    },
+    {
+      "role": "critic",
+      "type": "review",
+      "approves": true,
+      "issues": [
+        "Structure [CYCLES]: plan:DigitalArtifactType \u2014 The class 'plan:DigitalArtifactType' has a disjoint_with property with value 'AccessRestrictedDigitalArtifactType', which is not a sibling of 'plan:DigitalArtifactType'.; fix: Either remove the disjoint_with property or make 'AccessRestrictedDigitalArtifactType' a subclass of 'plan:DigitalArtifactType'",
+        "Structure [CYCLES]: plan:IntellectualPropertyRestrictedDigitalArtifactType \u2014 The class 'plan:IntellectualPropertyRestrictedDigitalArtifactType' has a disjoint_with property with value 'AccessRestrictedDigitalArtifactType', which is not a sibling of 'plan:IntellectualPropertyRestrictedDigitalArtifactType'.; fix: Either remove the disjoint_with property or make 'AccessRestrictedDigitalArtifactType' a subclass of 'plan:IntellectualPropertyRestrictedDigitalArtifactType'",
+        "Structure [CYCLES]: plan:AccessRestrictedDigitalArtifactType \u2014 The class 'plan:AccessRestrictedDigitalArtifactType' has a disjoint_with property with value 'IntellectualPropertyRestrictedDigitalArtifactType', which is not a sibling of 'plan:AccessRestrictedDigitalArtifactType'.; fix: Either remove the disjoint_with property or make 'IntellectualPropertyRestrictedDigitalArtifactType' a subclass of 'plan:AccessRestrictedDigitalArtifactType'",
+        "Redundancy: AccessRestrictedDigitalArtifactType, IntellectualPropertyRestrictedDigitalArtifactType \u2014 These two classes have the same disjoint_with property with value 'DigitalArtifactType'. Consider merging them or making one a subclass of the other.",
+        "Consistency [NAMING]: The class 'plan:DigitalArtifactType' should be renamed to 'plan:DigitalArtifactClassification'.",
+        "Consistency [NAMING]: The class 'AccessRestrictedDigitalArtifactType' should be renamed to 'AccessRestrictedDigitalArtifactAccessControl'.",
+        "CQs not covered: cq5, cq9"
+      ],
+      "reasoning": "The proposal has some structural issues, but it provides a good starting point for further refinement."
+    },
+    {
+      "role": "ontology_engineer",
+      "type": "revision",
+      "approves": null,
+      "issues": [],
+      "reasoning": "Revised based on 2 reviews. Addressed: Accuracy: DigitalArtifactType \u2014 The definition is too broad, as it encompasses various categories of digital artifacts.; Accuracy: AccessRestrictedDigitalArtifactType \u2014 The definition does not explicitly mention access restrictions.; Accuracy: IntellectualPropertyRestrictedDigitalArtifactType \u2014 The definition does not explicitly mention intellectual property restrictions.; Missing: Digital Artifact Classification (importance: high); Missing: Digital Artifac"
+    },
+    {
+      "role": "domain_expert",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Accuracy: DigitalArtifactAccessControl \u2014 This term may be more accurately represented as 'AccessRestrictedDigitalArtifactAccessControl' or 'IntellectualPropertyRestrictedDigitalArtifactAccessControl', depending on the specific context.",
+        "Accuracy: PreservationMetadataFormat \u2014 This term may be more accurately represented as a specific format, such as 'Dublin Core' or 'MODS'.",
+        "Missing: DigitalArtifactValidation (importance: high)",
+        "Missing: DigitalArtifactMigration (importance: medium)",
+        "Rename: 'plan:Team' \u2192 'plan:ProjectTeam'",
+        "Rename: 'plan:IntellectualPropertyRestrictedDigitalArtifactAccessControl' \u2192 'plan:IntellectualPropertyRestrictedDigitalArtifactAccessControlPolicy'"
+      ],
+      "reasoning": "The proposal has some accuracy issues and missing concepts, but overall it provides a good foundation for the hierarchy. With further refinement and attention to terminology, this hierarchy can be more accurate and complete."
+    },
+    {
+      "role": "critic",
+      "type": "review",
+      "approves": true,
+      "issues": [
+        "Structure [REDUNDANCY]: plan:IntellectualPropertyRestrictedDigitalArtifactAccessControlPolicy \u2014 Duplicate concept with different name, plan:IntellectualPropertyRestrictedDigitalArtifactAccessControl should be used instead.; fix: Rename to plan:IntellectualPropertyRestrictedDigitalArtifactAccessControl",
+        "Structure [NAMING]: plan:Team \u2014 Name does not follow PascalCase convention, should be renamed to plan:ProjectTeam; fix: Rename to plan:ProjectTeam",
+        "Redundancy: AccessRestrictedDigitalArtifactType, IntellectualPropertyRestrictedDigitalArtifactType \u2014 Both concepts serve similar purposes, AccessRestrictedDigitalArtifactType should be used instead.",
+        "Consistency [NAMING]: Naming conventions are not consistent across the hierarchy.",
+        "Consistency [DEFINITION]: Definition style is not consistent, some definitions use more detail than others.",
+        "CQs not covered: cq1, cq2, cq3, cq4, cq5, cq6, cq7, cq8, cq9, cq10"
+      ],
+      "reasoning": "The hierarchy has some structural issues but overall it provides a good foundation for the competency questions. With further refinement and attention to terminology, this hierarchy can be more accurate and complete."
+    }
+  ]
+}

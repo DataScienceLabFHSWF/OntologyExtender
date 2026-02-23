@@ -106,10 +106,17 @@ class ResultsAggregator:
         results_dir : str | Path
             Directory containing JSON result files.
         """
-        raise NotImplementedError(
-            "TODO: glob for *_result.json, json.load each, "
-            "BenchmarkResult.model_validate(data)"
-        )
+        results_path = Path(results_dir)
+        if not results_path.exists():
+            logger.warning("results_dir_not_found", path=str(results_path))
+            return
+        for json_file in sorted(results_path.glob("*_result.json")):
+            try:
+                data = json.loads(json_file.read_text())
+                result = BenchmarkResult.model_validate(data)
+                self.add_result(result)
+            except Exception as e:
+                logger.warning("load_result_failed", file=str(json_file), error=str(e))
 
     # ------------------------------------------------------------------
     # Table builders
@@ -222,9 +229,17 @@ class ResultsAggregator:
         dict[str, dict[str, float]]
             Same structure as ``build_master_table()``.
         """
-        raise NotImplementedError(
-            "TODO: filter results by level, then aggregate per system"
-        )
+        filtered = [r for r in self.results if r.reduction_level == level]
+        if not filtered:
+            return {}
+        # Temporarily swap results to reuse build_master_table logic
+        saved = self.results
+        self.results = filtered
+        try:
+            table = self.build_master_table()
+        finally:
+            self.results = saved
+        return table
 
     def build_ranking_table(self) -> dict[str, str]:
         """Determine which system wins on each metric dimension.
@@ -235,9 +250,26 @@ class ResultsAggregator:
             Metric name → winning system name.
             Example: ``{"semantic_correctness": "cogagent", ...}``
         """
-        raise NotImplementedError(
-            "TODO: for each metric, find system with best average score"
-        )
+        master = self.build_master_table()
+        if not master:
+            return {}
+        # Determine metrics from first system
+        metrics = list(next(iter(master.values())).keys())
+        ranking: dict[str, str] = {}
+        for metric in metrics:
+            best_system = None
+            best_val = float("-inf")
+            for system, vals in master.items():
+                v = vals.get(metric, 0.0)
+                # For hallucination_rate, lower is better
+                if metric == "hallucination_rate":
+                    v = -v
+                if v > best_val:
+                    best_val = v
+                    best_system = system
+            if best_system:
+                ranking[metric] = best_system
+        return ranking
 
     def build_delta_table(
         self, reference_system: BaselineSystem = BaselineSystem.LLM4ACOE,
@@ -267,34 +299,34 @@ class ResultsAggregator:
                     }
                 }
         """
-        raise NotImplementedError(
-            "TODO: compute per-metric delta between cogagent and reference"
-        )
+        master = self.build_master_table()
+        cog_key = BaselineSystem.COGAGENT.value
+        ref_key = reference_system.value
+        if cog_key not in master or ref_key not in master:
+            return {}
+        cog_vals = master[cog_key]
+        ref_vals = master[ref_key]
+        delta_table: dict[str, dict[str, float]] = {}
+        for metric in cog_vals:
+            cog_v = cog_vals.get(metric, 0.0)
+            ref_v = ref_vals.get(metric, 0.0)
+            delta = cog_v - ref_v
+            # For hallucination_rate, improvement = decrease
+            if metric == "hallucination_rate":
+                improvement_pct = ((ref_v - cog_v) / abs(ref_v) * 100) if ref_v != 0 else 0.0
+            else:
+                improvement_pct = (delta / abs(ref_v) * 100) if ref_v != 0 else 0.0
+            delta_table[metric] = {
+                "cogagent": cog_v,
+                "reference": ref_v,
+                "delta": delta,
+                "improvement_pct": round(improvement_pct, 2),
+            }
+        return delta_table
 
     # ------------------------------------------------------------------
     # Export
     # ------------------------------------------------------------------
-
-    def export_all(self) -> dict[str, Path]:
-        """Export all tables to JSON, CSV, and Markdown files.
-
-        Creates the following files in ``output_dir``:
-          - ``master_comparison.json``
-          - ``master_comparison.csv``
-          - ``master_comparison.md``
-          - ``per_level_50pct.json``  (and 75/90/95)
-          - ``ranking.json``
-          - ``delta_vs_llm4acoe.json``
-          - ``all_results.json``   (raw results for reproducibility)
-
-        Returns
-        -------
-        dict[str, Path]
-            Mapping from file description to path.
-        """
-        raise NotImplementedError(
-            "TODO: call each build_* method, serialise to multiple formats"
-        )
 
     def to_markdown(self, table: dict[str, dict[str, float]]) -> str:
         """Convert a comparison table to a Markdown-formatted string.

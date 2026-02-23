@@ -124,9 +124,20 @@ class TestCaseGenerator:
         FileNotFoundError
             If the gold-standard OWL file does not exist.
         """
-        raise NotImplementedError(
-            "TODO: iterate over REDUCTION_LEVELS, call generate_single() for each"
-        )
+        if not self.gold_standard_path.exists():
+            raise FileNotFoundError(f"Gold-standard OWL file not found: {self.gold_standard_path}")
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        test_cases: list[TestCase] = []
+        for level, fraction in self.REDUCTION_LEVELS:
+            tc = self.generate_single(level, fraction)
+            test_cases.append(tc)
+            logger.info(
+                "test_case_generated",
+                level=level.value,
+                removed=len(tc.removed_classes),
+                remaining=tc.num_remaining_classes,
+            )
+        return test_cases
 
     def generate_single(self, level: ReductionLevel, fraction: float) -> TestCase:
         """Generate one test case at the given reduction level.
@@ -151,8 +162,43 @@ class TestCaseGenerator:
         4. Remove selected classes and dependent properties.
         5. Serialise reduced graph and build competency questions.
         """
-        raise NotImplementedError(
-            "TODO: implement ontology reduction logic"
+        graph = self._load_gold_standard()
+        all_classes = self._enumerate_classes(graph)
+        all_properties = self._enumerate_properties(graph)
+        dep_graph = self._build_dependency_graph(graph, all_classes, all_properties)
+
+        classes_to_remove = self._select_classes_to_remove(all_classes, fraction, dep_graph)
+
+        # Work on a copy so the cached gold graph is not mutated
+        import copy
+        reduced = copy.deepcopy(graph)
+        reduced, removed_class_uris, removed_property_uris = self._remove_elements(
+            reduced, classes_to_remove, dep_graph
+        )
+
+        seed_path = self._serialise_reduced_ontology(reduced, level)
+
+        cqs = self._generate_competency_questions(
+            removed_class_uris, removed_property_uris, level
+        )
+
+        num_orig = len(all_classes)
+        num_remaining = num_orig - len(removed_class_uris)
+
+        return TestCase(
+            id=f"{self.gold_standard_path.stem}-{level.value}",
+            reduction_level=level,
+            seed_ontology_path=seed_path,
+            gold_standard_path=self.gold_standard_path,
+            removed_classes=removed_class_uris,
+            removed_properties=removed_property_uris,
+            competency_questions=cqs,
+            num_original_classes=num_orig,
+            num_remaining_classes=num_remaining,
+            metadata={
+                "random_seed": self.random_seed,
+                "fraction": fraction,
+            },
         )
 
     # ------------------------------------------------------------------
@@ -177,9 +223,21 @@ class TestCaseGenerator:
         Caches the parsed graph in ``self._gold_graph`` to avoid
         re-parsing on subsequent calls.
         """
-        raise NotImplementedError(
-            "TODO: rdflib.Graph().parse(self.gold_standard_path, format='xml')"
+        if self._gold_graph is not None:
+            return self._gold_graph
+        if not self.gold_standard_path.exists():
+            raise FileNotFoundError(str(self.gold_standard_path))
+        g = Graph()
+        suffix = self.gold_standard_path.suffix.lower()
+        fmt = "xml" if suffix in (".owl", ".rdf", ".xml") else (
+            "turtle" if suffix in (".ttl",) else None
         )
+        if fmt:
+            g.parse(str(self.gold_standard_path), format=fmt)
+        else:
+            g.parse(str(self.gold_standard_path))
+        self._gold_graph = g
+        return g
 
     def _enumerate_classes(self, graph: Graph) -> list[URIRef]:
         """Extract all owl:Class URIs from the graph.
@@ -195,9 +253,12 @@ class TestCaseGenerator:
             Sorted list of class URIs (excluding OWL built-ins like
             ``owl:Thing`` and ``owl:Nothing``).
         """
-        raise NotImplementedError(
-            "TODO: graph.subjects(RDF.type, OWL.Class), filter built-ins"
-        )
+        built_ins = {OWL.Thing, OWL.Nothing}
+        classes: set[URIRef] = set()
+        for s in graph.subjects(RDF.type, OWL.Class):
+            if isinstance(s, URIRef) and s not in built_ins:
+                classes.add(s)
+        return sorted(classes, key=str)
 
     def _enumerate_properties(self, graph: Graph) -> list[URIRef]:
         """Extract all owl:ObjectProperty and owl:DatatypeProperty URIs.
@@ -211,9 +272,14 @@ class TestCaseGenerator:
         list[URIRef]
             Sorted list of property URIs.
         """
-        raise NotImplementedError(
-            "TODO: combine ObjectProperty + DatatypeProperty subjects"
-        )
+        props: set[URIRef] = set()
+        for s in graph.subjects(RDF.type, OWL.ObjectProperty):
+            if isinstance(s, URIRef):
+                props.add(s)
+        for s in graph.subjects(RDF.type, OWL.DatatypeProperty):
+            if isinstance(s, URIRef):
+                props.add(s)
+        return sorted(props, key=str)
 
     def _build_dependency_graph(
         self, graph: Graph, classes: list[URIRef], properties: list[URIRef]
@@ -235,9 +301,15 @@ class TestCaseGenerator:
             Mapping from class URI to the set of property URIs that
             reference it.
         """
-        raise NotImplementedError(
-            "TODO: iterate properties, check domain/range, build map"
-        )
+        dep: dict[URIRef, set[URIRef]] = {c: set() for c in classes}
+        for prop in properties:
+            for _, _, domain_cls in graph.triples((prop, RDFS.domain, None)):
+                if isinstance(domain_cls, URIRef) and domain_cls in dep:
+                    dep[domain_cls].add(prop)
+            for _, _, range_cls in graph.triples((prop, RDFS.range, None)):
+                if isinstance(range_cls, URIRef) and range_cls in dep:
+                    dep[range_cls].add(prop)
+        return dep
 
     # ------------------------------------------------------------------
     # Internal: Reduction
@@ -266,9 +338,21 @@ class TestCaseGenerator:
         list[URIRef]
             Classes selected for removal.
         """
-        raise NotImplementedError(
-            "TODO: sort by dependency count ascending, take fraction"
-        )
+        n_to_remove = max(1, int(len(classes) * fraction))
+        # Sort by number of dependents ascending (periphery first)
+        sorted_classes = sorted(classes, key=lambda c: len(dep_graph.get(c, set())))
+        # Shuffle within same-dependency-count tiers for randomness
+        tier_start = 0
+        while tier_start < len(sorted_classes):
+            tier_count = len(dep_graph.get(sorted_classes[tier_start], set()))
+            tier_end = tier_start
+            while tier_end < len(sorted_classes) and len(dep_graph.get(sorted_classes[tier_end], set())) == tier_count:
+                tier_end += 1
+            tier = sorted_classes[tier_start:tier_end]
+            self._rng.shuffle(tier)
+            sorted_classes[tier_start:tier_end] = tier
+            tier_start = tier_end
+        return sorted_classes[:n_to_remove]
 
     def _remove_elements(
         self,
@@ -296,9 +380,34 @@ class TestCaseGenerator:
         removed_property_uris : list[str]
             String URIs of removed properties.
         """
-        raise NotImplementedError(
-            "TODO: remove all triples where class/property is subject or object"
-        )
+        removed_class_uris: list[str] = []
+        removed_property_uris: list[str] = []
+
+        # Gather all properties to remove (dependent on removed classes)
+        props_to_remove: set[URIRef] = set()
+        for cls in classes_to_remove:
+            props_to_remove.update(dep_graph.get(cls, set()))
+
+        # Remove class triples
+        for cls in classes_to_remove:
+            removed_class_uris.append(str(cls))
+            # Remove all triples where this class is subject or object
+            for t in list(graph.triples((cls, None, None))):
+                graph.remove(t)
+            for t in list(graph.triples((None, None, cls))):
+                graph.remove(t)
+
+        # Remove property triples
+        for prop in props_to_remove:
+            removed_property_uris.append(str(prop))
+            for t in list(graph.triples((prop, None, None))):
+                graph.remove(t)
+            for t in list(graph.triples((None, None, prop))):
+                graph.remove(t)
+            for t in list(graph.triples((None, prop, None))):
+                graph.remove(t)
+
+        return graph, removed_class_uris, removed_property_uris
 
     def _serialise_reduced_ontology(
         self, graph: Graph, level: ReductionLevel
@@ -318,9 +427,12 @@ class TestCaseGenerator:
             Path to the written file, e.g.
             ``data/test_cases/plan-ontology-75pct.owl``.
         """
-        raise NotImplementedError(
-            "TODO: graph.serialize(destination=..., format='xml')"
-        )
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"{self.gold_standard_path.stem}-{level.value}.owl"
+        out_path = self.output_dir / filename
+        graph.serialize(destination=str(out_path), format="xml")
+        logger.info("serialised_reduced_ontology", path=str(out_path))
+        return out_path
 
     # ------------------------------------------------------------------
     # Internal: Competency Question Generation
@@ -357,6 +469,47 @@ class TestCaseGenerator:
         list[CompetencyQuestion]
             CQs that should become answerable after extension.
         """
-        raise NotImplementedError(
-            "TODO: template + optional LLM generation of CQs"
-        )
+        cqs: list[CompetencyQuestion] = []
+
+        # Template-based CQ generation for removed classes
+        for i, cls_uri in enumerate(removed_classes):
+            local_name = cls_uri.split("#")[-1].split("/")[-1]
+            # Convert camelCase/underscore to words
+            label = local_name.replace("_", " ")
+
+            difficulty = "easy"
+            if level in (ReductionLevel.PCT_90, ReductionLevel.PCT_95):
+                difficulty = "hard"
+            elif level == ReductionLevel.PCT_75:
+                difficulty = "medium"
+
+            cqs.append(
+                CompetencyQuestion(
+                    id=f"CQ-C{i:02d}",
+                    question=f"What is a {label} and how does it relate to the ontology?",
+                    target_classes=[cls_uri],
+                    target_properties=[],
+                    difficulty=difficulty,
+                )
+            )
+
+        # Template-based CQ generation for removed properties
+        for j, prop_uri in enumerate(removed_properties):
+            local_name = prop_uri.split("#")[-1].split("/")[-1]
+            label = local_name.replace("_", " ")
+
+            difficulty = "medium" if level in (
+                ReductionLevel.PCT_50, ReductionLevel.PCT_75
+            ) else "hard"
+
+            cqs.append(
+                CompetencyQuestion(
+                    id=f"CQ-P{j:02d}",
+                    question=f"What relationship does '{label}' describe between entities?",
+                    target_classes=[],
+                    target_properties=[prop_uri],
+                    difficulty=difficulty,
+                )
+            )
+
+        return cqs

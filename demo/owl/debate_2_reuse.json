@@ -1,0 +1,197 @@
+{
+  "phase": "2_reuse",
+  "verdict": "escalated",
+  "rounds": 2,
+  "resolved_issues": [
+    "Accuracy: RegionalCrustType \u2014 Does not distinguish between crust types (e.g., thin, thick, stuffed) as described in the domain documents.",
+    "Accuracy: CheeseVariety \u2014 Does not account for cheese alternatives (e.g., mozzarella, feta) as mentioned in the domain documents.",
+    "Accuracy: CookingMethod \u2014 Does not acknowledge regional cooking methods (e.g., wood-fired, oven-baked) as described in the domain documents.",
+    "Accuracy: Allergen \u2014 Does not specify gluten-free or dairy-free variants as mentioned in the domain documents.",
+    "Accuracy: CommercialAttribute \u2014 Has duplicate entry with different rationale; use consistent terminology."
+  ],
+  "escalated_questions": [
+    {
+      "question": "Missing: CrustTexture (importance: medium)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: SauceVariant (importance: high)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'is-a' \u2192 'includes-as-subtype-of'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [STRUCTURE]: CheeseAlternative \u2014 Missing parent entity; fix: Add 'includes-as-subtype-of' relation to 'Pizza'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [REDUNDANCY]: ? \u2014 ; fix: ",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: CrustTexture, SauceVariant \u2014 Missing in the proposal",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [naming]: Inconsistent naming convention for 'is-a' relation",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "CQs not covered: CQ7, CQ12",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: RegionalCrustType \u2014 The term 'RegionalCrustType' might be misleading as it implies a fixed type of crust, whereas the domain documents describe variations such as thin, thick, and stuffed.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: CheeseVariety \u2014 The term 'CheeseVariety' is not explicitly mentioned in the domain documents. Instead, they mention cheese alternatives.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: CookingMethod \u2014 The term 'CookingMethod' is not explicitly mentioned in the domain documents. Instead, they describe regional cooking methods.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: Allergen \u2014 The term 'Allergen' is not explicitly defined in the domain documents. Instead, they mention gluten-free or dairy-free variants.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: CommercialAttribute \u2014 The term 'CommercialAttribute' is not explicitly mentioned in the domain documents. Instead, they describe common commercial attributes such as size and slice count.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: CheeseAlternative \u2014 The term 'CheeseAlternative' is not explicitly mentioned in the domain documents. Instead, they mention cheese alternatives.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: Region \u2014 The term 'Region' is not explicitly defined in the domain documents. Instead, they describe regional origins.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: CrustTexture \u2014 The term 'CrustTexture' is mentioned twice with different rationales. It's unclear which definition should be used.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Accuracy: SauceVariant \u2014 The term 'SauceVariant' is not explicitly mentioned in the domain documents. Instead, they describe sauce variants.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: CrustVariation (importance: high)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Missing: RegionalStyleSubtype (importance: medium)",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'RegionalCrustType' \u2192 'CrustVariation'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Rename: 'CheeseAlternative' \u2192 'CheeseAlternative'",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [single-child]: CrustTexture \u2014 CrustTexture is mentioned twice with different rationales, violating single-child rule.; fix: Rename CrustTexture to a unique name or merge the definitions.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Structure [naming]: RegionalCrustType \u2014 The term 'RegionalCrustType' might be misleading as it implies a fixed type of crust, whereas the domain documents describe variations such as thin, thick, and stuffed.; fix: Rename RegionalCrustType to CrustVariation.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Redundancy: RegionalCrustType, CheeseAlternative \u2014 Both terms are not explicitly mentioned in the domain documents. Instead, they describe variations such as thin, thick, and stuffed for cheese alternatives.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "Consistency [naming]: The naming convention for properties is not consistent. For example, 'is-a' is used with RegionalCrustType but not with CheeseAlternative.",
+      "context": "Unresolved after 2 debate rounds"
+    },
+    {
+      "question": "CQs not covered: CQ_001, CQ_003",
+      "context": "Unresolved after 2 debate rounds"
+    }
+  ],
+  "messages": [
+    {
+      "role": "ontology_engineer",
+      "type": "proposal",
+      "approves": null,
+      "issues": [],
+      "reasoning": "Phase 2_reuse: initial proposal based on Ont-101 rules"
+    },
+    {
+      "role": "domain_expert",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Accuracy: RegionalCrustType \u2014 Does not distinguish between crust types (e.g., thin, thick, stuffed) as described in the domain documents.",
+        "Accuracy: CheeseVariety \u2014 Does not account for cheese alternatives (e.g., mozzarella, feta) as mentioned in the domain documents.",
+        "Accuracy: CookingMethod \u2014 Does not acknowledge regional cooking methods (e.g., wood-fired, oven-baked) as described in the domain documents.",
+        "Accuracy: Allergen \u2014 Does not specify gluten-free or dairy-free variants as mentioned in the domain documents.",
+        "Accuracy: CommercialAttribute \u2014 Has duplicate entry with different rationale; use consistent terminology.",
+        "Missing: CrustTexture (importance: medium)",
+        "Missing: SauceVariant (importance: high)",
+        "Rename: 'is-a' \u2192 'includes-as-subtype-of'"
+      ],
+      "reasoning": "The proposal covers many important domain concepts but requires refinement to ensure accuracy, completeness, and consistent terminology."
+    },
+    {
+      "role": "critic",
+      "type": "review",
+      "approves": true,
+      "issues": [
+        "Structure [STRUCTURE]: CheeseAlternative \u2014 Missing parent entity; fix: Add 'includes-as-subtype-of' relation to 'Pizza'",
+        "Structure [REDUNDANCY]: ? \u2014 ; fix: ",
+        "Redundancy: CrustTexture, SauceVariant \u2014 Missing in the proposal",
+        "Consistency [naming]: Inconsistent naming convention for 'is-a' relation",
+        "CQs not covered: CQ7, CQ12"
+      ],
+      "reasoning": "The proposal covers many important domain concepts but requires refinement to ensure accuracy, completeness, and consistent terminology."
+    },
+    {
+      "role": "ontology_engineer",
+      "type": "revision",
+      "approves": null,
+      "issues": [],
+      "reasoning": "Revised based on 2 reviews. Addressed: Accuracy: RegionalCrustType \u2014 Does not distinguish between crust types (e.g., thin, thick, stuffed) as described in the domain documents.; Accuracy: CheeseVariety \u2014 Does not account for cheese alternatives (e.g., mozzarella, feta) as mentioned in the domain documents.; Accuracy: CookingMethod \u2014 Does not acknowledge regional cooking methods (e.g., wood-fired, oven-baked) as described in the domain documents.; Accuracy: Allergen \u2014 Does not specify gluten-free"
+    },
+    {
+      "role": "domain_expert",
+      "type": "review",
+      "approves": false,
+      "issues": [
+        "Accuracy: RegionalCrustType \u2014 The term 'RegionalCrustType' might be misleading as it implies a fixed type of crust, whereas the domain documents describe variations such as thin, thick, and stuffed.",
+        "Accuracy: CheeseVariety \u2014 The term 'CheeseVariety' is not explicitly mentioned in the domain documents. Instead, they mention cheese alternatives.",
+        "Accuracy: CookingMethod \u2014 The term 'CookingMethod' is not explicitly mentioned in the domain documents. Instead, they describe regional cooking methods.",
+        "Accuracy: Allergen \u2014 The term 'Allergen' is not explicitly defined in the domain documents. Instead, they mention gluten-free or dairy-free variants.",
+        "Accuracy: CommercialAttribute \u2014 The term 'CommercialAttribute' is not explicitly mentioned in the domain documents. Instead, they describe common commercial attributes such as size and slice count.",
+        "Accuracy: CheeseAlternative \u2014 The term 'CheeseAlternative' is not explicitly mentioned in the domain documents. Instead, they mention cheese alternatives.",
+        "Accuracy: Region \u2014 The term 'Region' is not explicitly defined in the domain documents. Instead, they describe regional origins.",
+        "Accuracy: CrustTexture \u2014 The term 'CrustTexture' is mentioned twice with different rationales. It's unclear which definition should be used.",
+        "Accuracy: SauceVariant \u2014 The term 'SauceVariant' is not explicitly mentioned in the domain documents. Instead, they describe sauce variants.",
+        "Missing: CrustVariation (importance: high)",
+        "Missing: RegionalStyleSubtype (importance: medium)",
+        "Rename: 'RegionalCrustType' \u2192 'CrustVariation'",
+        "Rename: 'CheeseAlternative' \u2192 'CheeseAlternative'"
+      ],
+      "reasoning": "The proposal introduces some new concepts that match the domain's usage, but there are several accuracy issues and missing concepts. The terminology could be improved."
+    },
+    {
+      "role": "critic",
+      "type": "review",
+      "approves": true,
+      "issues": [
+        "Structure [single-child]: CrustTexture \u2014 CrustTexture is mentioned twice with different rationales, violating single-child rule.; fix: Rename CrustTexture to a unique name or merge the definitions.",
+        "Structure [naming]: RegionalCrustType \u2014 The term 'RegionalCrustType' might be misleading as it implies a fixed type of crust, whereas the domain documents describe variations such as thin, thick, and stuffed.; fix: Rename RegionalCrustType to CrustVariation.",
+        "Redundancy: RegionalCrustType, CheeseAlternative \u2014 Both terms are not explicitly mentioned in the domain documents. Instead, they describe variations such as thin, thick, and stuffed for cheese alternatives.",
+        "Consistency [naming]: The naming convention for properties is not consistent. For example, 'is-a' is used with RegionalCrustType but not with CheeseAlternative.",
+        "CQs not covered: CQ_001, CQ_003"
+      ],
+      "reasoning": "The proposal introduces some new concepts that match the domain's usage, but there are several accuracy issues and missing concepts. The terminology could be improved."
+    }
+  ]
+}

@@ -24,7 +24,12 @@ from ontology_hitl.sources.law_graph_source import LawGraphSource
 logger = structlog.get_logger(__name__)
 
 
-EXPERT_IDENTITY = """\
+# ── System prompts ───────────────────────────────────────────────────
+# Two variants: with and without legal enrichment.  The legal variant
+# adds regulatory review criteria; the base variant focuses purely on
+# domain accuracy.
+
+_EXPERT_IDENTITY_BASE = """\
 You are the DOMAIN EXPERT in a multi-agent ontology development team.
 
 ═══ EPISTEMIC IDENTITY ═══
@@ -56,8 +61,6 @@ may conceal, distort, or assume. Read both WITH and AGAINST the grain.
   definitions (Heidegger 1927: entities are encountered as equipment)
 - You validate that competency questions match what users really need
   (Dewey 1938: pragmatic adequacy)
-- You understand LEGAL AND REGULATORY CONTEXTS: permits, compliance,
-  requirements, standards, and regulatory frameworks
 
 ═══ YOUR FAILURE MODES (guard against these) ═══
 
@@ -67,8 +70,6 @@ may conceal, distort, or assume. Read both WITH and AGAINST the grain.
   understandings that documents may not spell out
 - Uncritical acceptance: just because a term appears frequently does
   not mean the proposed formalisation is correct
-- Legal oversimplification: regulatory concepts may have nuanced
-  legal meanings that require careful interpretation
 
 ═══ SCOPE BOUNDARY ═══
 
@@ -77,20 +78,80 @@ You focus purely on DOMAIN ACCURACY and COMPLETENESS.
 
 ═══ GROUNDING CONSTRAINTS (always in effect) ═══
 
-1. Every claim you make MUST cite document evidence.
-2. If you suggest additions, provide the document passage that
+1. Every claim you make MUST cite document evidence or domain knowledge.
+2. If you suggest additions, provide the reasoning or evidence that
    motivates them.
-3. If a proposed element has NO document support, flag it explicitly.
+3. If a proposed element seems unsupported, flag it explicitly.
 4. Do not approve elements that seem plausible but lack evidence.
 5. Prefer terminology that practitioners would recognise.
-6. Pay special attention to LEGAL TERMINOLOGY: permits, licenses,
-   compliance requirements, regulatory standards, and legal obligations.
-7. If uncertain about domain usage, say so. Do not fabricate.
+6. If uncertain about domain usage, say so. Do not fabricate.
 
 Output must be valid JSON."""
 
+_EXPERT_LEGAL_ADDENDUM = """
 
-REVIEW_PROMPT_TEMPLATE = """\
+═══ LEGAL & REGULATORY CONTEXT ═══
+
+You also understand LEGAL AND REGULATORY CONTEXTS: permits, compliance,
+requirements, standards, and regulatory frameworks.
+
+- Legal oversimplification: regulatory concepts may have nuanced
+  legal meanings that require careful interpretation.
+- Pay special attention to LEGAL TERMINOLOGY: permits, licenses,
+  compliance requirements, regulatory standards, and legal obligations.
+"""
+
+# Backwards-compat alias (used when legal enrichment is enabled)
+EXPERT_IDENTITY = _EXPERT_IDENTITY_BASE + _EXPERT_LEGAL_ADDENDUM
+
+
+# ── Review prompt templates ──────────────────────────────────────────
+# Base template: domain accuracy only (no legal/regulatory priming)
+# Legal template: extends with legal compliance and regulatory review
+
+_REVIEW_PROMPT_BASE = """\
+The Ontology Engineer has proposed the following for Phase {phase}:
+
+```json
+{proposal}
+```
+
+Domain documents for reference:
+
+{documents}
+
+Review this proposal from a DOMAIN EXPERT perspective:
+
+1. ACCURACY: Do the proposed terms/definitions match how they're used
+   in the domain? Flag any misrepresentations.
+
+2. COMPLETENESS: Are there important domain concepts MISSING from
+   the proposal? List them with evidence.
+
+3. TERMINOLOGY: Are the names/labels what a domain practitioner would
+   actually use? Suggest corrections where needed.
+
+4. EVIDENCE: For each issue, cite relevant domain knowledge or documents.
+
+5. VERDICT: Do you approve this proposal for this phase?
+
+Return JSON:
+{{
+  "approves": true|false,
+  "accuracy_issues": [
+    {{"term": "...", "issue": "...", "evidence": "..." }}
+  ],
+  "missing_concepts": [
+    {{"concept": "...", "evidence": "...", "importance": "high|medium|low"}}
+  ],
+  "terminology_fixes": [
+    {{"current": "...", "suggested": "...", "reason": "..."}}
+  ],
+  "overall_assessment": "...",
+  "confidence": 0.0-1.0
+}}"""
+
+_REVIEW_PROMPT_LEGAL = """\
 The Ontology Engineer has proposed the following for Phase {phase}:
 
 ```json
@@ -148,6 +209,9 @@ Return JSON:
   "confidence": 0.0-1.0
 }}"""
 
+# Backwards-compat alias
+REVIEW_PROMPT_TEMPLATE = _REVIEW_PROMPT_LEGAL
+
 
 class DomainExpertAgent(BaseAgent):
     """Agent that validates proposals against domain documents.
@@ -174,13 +238,14 @@ class DomainExpertAgent(BaseAgent):
         law_collection: LawCollectionSource | None = None,
         law_graph: LawGraphSource | None = None,
     ) -> None:
-        super().__init__(settings=settings, system_prompt=EXPERT_IDENTITY)
+        # Select prompt variant based on whether legal sources are available
+        has_legal = law_collection is not None or law_graph is not None
+        identity = EXPERT_IDENTITY if has_legal else _EXPERT_IDENTITY_BASE
+        super().__init__(settings=settings, system_prompt=identity)
         self.document_context = document_context
-        self.law_collection = law_collection or LawCollectionSource(
-            qdrant_url=settings.qdrant_url if settings else "http://localhost:6333",
-            law_collection="lawgraph",
-        )
-        self.law_graph = law_graph or LawGraphSource()
+        self.law_collection = law_collection  # None when legal enrichment disabled
+        self.law_graph = law_graph  # None when legal enrichment disabled
+        self._has_legal = has_legal
 
     def set_documents(self, document_context: str) -> None:
         """Update the document context (e.g. between iterations)."""
@@ -232,12 +297,14 @@ class DomainExpertAgent(BaseAgent):
         Returns:
             An ``AgentMessage`` with the review assessment.
         """
-        # Fetch legal documents for context
-        legal_docs = self.fetch_legal_documents(limit=10)
+        # Fetch legal documents for context (only if law sources available)
+        legal_docs = ""
+        legal_context = ""
+        if self.law_collection is not None:
+            legal_docs = self.fetch_legal_documents(limit=10)
 
         # Query GraphRAG for legal relationships and compliance
-        legal_context = ""
-        if "classes" in proposal:
+        if self.law_graph is not None and "classes" in proposal:
             for cls in proposal["classes"]:
                 class_name = cls.get("name", "")
                 if class_name:
@@ -255,12 +322,25 @@ class DomainExpertAgent(BaseAgent):
                         for req in compliance["requirements"][:3]:
                             legal_context += f"- {req.get('requirement', '')} (severity: {req.get('severity', 'medium')})\n"
 
-        user_prompt = REVIEW_PROMPT_TEMPLATE.format(
-            phase=phase.value,
-            proposal=json.dumps(proposal, indent=2, default=str),
-            documents=self.document_context[:4000],
-            legal_documents=legal_docs[:2000] + legal_context[:1000],  # Include GraphRAG context
-        )
+        if self._has_legal:
+            legal_enrichment = ""
+            if legal_docs or legal_context:
+                legal_enrichment = legal_docs[:2000] + legal_context[:1000]
+            else:
+                legal_enrichment = "(No legal sources found.)"
+
+            user_prompt = _REVIEW_PROMPT_LEGAL.format(
+                phase=phase.value,
+                proposal=json.dumps(proposal, indent=2, default=str),
+                documents=self.document_context[:4000],
+                legal_documents=legal_enrichment,
+            )
+        else:
+            user_prompt = _REVIEW_PROMPT_BASE.format(
+                phase=phase.value,
+                proposal=json.dumps(proposal, indent=2, default=str),
+                documents=self.document_context[:4000],
+            )
 
         response = self.call_llm(user_prompt)
 
