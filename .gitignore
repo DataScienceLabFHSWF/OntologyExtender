@@ -219,3 +219,16 @@ data/benchmark_datasets/
 
 Experiments/SAR/Phase_*
 data/SAR_docs_text/
+
+# Demo artifacts – only scripts and ontology fragments are tracked, avoid large auto-generated files
+# transcripts and demo outputs should not be pushed
+/demo/transcript*
+/demo/*.txt
+/demo/*.md
+/demo/owl/
+
+# Data exports often large and regenerated
+/data/exports/
+
+# Presentation source and builds
+/presentation/
