@@ -279,3 +279,7 @@ class ProvenanceTracker:
                 for r in self._records
             ]
         }
+
+    def clear(self) -> None:
+        """Remove all recorded evidence."""
+        self._records.clear()

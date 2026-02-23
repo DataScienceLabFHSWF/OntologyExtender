@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import pytest
+
 from ontology_hitl.discovery.relation_generator import RelationProposalGenerator
 from ontology_hitl.core.models import ProposedClass
 
 
+@pytest.mark.slow
 class TestRelationProposalGenerator:
     """Test relation suggestion functionality."""
 

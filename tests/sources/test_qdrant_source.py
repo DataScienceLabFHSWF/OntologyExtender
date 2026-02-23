@@ -50,12 +50,16 @@ class TestFetchChunks:
             chunks = qdrant_source.fetch_chunks(limit=10)
 
         assert len(chunks) == 2
-        assert chunks[0].chunk_id == "abc-123"
-        assert chunks[0].document_name == "doc_15.pdf"
-        assert "Greifswald" in chunks[0].text
+        # Both chunks present (order may vary due to legal-doc prioritization)
+        ids = {c.chunk_id for c in chunks}
+        assert ids == {"abc-123", "def-456"}
+        greifswald = [c for c in chunks if c.chunk_id == "abc-123"][0]
+        permit = [c for c in chunks if c.chunk_id == "def-456"][0]
+        assert greifswald.document_name == "doc_15.pdf"
+        assert "Greifswald" in greifswald.text
         # Second chunk uses "content" and "source" keys
-        assert "Permit" in chunks[1].text
-        assert chunks[1].document_name == "doc_22.pdf"
+        assert "Permit" in permit.text
+        assert permit.document_name == "doc_22.pdf"
 
     def test_fetch_chunks_handles_connection_error(self, qdrant_source):
         import httpx

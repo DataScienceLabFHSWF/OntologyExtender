@@ -244,6 +244,53 @@ tail -f logs/small_model_experiments.log
 # https://wandb.ai/dsfhswf/ontology-hitl
 ```
 
+### Reproducing the SAR (LLM4ACOE) head-to-head — quick steps (2026-02-16)
+This repository now includes the reproduced SAR dataset and helper scripts used
+for a head-to-head comparison with LLM4ACOE. Key points:
+
+- SAR documents are indexed into a dedicated Qdrant collection `sar_documents`.
+- Chunking uses `chunk_size=750` with zero overlap to match the original pipeline.
+- `questions_for_review` (HITL escalation count) is now recorded per iteration
+  and appears in `data/exports/{experiment}/convergence_report.json` and W&B.
+
+Index SAR documents to Qdrant (integers or UUIDs):
+```bash
+python scripts/index_sar_to_qdrant.py --collection sar_documents
+# or use UUIDs for stable ids
+python scripts/index_sar_to_qdrant.py --collection sar_documents --use-uuids
+```
+
+Quick smoke runs (seeded vs seedless):
+```bash
+HITL_QDRANT_COLLECTION=sar_documents \
+  HITL_SEED_ONTOLOGY_PATH=Experiments/SAR/safers_ontology_V3.0.owl \
+  python scripts/run_feedback_loop.py --mode standalone --max-iterations 3 --auto-review --experiment-name sar_seeded_3iter
+
+HITL_QDRANT_COLLECTION=sar_documents \
+  HITL_SEED_ONTOLOGY_PATH= \
+  python scripts/run_feedback_loop.py --mode standalone --max-iterations 3 --auto-review --experiment-name sar_noseed_3iter
+```
+
+Full SAR head-to-head (seeded / seedless) — background example:
+```bash
+nohup bash -lc 'export HITL_QDRANT_COLLECTION=sar_documents; export HITL_QDRANT_SOURCE_FILTER=SAR; export HITL_SEED_ONTOLOGY_PATH=Experiments/SAR/safers_ontology_V3.0.owl; .venv/bin/python scripts/run_model_comparison.py --run-all --output results/full_comparison_sar_seeded.json --report results/sar_seeded_report.md' > logs/experiments/sar_model_comparison_seeded.log 2>&1 &
+
+nohup bash -lc 'export HITL_QDRANT_COLLECTION=sar_documents; export HITL_QDRANT_SOURCE_FILTER=SAR; export HITL_SEED_ONTOLOGY_PATH=""; .venv/bin/python scripts/run_model_comparison.py --run-all --output results/full_comparison_sar_seedless.json --report results/sar_seedless_report.md' > logs/experiments/sar_model_comparison_seedless.log 2>&1 &
+```
+
+Where to find outputs & logs
+- Per-iteration: `data/iterations/{experiment}/iteration_summary.json` (contains `questions` array)
+- Convergence summary: `data/exports/{experiment}/convergence_report.json` (`escalations` + `questions_for_review`)
+- Background run logs: `logs/experiments/*.log`
+- Final aggregated results & reports: `results/*.json`, `results/*.md`
+
+Notes
+- `questions_for_review` is logged to W&B (`questions_for_review`) and included
+  in the convergence report to measure human review burden across experiments.
+- The SAR collection is separate from the main `documents` collection so you can
+  run domain-constrained experiments without affecting production data.
+
+
 ---
 
 ## Analysis Plan
