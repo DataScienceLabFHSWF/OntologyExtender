@@ -27,6 +27,12 @@ dependencies = [
     # LLM access
     "httpx>=0.27",
 
+    # Neo4j async driver (GraphRAG)
+    "neo4j>=5.0",
+
+    # Fuzzy matching (entity linker)
+    "rapidfuzz>=3.0",
+
     # Vector store (shared with KGB)
     "qdrant-client>=1.9",
 

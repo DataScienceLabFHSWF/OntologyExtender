@@ -9,6 +9,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# Activate virtual environment
+if [[ -f .venv/bin/activate ]]; then
+    source .venv/bin/activate
+fi
+
 OUTPUT_DIR="results/ontourl"
 OLLAMA_URL="${HITL_OLLAMA_URL:-http://localhost:18135}"
 LOG_DIR="logs/ontourl"

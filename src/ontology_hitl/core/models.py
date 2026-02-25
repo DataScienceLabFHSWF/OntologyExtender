@@ -5,7 +5,51 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Literal
+from typing import Any, Literal
+
+
+# ── Knowledge-graph models (ported from GraphQAAgent) ───────────────
+
+
+@dataclass
+class KGEntity:
+    """An entity node in the Neo4j knowledge graph."""
+
+    id: str
+    label: str
+    entity_type: str = ""
+    description: str = ""
+    confidence: float = 0.0
+    extras: dict[str, Any] = field(default_factory=dict)
+    neo4j_labels: list[str] = field(default_factory=list)
+
+
+@dataclass
+class KGRelation:
+    """A directed relationship between two :class:`KGEntity` nodes."""
+
+    source_id: str
+    target_id: str
+    relation_type: str
+    confidence: float = 0.0
+
+
+@dataclass
+class OntologyClass:
+    """An OWL class from the Fuseki TBox."""
+
+    uri: str
+    label: str
+
+
+@dataclass
+class OntologyProperty:
+    """An OWL property from the Fuseki TBox."""
+
+    uri: str
+    label: str
+    domain_uri: str = ""
+    range_uri: str = ""
 
 
 class ProposalStatus(str, Enum):

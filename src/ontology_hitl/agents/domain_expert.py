@@ -12,6 +12,7 @@ a practitioner recognise these terms?"
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any
 
@@ -22,6 +23,13 @@ from ontology_hitl.sources.law_collection_source import LawCollectionSource
 from ontology_hitl.sources.law_graph_source import LawGraphSource
 
 logger = structlog.get_logger(__name__)
+
+# Optional GraphRAG imports — gracefully degrade if connectors not set up
+try:
+    from ontology_hitl.retrieval.graph_retriever import GraphRetriever, GraphMode
+except ImportError:
+    GraphRetriever = None  # type: ignore[misc,assignment]
+    GraphMode = None  # type: ignore[misc,assignment]
 
 
 # ── System prompts ───────────────────────────────────────────────────
@@ -237,19 +245,58 @@ class DomainExpertAgent(BaseAgent):
         document_context: str = "",
         law_collection: LawCollectionSource | None = None,
         law_graph: LawGraphSource | None = None,
+        graph_retriever: GraphRetriever | None = None,
     ) -> None:
         # Select prompt variant based on whether legal sources are available
-        has_legal = law_collection is not None or law_graph is not None
+        has_legal = law_collection is not None or law_graph is not None or graph_retriever is not None
         identity = EXPERT_IDENTITY if has_legal else _EXPERT_IDENTITY_BASE
         super().__init__(settings=settings, system_prompt=identity)
         self.document_context = document_context
         self.law_collection = law_collection  # None when legal enrichment disabled
         self.law_graph = law_graph  # None when legal enrichment disabled
+        self.graph_retriever = graph_retriever  # New: async GraphRAG retriever
         self._has_legal = has_legal
 
     def set_documents(self, document_context: str) -> None:
         """Update the document context (e.g. between iterations)."""
         self.document_context = document_context
+
+    def _fetch_graph_context_for_classes(self, classes: list[dict[str, Any]]) -> str:
+        """Use async GraphRetriever to fetch KG evidence for proposed classes.
+
+        Runs the async retriever in a sync context (for backwards compat).
+        """
+        if self.graph_retriever is None or GraphRetriever is None:
+            return ""
+
+        async def _gather() -> str:
+            parts: list[str] = []
+            for cls in classes[:5]:  # Limit to 5 classes for latency
+                name = cls.get("name", "")
+                if not name:
+                    continue
+                try:
+                    result = await self.graph_retriever.retrieve(
+                        [name], mode=GraphMode.SUBGRAPH,
+                    )
+                    if result.get("text"):
+                        parts.append(f"\n--- {name} ---\n{result['text']}")
+                except Exception as exc:
+                    logger.debug("graph_retriever_failed", cls=name, error=str(exc))
+            return "\n".join(parts)
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            # Already inside an event loop — use nest_asyncio or thread
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                return pool.submit(asyncio.run, _gather()).result()
+        else:
+            return asyncio.run(_gather())
 
     def query_legal_relationships(self, entity: str) -> dict[str, Any]:
         """Query legal relationships using GraphRAG."""
@@ -303,19 +350,23 @@ class DomainExpertAgent(BaseAgent):
         if self.law_collection is not None:
             legal_docs = self.fetch_legal_documents(limit=10)
 
-        # Query GraphRAG for legal relationships and compliance
-        if self.law_graph is not None and "classes" in proposal:
+        # NEW: Use async GraphRetriever when available (preferred over legacy LawGraphSource)
+        if self.graph_retriever is not None and "classes" in proposal:
+            graph_context = self._fetch_graph_context_for_classes(proposal["classes"])
+            if graph_context:
+                legal_context += "\n\n=== GraphRAG Evidence ===\n" + graph_context
+
+        # LEGACY: Query old LawGraphSource for legal relationships
+        elif self.law_graph is not None and "classes" in proposal:
             for cls in proposal["classes"]:
                 class_name = cls.get("name", "")
                 if class_name:
-                    # Query legal relationships for this class
                     legal_rels = self.query_legal_relationships(class_name)
                     if legal_rels.get("relationships"):
                         legal_context += f"\nLegal relationships for {class_name}:\n"
-                        for rel in legal_rels["relationships"][:3]:  # Limit to top 3
+                        for rel in legal_rels["relationships"][:3]:
                             legal_context += f"- {rel.get('type', '')}: {rel.get('target', '')}\n"
 
-                    # Query compliance requirements
                     compliance = self.query_compliance_requirements(class_name)
                     if compliance.get("requirements"):
                         legal_context += f"\nCompliance requirements for {class_name}:\n"

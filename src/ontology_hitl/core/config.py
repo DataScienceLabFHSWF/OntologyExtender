@@ -20,11 +20,19 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Neo4j (optional — for future GraphQAAgent integration)
+    # Neo4j (async driver for GraphRAG)
     neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_http_url: str = "http://localhost:7474"  # HTTP API for LawGraphSource
+    neo4j_http_url: str = "http://localhost:7474"  # HTTP API (legacy LawGraphSource)
     neo4j_username: str = "neo4j"
     neo4j_password: str = "changeme"
+    neo4j_database: str = "neo4j"
+    neo4j_node_label: str = "Entity"  # Cypher label filter; "Entity" → match all
+
+    # GraphRAG retrieval parameters
+    graph_max_hops: int = 2
+    graph_max_nodes: int = 50
+    ppr_damping: float = 0.85
+    ppr_top_k: int = 20
 
     # Fuseki (per INTERFACE_CONTRACT.md §3)
     fuseki_url: str = "http://localhost:3030"
