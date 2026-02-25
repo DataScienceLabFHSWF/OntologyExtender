@@ -1,4 +1,8 @@
-"""Core data models for ontology extension workflow."""
+"""Core data models for ontology extension workflow.
+
+Includes mirrored KGB data models (read-only), retrieval pipeline types
+(ported from GraphQAAgent), and HITL ontology-extension specific models.
+"""
 
 from __future__ import annotations
 
@@ -22,6 +26,7 @@ class KGEntity:
     confidence: float = 0.0
     extras: dict[str, Any] = field(default_factory=dict)
     neo4j_labels: list[str] = field(default_factory=list)
+    properties: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -40,6 +45,8 @@ class OntologyClass:
 
     uri: str
     label: str
+    parent_uri: str | None = None
+    description: str = ""
 
 
 @dataclass
@@ -50,6 +57,90 @@ class OntologyProperty:
     label: str
     domain_uri: str = ""
     range_uri: str = ""
+    property_type: str = "object"  # "object" | "datatype"
+
+
+# ── Retrieval pipeline models (ported from GraphQAAgent) ────────────
+
+
+@dataclass
+class DocumentChunk:
+    """Chunk read from Qdrant payload (matches KGB field names)."""
+
+    id: str
+    doc_id: str
+    content: str
+    strategy: str = ""
+    embedding: list[float] | None = None
+
+
+class QuestionType(Enum):
+    """Classification of user questions."""
+
+    FACTOID = "factoid"
+    LIST = "list"
+    BOOLEAN = "boolean"
+    COMPARATIVE = "comparative"
+    CAUSAL = "causal"
+    AGGREGATION = "aggregation"
+
+
+class RetrievalSource(Enum):
+    """Provenance label for a retrieved context piece."""
+
+    VECTOR = "vector"
+    GRAPH = "graph"
+    HYBRID = "hybrid"
+    ONTOLOGY = "ontology"
+
+
+@dataclass
+class QAQuery:
+    """Parsed user question enriched by question parser + ontology expansion."""
+
+    raw_question: str
+    question_type: QuestionType | None = None
+    detected_entities: list[str] = field(default_factory=list)
+    detected_types: list[str] = field(default_factory=list)
+    expected_relations: list[str] = field(default_factory=list)
+    sub_questions: list[str] = field(default_factory=list)
+    language: str = "de"
+
+
+@dataclass
+class Provenance:
+    """Tracks where a piece of evidence came from."""
+
+    doc_id: str | None = None
+    source_id: str | None = None
+    entity_ids: list[str] = field(default_factory=list)
+    retrieval_strategy: str = ""
+    retrieval_score: float = 0.0
+
+
+@dataclass
+class RetrievedContext:
+    """Single piece of retrieved evidence with provenance."""
+
+    source: RetrievalSource
+    text: str
+    score: float = 0.0
+    chunk: DocumentChunk | None = None
+    subgraph: list[KGEntity | KGRelation] | None = None
+    provenance: Provenance | None = None
+
+
+@dataclass
+class GraphExplorationState:
+    """State of an iterative Think-on-Graph exploration."""
+
+    visited_entity_ids: set[str] = field(default_factory=set)
+    frontier_entity_ids: set[str] = field(default_factory=set)
+    collected_entities: list[KGEntity] = field(default_factory=list)
+    collected_relations: list[KGRelation] = field(default_factory=list)
+    exploration_path: list[str] = field(default_factory=list)
+    iterations: int = 0
+    sufficient_evidence: bool = False
 
 
 class ProposalStatus(str, Enum):

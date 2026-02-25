@@ -30,6 +30,10 @@ dependencies = [
     # Neo4j async driver (GraphRAG)
     "neo4j>=5.0",
 
+    # LangChain Ollama + Neo4j integrations (hybrid/agentic retrieval)
+    "langchain-ollama>=1.0",
+    "langchain-neo4j>=0.8",
+
     # Fuzzy matching (entity linker)
     "rapidfuzz>=3.0",
 

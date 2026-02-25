@@ -110,6 +110,15 @@ class Settings(BaseSettings):
     # Legal enrichment (LawGraph / lawgraph Qdrant collection)
     legal_enrichment_enabled: bool = True
 
+    # Ollama embeddings
+    ollama_embedding_model: str = "nomic-embed-text"
+
+    # Retrieval pipeline (HybridRetriever / AgenticGraphRAG)
+    vector_top_k: int = 10
+    fusion_weight_vector: float = 0.4
+    fusion_weight_graph: float = 0.4
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
     # Domain configuration
     # Used in fallback definitions, CQ generation, and entity extraction
     # prompts. Set to empty string for domain-agnostic operation (e.g.
