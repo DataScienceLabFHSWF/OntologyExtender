@@ -1,30 +1,37 @@
 # OntologyExtender
 
-**Human-in-the-Loop Ontology Extension** using multi-agent debate.
+**Human-in-the-Loop Ontology Extension** using multi-agent debate and hybrid agentic GraphRAG.
 
 Multiple LLM agents debate what to add to a seed ontology while a human
-reviewer keeps the final say. Benchmarked against published baselines on
-OntoURL (58K questions, 15 tasks) and compared with LLM4ACOE.
+reviewer keeps the final say. A full hybrid retrieval pipeline
+(vector + graph + ontology) feeds live knowledge-graph context into every
+step. Benchmarked against published baselines on OntoURL (58K questions, 15
+tasks) and compared with LLM4ACOE.
 
 ## How It Works
 
 ```
-Documents → Gap Analysis → Multi-Agent Debate → Human Review → Extended Ontology
+Documents ─┐
+           ├─→ Gap Analysis ─→ Multi-Agent Debate ─→ Human Review ─→ Extended Ontology
+KG (Neo4j) ┘       ▲                   ▲
+Fuseki TBox ───────┘                   │
+Qdrant Vectors ────────────────────────┘
 ```
 
-1. **Gap Analysis** — Find entities in documents the ontology can't represent
-2. **7-Phase Pipeline** — Three agents debate scope, terms, hierarchy, properties, facets, instances
-3. **Human Review** — Accept, reject, or revise proposals
-4. **Export** — Produce OWL, SHACL constraints, and updated competency questions
-5. **Evaluate** — Measure improvement across 6 dimensions. Repeat until convergence.
+1. **Gap Analysis** — Live graph + SPARQL comparison finds entities the ontology can't represent
+2. **Hybrid Retrieval** — Vector, graph, Cypher and ontology retrieval fused via reciprocal rank fusion
+3. **7-Phase Pipeline** — Three agents debate scope, terms, hierarchy, properties, facets, instances
+4. **Human Review** — Accept, reject, or revise proposals
+5. **Export** — Produce OWL, SHACL constraints, and updated competency questions
+6. **Evaluate** — Measure improvement across 6 dimensions. Repeat until convergence.
 
 ## Quick Start
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
-cp .env.example .env          # configure Ollama URL, model, etc.
+cp .env.example .env          # configure Ollama URL, model, backends
 pip install -e ".[dev]"
-docker compose up -d           # Ollama + optional Fuseki
+docker compose up -d           # Ollama, Neo4j, Fuseki, Qdrant
 
 python scripts/run_feedback_loop.py --mode standalone --max-iterations 4
 ```
@@ -46,6 +53,8 @@ python scripts/evaluate_iteration.py  --before before.json --after after.json --
 src/ontology_hitl/
 ├── agents/          3 agents + moderator + 5 debate strategies
 ├── core/            Loop orchestrator, config, data models
+├── connectors/      Neo4j · Fuseki · Ollama (LangChain) · Qdrant
+├── retrieval/       Hybrid agentic GraphRAG pipeline (see below)
 ├── methodology/     Ont-101 pipeline (7 phases), validation
 ├── discovery/       Gap analysis, entity linking, embedding advisor
 ├── schema/          OWL export, SHACL, seed protection, versioning
@@ -55,6 +64,39 @@ src/ontology_hitl/
 ├── mapping/         YARRRML/RML mapping rules
 └── benchmarking/    OntoURL benchmark + 6-dimension evaluation
 ```
+
+### Connectors
+
+| Module | Backend | Notes |
+|--------|---------|-------|
+| `neo4j.py` | Neo4j (async driver) | k-hop neighbourhood, shortest paths, PPR |
+| `fuseki.py` | Apache Fuseki | Async SPARQL (classes, subclasses, synonyms) |
+| `ollama.py` | Ollama via LangChain | Chat + embeddings (`ChatOllama` / `OllamaEmbeddings`) |
+| `qdrant.py` | Qdrant | Async vector search, returns `DocumentChunk` |
+
+### Hybrid Agentic GraphRAG Pipeline
+
+```
+              ┌──── VectorRetriever (Qdrant) ───────┐
+QAQuery ──→   ├──── GraphRetriever (Neo4j, 4 modes) ┼──→ RRF Fusion ──→ Reranker ──→ Contexts
+              ├──── CypherRetriever (LLM→Cypher)    │
+              └──── OntologyRetriever (Fuseki TBox) ─┘
+                              ▲
+                    AgenticGraphRAG (ReAct, 6 tools)
+```
+
+| Module | Purpose |
+|--------|---------|
+| `vector.py` | Classic RAG: embed question → Qdrant → ranked contexts |
+| `graph_retriever.py` | 4 modes: entity-centric, subgraph, path, PPR |
+| `cypher.py` | LLM-to-Cypher via LangChain `GraphCypherQAChain` |
+| `ontology_context.py` | TBox cache: loads all classes + properties from Fuseki at startup |
+| `ontology_retriever.py` | Ontology-guided query expansion (subclasses, synonyms, relations) |
+| `path_ranker.py` | Relation-aware path scoring (PathCon / PRA-inspired) |
+| `reranker.py` | Cross-encoder reranking (`ms-marco-MiniLM-L-6-v2`) |
+| `hybrid.py` | Three-way reciprocal rank fusion with adaptive weights |
+| `agentic_rag.py` | ReAct agent with 6 tools orchestrating all retrieval |
+| `graphrag_gap_analyzer.py` | Live Neo4j + Fuseki gap detection |
 
 ### Agents & Debate Strategies
 
@@ -170,11 +212,29 @@ Details: [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md)
 Key settings in `.env`:
 
 ```bash
+# LLM
 HITL_OLLAMA_URL=http://localhost:18135
 HITL_OLLAMA_MODEL=qwen3-next
+HITL_OLLAMA_EMBEDDING_MODEL=nomic-embed-text   # embeddings for vector retrieval
 HITL_SEMANTIC_EMBEDDING_MODEL=qwen3-embedding  # Ollama embedding model used as fallback
+
+# Backends
+HITL_NEO4J_URI=bolt://localhost:7687
+HITL_NEO4J_USER=neo4j
+HITL_NEO4J_PASSWORD=changeme
+HITL_FUSEKI_URL=http://localhost:3030
+HITL_FUSEKI_DATASET=kgbuilder
 HITL_QDRANT_URL=http://localhost:6333
-HITL_QDRANT_COLLECTION=documents
+HITL_QDRANT_COLLECTION=kgbuilder
+
+# Retrieval tuning
+HITL_VECTOR_TOP_K=10
+HITL_FUSION_WEIGHT_VECTOR=0.4
+HITL_FUSION_WEIGHT_GRAPH=0.4
+HITL_RERANKER_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
+HITL_GRAPH_MAX_HOPS=2
+HITL_PPR_TOP_K=20
+
 HITL_CQ_ANSWERABILITY_TARGET=0.80
 ```
 
@@ -192,7 +252,9 @@ WANDB_PROJECT=ontology-hitl       # W&B experiment tracking
 ## Tests
 
 ```bash
-python -m pytest tests/ -v
+python -m pytest tests/ -v                      # all tests (60+)
+python -m pytest tests/test_graphrag.py -v        # graph retrieval layer
+python -m pytest tests/test_hybrid_graphrag.py -v  # hybrid agentic pipeline
 ```
 
 ## Development
