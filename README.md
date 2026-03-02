@@ -27,12 +27,41 @@ Qdrant Vectors ─────────────────────�
 
 ## Quick Start
 
+### Option 1: Docker (Recommended)
+
+```bash
+git clone https://github.com/DataScienceLabFHSWF/OntologyExtender.git
+cd OntologyExtender
+cp .env.example .env
+
+# Start everything — Fuseki + Ollama + API + auto model pull
+docker compose up -d --build
+
+# API: http://localhost:8003/docs
+# Fuseki: http://localhost:3030
+```
+
+Container names are prefixed with `ontology-` to avoid conflicts with other stacks.
+
+### Option 2: As Part of KGPlatform
+
+```bash
+git clone --recurse-submodules https://github.com/DataScienceLabFHSWF/KGPlatform.git
+cd KGPlatform
+docker compose up -d  # starts all 3 APIs + shared infra (Ontology API on port 8010)
+```
+
+### Option 3: Local Development
+
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 cp .env.example .env          # configure Ollama URL, model, backends
 pip install -e ".[dev]"
-docker compose up -d           # Ollama, Neo4j, Fuseki, Qdrant
 
+# Start Fuseki + Ollama separately, then:
+uvicorn ontology_hitl.api.server:app --host 0.0.0.0 --port 8003
+
+# Or run the feedback loop directly:
 python scripts/run_feedback_loop.py --mode standalone --max-iterations 4
 ```
 
@@ -169,54 +198,95 @@ Full derivation: [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 
 ## Models
 
-| Model | Params | Use |
-|-------|--------|-----|
-| `llama3.2:3b` | 3.2B | Small baseline |
-| `nemotron-3-nano` | ~8B | Practical deployment |
-| `qwen3-next` | 79.7B | Maximum capability |
-| `qwen3-embedding` | embedding model | Ollama embedding model (used as fallback for semantic matching) |
+| Model | Params | Use | Auto-pulled |
+|-------|--------|-----|-------------|
+| `qwen3:8b` | 8B | Default API model (reasoning) | Yes (via init container) |
+| `llama3.2:3b` | 3.2B | Small non-reasoning baseline for benchmarks | No — pull manually |
+| `nemotron-3-nano` | ~8B | Medium model for experiments | No — pull manually |
+| `qwen3-next` | 79.7B | Large reasoning model for benchmarks | No — pull manually |
+| `qwen3-embedding` | — | Semantic matching fallback | No — pull if needed |
 
-All served locally via Ollama (`localhost:18135`).
+All served locally via Ollama. The standalone container is `ontology-ollama` (port 11437);
+inside KGPlatform the instance is `ollama-ontology` (port 18135).
 
-Note: the benchmarking pipeline prefers `sentence-transformers` for
-TamingHallucinations semantic matching when available; when not, the
-framework falls back to Ollama `/api/embed` using the configured
-`semantic_embedding_model` (default: `qwen3-embedding`). Pull the
-embedding image into the local Ollama instance with:
+### Pulling Additional Benchmark Models
 
 ```bash
-# using the repo's Ollama container
-docker exec ollama-ontology-extender ollama pull qwen3-embedding
+# Standalone
+docker exec ontology-ollama ollama pull llama3.2:3b
+docker exec ontology-ollama ollama pull nemotron-3-nano
+docker exec ontology-ollama ollama pull qwen3-next:latest
+docker exec ontology-ollama ollama pull qwen3-embedding
+
+# Inside KGPlatform
+docker exec ollama-ontology ollama pull llama3.2:3b
 ```
 
-Or use `docker compose up -d` to start the Ollama service and then
-`docker exec ... ollama pull ...` as above. The embedding model is a
-runtime-only optional dependency (no Python package required).
+Note: the benchmarking pipeline prefers `sentence-transformers` for
+semantic matching when available; when unavailable, it falls back to
+Ollama `/api/embed` using the configured `semantic_embedding_model`
+(default: `qwen3-embedding`). The embedding model is a runtime-only
+optional dependency (no Python package required).
 
 
 ## Experiments
 
+All experiments run against the standalone Docker stack. Make sure Ollama has
+the required models before starting (see [Models](#models) above).
+
 ```bash
-# Run all experiments
-python scripts/run_experiments.py --experiments experiments/comprehensive_experiments.json \
+# 1. Start standalone stack
+docker compose up -d --build
+
+# 2. Pull benchmark models (first time only)
+docker exec ontology-ollama ollama pull llama3.2:3b
+docker exec ontology-ollama ollama pull nemotron-3-nano
+docker exec ontology-ollama ollama pull qwen3-next:latest
+
+# 3. Run comprehensive model comparison (small/medium/large × 4 strategies)
+python scripts/run_model_comparison.py \
+    --experiments experiments/comprehensive_experiments.json \
+    --output results/comprehensive.json \
+    --report results/comparison_report.md
+
+# 4. Run debate strategy experiments (parallel)
+python scripts/run_experiments.py \
+    --experiments experiments/comprehensive_experiments.json \
     --parallel --output results/comprehensive_results.json
 
-# Model comparison
-python scripts/run_model_comparison.py --run-all --output results/full_comparison.json
+# 5. OntoURL benchmark (15 tasks, all strategies)
+python scripts/run_ontourl_benchmark.py --model llama3.2:3b
+bash scripts/run_lc3_comparison.sh          # Vanilla vs HCOME comparison
+
+# 6. LLM-only baselines
+python scripts/llm_only_baseline.py --model llama3.2:3b --strategy naive
 ```
+
+### Experiment Configurations
+
+| Config File | Models | Experiments |
+|-------------|--------|-------------|
+| `experiments/small_model_experiments.json` | llama3.2:3b | 5 (baseline + debate strategies) |
+| `experiments/large_model_experiments.json` | qwen3-next | 5 (baseline + debate strategies) |
+| `experiments/llm_only_experiments.json` | all 3 | 12 (4 strategies × 3 models) |
+| `experiments/comprehensive_experiments.json` | all 3 | 24 (debate + LLM-only × 3 sizes) |
 
 Details: [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md)
 
 ## Configuration
 
-Key settings in `.env`:
+Key settings in `.env` (copy from `.env.example`):
 
 ```bash
-# LLM
-HITL_OLLAMA_URL=http://localhost:18135
-HITL_OLLAMA_MODEL=qwen3-next
-HITL_OLLAMA_EMBEDDING_MODEL=nomic-embed-text   # embeddings for vector retrieval
-HITL_SEMANTIC_EMBEDDING_MODEL=qwen3-embedding  # Ollama embedding model used as fallback
+# LLM — default model pulled automatically by docker compose
+HITL_OLLAMA_MODEL=qwen3:8b
+
+# Override for benchmarking:
+# HITL_OLLAMA_MODEL=llama3.2:3b    # small baseline
+# HITL_OLLAMA_MODEL=qwen3-next     # large reasoning model
+
+# Semantic matching fallback (when sentence-transformers unavailable)
+HITL_SEMANTIC_EMBEDDING_MODEL=qwen3-embedding
 
 # Backends
 HITL_NEO4J_URI=bolt://localhost:7687

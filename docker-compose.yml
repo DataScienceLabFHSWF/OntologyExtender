@@ -1,69 +1,82 @@
-version: "3.9"
+# OntologyExtender — Standalone Docker Compose
+#
+# Brings up Fuseki + Ollama + the Ontology HITL API in one command.
+# Models are pulled automatically on first run.
+#
+# Usage:
+#   docker compose up -d              # start everything
+#   docker compose up -d --build      # rebuild API image + start
+#   docker compose logs -f ontology-api  # follow API logs
+#
+# When running inside KGPlatform, this file is NOT used.
+# KGPlatform's root docker-compose.yml handles everything.
 
 services:
-  # ── OntologyExtender API ───────────────────────────────────────────────
+  # ── OntologyExtender API ───────────────────────────────────
   ontology-api:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
     container_name: ontology-api
+    restart: unless-stopped
     ports:
-      - "8003:8003"
+      - "${UVICORN_PORT:-8003}:8003"
     environment:
       SERVICE_NAME: ontology
       UVICORN_PORT: "8003"
-      HITL_FUSEKI_URL: http://fuseki:3030
-      HITL_FUSEKI_DATASET: kgbuilder
-      HITL_FUSEKI_STAGING_DATASET: kgbuilder-staging
-      HITL_OLLAMA_URL: http://ollama-ontology:11434
-      HITL_OLLAMA_MODEL: qwen3:8b
-      KGBUILDER_API_URL: http://kgbuilder-api:8001
+      HITL_FUSEKI_URL: http://ontology-fuseki:3030
+      HITL_FUSEKI_DATASET: ${HITL_FUSEKI_DATASET:-kgbuilder}
+      HITL_FUSEKI_STAGING_DATASET: ${HITL_FUSEKI_STAGING_DATASET:-kgbuilder-staging}
+      HITL_OLLAMA_URL: http://ontology-ollama:11434
+      HITL_OLLAMA_MODEL: ${HITL_OLLAMA_MODEL:-qwen3:8b}
+      KGBUILDER_API_URL: ${KGBUILDER_API_URL:-}
     depends_on:
-      fuseki:
-        condition: service_started
-      ollama-ontology:
-        condition: service_started
-    networks:
-      - ontology-net
+      ontology-ollama-init:
+        condition: service_completed_successfully
+      ontology-fuseki:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8003/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-
-  # ── Fuseki (SPARQL / ontology store) ───────────────────────────────────
-  fuseki:
-    image: stain/jena-fuseki:4.10.0
-    container_name: fuseki
-    ports:
-      - "3030:3030"
-    environment:
-      ADMIN_PASSWORD: admin
-      FUSEKI_DATASET_1: kgbuilder
-      FUSEKI_DATASET_2: kgbuilder-staging
-    volumes:
-      - fuseki-data:/fuseki
     networks:
       - ontology-net
+
+  # ── Fuseki (SPARQL / ontology store) ───────────────────────
+  ontology-fuseki:
+    image: stain/jena-fuseki:latest
+    container_name: ontology-fuseki
+    restart: unless-stopped
+    ports:
+      - "${FUSEKI_PORT:-3030}:3030"
+    environment:
+      ADMIN_PASSWORD: ${HITL_FUSEKI_PASSWORD:-admin}
+      FUSEKI_DATASET_1: ${HITL_FUSEKI_DATASET:-kgbuilder}
+      FUSEKI_DATASET_2: ${HITL_FUSEKI_STAGING_DATASET:-kgbuilder-staging}
+    volumes:
+      - fuseki-data:/fuseki
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3030/$/ping"]
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - ontology-net
 
-  # ── Ollama (LLM for class generation) ─────────────────────────────────
-  ollama-ontology:
+  # ── Ollama + model init ────────────────────────────────────
+  ontology-ollama:
     image: ollama/ollama:0.14.3
-    container_name: ollama-ontology
+    container_name: ontology-ollama
+    restart: unless-stopped
     ports:
-      - "11437:11434"
+      - "${OLLAMA_PORT:-11437}:11434"
     volumes:
       - ollama-data:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
-    networks:
-      - ontology-net
+      - OLLAMA_ALLOW_DOWNLOADS=true
     deploy:
       resources:
         reservations:
@@ -71,41 +84,30 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ontology-net
 
-  # ── Legacy Ollama instance for ontology extension (port 18135)
-  ollama-ontology-extender:
+  ontology-ollama-init:
     image: ollama/ollama:0.14.3
-    container_name: ollama-ontology-extender
-    ports:
-      - "18135:11434"
-    volumes:
-      - ollama_data_legacy:/root/.ollama
+    container_name: ontology-ollama-init
+    depends_on:
+      ontology-ollama:
+        condition: service_healthy
     environment:
-      - OLLAMA_KEEP_ALIVE=1h
-      - OLLAMA_NUM_PARALLEL=4
-      - OLLAMA_FLASH_ATTENTION=1
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
-    restart: unless-stopped
-    networks:
-      - ontology-net
-
-  # ── Legacy Fuseki staging (port 3031)
-  fuseki-staging:
-    image: secoresearch/fuseki:latest
-    container_name: hitl-fuseki
-    ports:
-      - "3031:3030"
-    environment:
-      - ADMIN_PASSWORD=${HITL_FUSEKI_PASSWORD:-admin}
-    volumes:
-      - fuseki_data_legacy:/fuseki
-    restart: unless-stopped
+      - OLLAMA_HOST=ontology-ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Pulling models for OntologyExtender..."
+        ollama pull ${HITL_OLLAMA_MODEL:-qwen3:8b}
+        echo "OntologyExtender models ready."
+    restart: "no"
     networks:
       - ontology-net
 
@@ -113,10 +115,6 @@ volumes:
   fuseki-data:
     driver: local
   ollama-data:
-    driver: local
-  ollama_data_legacy:
-    driver: local
-  fuseki_data_legacy:
     driver: local
 
 networks:
