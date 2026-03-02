@@ -69,6 +69,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+api = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+]
 web = [
     "streamlit>=1.30",
 ]
@@ -83,10 +87,11 @@ dev = [
     "matplotlib>=3.7",
     "pandas>=2.0",
 ]
-all = ["ontology-hitl[web,dev]"]
+all = ["ontology-hitl[api,web,dev]"]
 
 [project.scripts]
 hitl-review = "ontology_hitl.review.cli:app"
+ontology-api = "uvicorn:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ontology_hitl"]
