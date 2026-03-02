@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import os
 from functools import lru_cache
+from pathlib import Path
+from typing import Any
 
 import httpx
 import structlog
@@ -24,6 +26,16 @@ def get_settings() -> dict[str, str]:
         "ollama_model": os.getenv("HITL_OLLAMA_MODEL", "qwen3:8b"),
         "kgbuilder_api_url": os.getenv("KGBUILDER_API_URL", "http://localhost:8001"),
     }
+
+
+# ── Core config Settings (for AgentTeam) ────────────────────────────────
+
+@lru_cache(maxsize=1)
+def get_core_settings():
+    """Return a core Settings instance (pydantic-settings) for agent/pipeline use."""
+    from ontology_hitl.core.config import Settings
+
+    return Settings()
 
 
 # ── Fuseki client ────────────────────────────────────────────────────────
@@ -110,3 +122,89 @@ def notify_kgbuilder_rebuild() -> bool:
     except Exception:
         logger.warning("kgbuilder_rebuild_notify_failed", url=url)
         return False
+
+
+# ── AgentTeam factory ────────────────────────────────────────────────────
+
+def create_agent_team(
+    document_context: str = "",
+    output_dir: Path | None = None,
+) -> "AgentTeam":
+    """Create an AgentTeam configured from environment settings.
+
+    This is the bridge between the lightweight API dependency layer
+    and the full multi-agent debate system.
+    """
+    from ontology_hitl.agents.team import AgentTeam
+
+    settings = get_core_settings()
+
+    if output_dir is None:
+        output_dir = Path(settings.iterations_dir) / "api_debates"
+
+    team = AgentTeam(
+        settings=settings,
+        document_context=document_context,
+        max_debate_rounds=2,
+        output_dir=output_dir,
+    )
+    return team
+
+
+def fetch_fuseki_hierarchy() -> str:
+    """Fetch the current class hierarchy from Fuseki as a text summary.
+
+    Returns a formatted string showing parent → child relationships
+    that agents can use as context for hierarchy-aware debates.
+    """
+    try:
+        rows = sparql_query("""
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+            SELECT ?class ?label ?parent ?parentLabel WHERE {
+                ?class a owl:Class .
+                OPTIONAL { ?class rdfs:label ?label }
+                OPTIONAL {
+                    ?class rdfs:subClassOf ?parent .
+                    ?parent a owl:Class .
+                    OPTIONAL { ?parent rdfs:label ?parentLabel }
+                }
+            }
+            ORDER BY ?parent ?class
+        """)
+    except Exception as e:
+        logger.warning("hierarchy_fetch_failed", error=str(e))
+        return "(Could not fetch current hierarchy from Fuseki)"
+
+    if not rows:
+        return "(No classes found in Fuseki)"
+
+    lines: list[str] = []
+    for row in rows:
+        uri = row.get("class", "")
+        label = row.get("label", uri.rsplit("/", 1)[-1].rsplit("#", 1)[-1])
+        parent_label = row.get("parentLabel", "")
+        parent_uri = row.get("parent", "")
+        if parent_uri:
+            p_display = parent_label or parent_uri.rsplit("/", 1)[-1].rsplit("#", 1)[-1]
+            lines.append(f"  {p_display} → {label}")
+        else:
+            lines.append(f"  {label} (root)")
+
+    return "Current ontology hierarchy:\n" + "\n".join(lines)
+
+
+def fetch_fuseki_class_labels() -> list[str]:
+    """Fetch just the class labels from Fuseki for seed context."""
+    try:
+        rows = sparql_query("""
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+            SELECT ?label WHERE {
+                ?class a owl:Class .
+                ?class rdfs:label ?label .
+            }
+        """)
+        return [r["label"] for r in rows if "label" in r]
+    except Exception:
+        return []

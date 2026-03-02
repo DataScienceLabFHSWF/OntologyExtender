@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -18,12 +19,24 @@ class TBoxChangeType(str, Enum):
     PROPERTY_FIX = "tbox_property_fix"
 
 
+class DebateVerdictEnum(str, Enum):
+    """Possible outcomes of a multi-agent debate."""
+
+    CONSENSUS = "consensus"
+    REVISED = "revised"
+    ESCALATED = "escalated"
+    PARTIAL = "partial"
+    SKIPPED = "skipped"  # debate was not run (e.g. fallback mode)
+
+
 # ── Extend ───────────────────────────────────────────────────────────────
 
 class TBoxChangeRequest(BaseModel):
     """Request to apply a single TBox change.
 
     Sent by KGBuilder's HITL gap detector or by the review UI.
+    When ``debate_enabled`` is True (default), NEW_CLASS changes are
+    routed through the multi-agent debate pipeline for quality assurance.
     """
 
     change_type: TBoxChangeType
@@ -35,12 +48,57 @@ class TBoxChangeRequest(BaseModel):
         description="Key-value pairs of suggested modifications (e.g. label, parent_uri, ...)",
     )
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    debate_enabled: bool = Field(
+        default=True,
+        description="Route through multi-agent debate pipeline (recommended for new classes)",
+    )
+    document_context: str = Field(
+        default="",
+        description="Domain document excerpts for the DomainExpert agent",
+    )
+
+
+# ── Debate result schemas ────────────────────────────────────────────────
+
+class DebateMessageSummary(BaseModel):
+    """Summary of a single message in a debate transcript."""
+
+    role: str = Field(..., description="Agent role: ontology_engineer / domain_expert / critic")
+    message_type: str = Field(..., description="proposal / review / revision")
+    approves: bool | None = None
+    issues_raised: list[str] = Field(default_factory=list)
+    reasoning_excerpt: str = Field(default="", description="Truncated chain-of-thought")
+
+
+class EscalatedQuestionInfo(BaseModel):
+    """A question escalated from the debate for HITL review."""
+
+    phase: str
+    question: str
+    context: str = ""
+
+
+class DebateResult(BaseModel):
+    """Full debate outcome attached to a TBox change response."""
+
+    verdict: DebateVerdictEnum
+    rounds: int = 0
+    resolved_issues: list[str] = Field(default_factory=list)
+    escalated_questions: list[EscalatedQuestionInfo] = Field(default_factory=list)
+    transcript: list[DebateMessageSummary] = Field(default_factory=list)
+    final_proposal: dict[str, Any] = Field(
+        default_factory=dict,
+        description="The debated & agreed-upon class definition JSON",
+    )
 
 
 class TBoxChangeResponse(BaseModel):
     """Result of applying a TBox change."""
 
-    status: str = Field(..., description="'applied' | 'staged' | 'rejected' | 'error'")
+    status: str = Field(
+        ...,
+        description="'applied' | 'staged' | 'needs_review' | 'rejected' | 'error'",
+    )
     change_id: str = Field(..., description="Unique ID for the applied change")
     changes_applied: list[str] = Field(
         default_factory=list,
@@ -49,6 +107,10 @@ class TBoxChangeResponse(BaseModel):
     new_ontology_version: str | None = Field(
         default=None,
         description="Version tag if the ontology was bumped",
+    )
+    debate: DebateResult | None = Field(
+        default=None,
+        description="Multi-agent debate result (present when debate_enabled=True)",
     )
 
 

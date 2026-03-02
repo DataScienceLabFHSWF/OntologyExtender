@@ -23,17 +23,22 @@ def mock_sparql_query():
 
 @pytest.fixture
 def mock_sparql_update():
-    """Mock SPARQL update helper."""
-    with patch("ontology_hitl.api.dependencies.sparql_update") as m:
-        yield m
+    """Mock SPARQL update helper — patches both dependencies and routes.extend."""
+    with patch("ontology_hitl.api.dependencies.sparql_update") as dep_mock, \
+         patch("ontology_hitl.api.routes.extend.sparql_update") as route_mock:
+        # Keep them in sync
+        route_mock.side_effect = dep_mock.side_effect
+        yield route_mock
 
 
 @pytest.fixture
 def mock_llm_generate():
-    """Mock LLM generation."""
-    with patch("ontology_hitl.api.dependencies.llm_generate") as m:
-        m.return_value = 'ex:TestClass a owl:Class ; rdfs:label "Test" .'
-        yield m
+    """Mock LLM generation — patches both dependencies and routes.extend."""
+    with patch("ontology_hitl.api.dependencies.llm_generate") as dep_mock, \
+         patch("ontology_hitl.api.routes.extend.llm_generate") as route_mock:
+        route_mock.return_value = 'ex:TestClass a owl:Class ; rdfs:label "Test" .'
+        dep_mock.return_value = 'ex:TestClass a owl:Class ; rdfs:label "Test" .'
+        yield route_mock
 
 
 @pytest.fixture
