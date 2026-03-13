@@ -1,0 +1,5 @@
+.env
+.miro_oauth_tokens.json
+.venv/
+__pycache__/
+*.pyc
