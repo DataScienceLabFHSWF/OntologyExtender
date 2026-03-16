@@ -1,0 +1,474 @@
+{
+  "id": "ontology-export",
+  "name": "Exported Ontology",
+  "version": "1.0.0",
+  "classes": [
+    {
+      "id": "cls:Action",
+      "name": "action",
+      "module": "Core",
+      "description": "a class that represents a type of action that can be performed in a planning domain",
+      "parentClassId": "rel:b0",
+      "exampleInstanceId": null,
+      "attributes": [
+        {
+          "id": "rel:hasActionExplanation",
+          "name": "has action explanation",
+          "dataType": "string",
+          "required": false,
+          "description": "",
+          "sourceDataType": "http://www.w3.org/2001/XMLSchema#string",
+          "cardinality": "0..1",
+          "exampleValue": null
+        }
+      ]
+    },
+    {
+      "id": "cls:Parameter",
+      "name": "parameter",
+      "module": "Core",
+      "description": "a class that represents what is involved in an action",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:State",
+      "name": "state",
+      "module": "Core",
+      "description": "represents a situation or a configuration of the world in a planning problem",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:Plan",
+      "name": "plan",
+      "module": "Core",
+      "description": "",
+      "parentClassId": "rel:b5",
+      "exampleInstanceId": null,
+      "attributes": [
+        {
+          "id": "rel:hasPlanCost",
+          "name": "has plan cost",
+          "dataType": "string",
+          "required": false,
+          "description": "",
+          "sourceDataType": "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+          "cardinality": "0..1",
+          "exampleValue": null
+        },
+        {
+          "id": "rel:hasPlanExplanation",
+          "name": "has plan explanation",
+          "dataType": "string",
+          "required": false,
+          "description": "",
+          "sourceDataType": "http://www.w3.org/2001/XMLSchema#string",
+          "cardinality": "0..1",
+          "exampleValue": null
+        }
+      ]
+    },
+    {
+      "id": "cls:ActionEffect",
+      "name": "action effect",
+      "module": "Core",
+      "description": "a class that represents what happens after an action is done",
+      "parentClassId": "rel:b15",
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:ActionPrecondition",
+      "name": "action precondition",
+      "module": "Core",
+      "description": "a class that represents what needs to be true before an action can be done",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:DomainConstant",
+      "name": "domain constant",
+      "module": "Core",
+      "description": "represents a fixed entity in a planning domain",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:DomainPredicate",
+      "name": "domain predicate",
+      "module": "Core",
+      "description": "a class that represents a condition or a fact that can be true or false in a planning domain",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:DomainRequirement",
+      "name": "domain requirement",
+      "module": "Core",
+      "description": "A feature that a planning domain requires or supports",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:GoalState",
+      "name": "goal state",
+      "module": "Core",
+      "description": "represents a desired or a target state defined in a task that a plan should achieve",
+      "parentClassId": "cls:State",
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:InitialState",
+      "name": "initial state",
+      "module": "Core",
+      "description": "represents the starting or the given state of a planning problem",
+      "parentClassId": "cls:State",
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:MacroAction",
+      "name": "macro action",
+      "module": "Core",
+      "description": "Extracted macro action, which is a combination of multiple actions of a planning domain",
+      "parentClassId": "cls:Action",
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:ParameterType",
+      "name": "parameter type",
+      "module": "Core",
+      "description": "represents a kind of entity in a planning domain",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:Planner",
+      "name": "planner",
+      "module": "Core",
+      "description": "a system that can generate plans for a given planning domain and problem",
+      "parentClassId": "rel:b25",
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:PlannerType",
+      "name": "planner type",
+      "module": "Core",
+      "description": "a category or classification of planners based on their characteristics or features",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:PlanningDomain",
+      "name": "planning domain",
+      "module": "Core",
+      "description": "a class that represents a problem setting for automated planning",
+      "parentClassId": "rel:b35",
+      "exampleInstanceId": null,
+      "attributes": [
+        {
+          "id": "rel:hasModelReconciliationExplanation",
+          "name": "has model reconciliation explanation",
+          "dataType": "string",
+          "required": false,
+          "description": "",
+          "sourceDataType": "http://www.w3.org/2001/XMLSchema#string",
+          "cardinality": "0..1",
+          "exampleValue": null
+        }
+      ]
+    },
+    {
+      "id": "cls:PlanningProblem",
+      "name": "planning problem",
+      "module": "Core",
+      "description": "represents a task of the planning domain that requires a plan to be solved",
+      "parentClassId": "rel:b50",
+      "exampleInstanceId": null,
+      "attributes": []
+    },
+    {
+      "id": "cls:ProblemObject",
+      "name": "problem object",
+      "module": "Core",
+      "description": "represents an entity or a constant that is involved in a planning problem",
+      "parentClassId": null,
+      "exampleInstanceId": null,
+      "attributes": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel:solvedBy",
+      "name": "solved by",
+      "domainClassId": "cls:DomainRequirement",
+      "rangeClassId": "cls:Planner",
+      "description": "a property that relates a domain requirement to a planner that solves it",
+      "inverseName": "solves requirement",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:isGeneratedBy",
+      "name": "is generated by",
+      "domainClassId": "cls:Plan",
+      "rangeClassId": "cls:Planner",
+      "description": "a property that relates a plan to a planner that generates it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:ofPlannerType",
+      "name": "of planner type",
+      "domainClassId": "cls:Planner",
+      "rangeClassId": "cls:PlannerType",
+      "description": "a property that relates a planner to a planner type that categorizes it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasRequirement",
+      "name": "has requirement",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:DomainRequirement",
+      "description": "a property that relates a planning domain or problem to a domain requirement that is required or supported by it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasAction",
+      "name": "has action",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:Action",
+      "description": "a property that relates a planning domain to a domain action that is available in it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasConstant",
+      "name": "has constant",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:DomainConstant",
+      "description": "a property that relates a planning domain to a domain constant that is defined in it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasPredicate",
+      "name": "has predicate",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:DomainPredicate",
+      "description": "a property that relates a planning domain to a domain predicate that is defined in it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasHighRelevancePlanner",
+      "name": "has high relevance planner",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:Planner",
+      "description": "a property that relates a planning domain to a planner that has a high relevance score for it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasLowRelevancePlanner",
+      "name": "has low relevance planner",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:Planner",
+      "description": "a property that relates a planning domain to a planner that has a low relevance score for it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasMediumRelevancePlanner",
+      "name": "has medium relevance planner",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:Planner",
+      "description": "a property that relates a planning domain to a planner that has a medium relevance score for it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasProblem",
+      "name": "has problem",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:PlanningProblem",
+      "description": "a property that relates a planning domain to a planning problem that is defined in it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasParameterType",
+      "name": "has parameter type",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:ParameterType",
+      "description": "a property that relates a planning domain to a type",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasExtractedAction",
+      "name": "has extracted action",
+      "domainClassId": "cls:PlanningDomain",
+      "rangeClassId": "cls:MacroAction",
+      "description": "a property that relates a planning domain to an action that is extracted from its plan",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasGoalState",
+      "name": "has goal state",
+      "domainClassId": "cls:PlanningProblem",
+      "rangeClassId": "cls:GoalState",
+      "description": "a property that relates a planning problem to a goal state that is desired for it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasPlan",
+      "name": "has plan",
+      "domainClassId": "cls:PlanningProblem",
+      "rangeClassId": "cls:Plan",
+      "description": "a property that relates a planning problem to a plan that solves it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasObject",
+      "name": "has object",
+      "domainClassId": "cls:PlanningProblem",
+      "rangeClassId": "cls:ProblemObject",
+      "description": "a property that relates a planning problem to a problem object that is involved in it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasInitialState",
+      "name": "has initial state",
+      "domainClassId": "cls:PlanningProblem",
+      "rangeClassId": "cls:InitialState",
+      "description": "a property that relates a planning problem to an initial state that is given for it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasPDDLTypeInstance",
+      "name": "has pddltype instance",
+      "domainClassId": "cls:ParameterType",
+      "rangeClassId": "cls:ProblemObject",
+      "description": "a property that relates a type to a problem object that is an instance of it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasTag",
+      "name": "has tag",
+      "domainClassId": "cls:ParameterType",
+      "rangeClassId": null,
+      "description": "a property that relates a type to a type tag that labels it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:ofParameterType",
+      "name": "of parameter type",
+      "domainClassId": "cls:Parameter",
+      "rangeClassId": "cls:ParameterType",
+      "description": "a property that relates an action parameter to a type that classifies it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasEffect",
+      "name": "has effect",
+      "domainClassId": "cls:Action",
+      "rangeClassId": "cls:ActionEffect",
+      "description": "a property that relates an action to an action effect that results from it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasParameter",
+      "name": "has parameter",
+      "domainClassId": "cls:Action",
+      "rangeClassId": "cls:Parameter",
+      "description": "a property that relates an action to an action parameter that is involved in it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:hasPrecondition",
+      "name": "has precondition",
+      "domainClassId": "cls:Action",
+      "rangeClassId": "cls:ActionPrecondition",
+      "description": "a property that relates an action to an action precondition that is required for it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:addsPredicate",
+      "name": "adds predicate",
+      "domainClassId": "cls:ActionEffect",
+      "rangeClassId": "cls:State",
+      "description": "a property that relates an effect to a state that adds a predicate to it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:deletesPredicate",
+      "name": "deletes predicate",
+      "domainClassId": "cls:ActionEffect",
+      "rangeClassId": "cls:State",
+      "description": "a property that relates an effect to a state that deletes a predicate from it",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    },
+    {
+      "id": "rel:solvesRequirement",
+      "name": "solves requirement",
+      "domainClassId": "cls:Planner",
+      "rangeClassId": "cls:DomainRequirement",
+      "description": "a property that relates a planner to a domain requirement that it can handle or satisfy",
+      "inverseName": "",
+      "cardinality": "0..n",
+      "exampleTriple": null
+    }
+  ]
+}
