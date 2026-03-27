@@ -211,6 +211,14 @@ class TestCase(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class CQType(str, Enum):
+    SCQ = "SCQ"
+    VCQ = "VCQ"
+    FCQ = "FCQ"
+    RCQ = "RCQ"
+    MpCQ = "MpCQ"
+
+
 class CompetencyQuestion(BaseModel):
     """A competency question targeting removed ontology elements.
 
@@ -223,6 +231,8 @@ class CompetencyQuestion(BaseModel):
         Short identifier, e.g. ``"CQ-07"``.
     question : str
         Natural-language question text.
+    cq_type : CQType
+        Ontology competency question type according to Keet & Khan (2024).
     target_classes : list[str]
         Class URIs whose presence is required to answer the CQ.
     target_properties : list[str]
@@ -237,6 +247,7 @@ class CompetencyQuestion(BaseModel):
 
     id: str
     question: str
+    cq_type: CQType = CQType.VCQ
     target_classes: list[str] = Field(default_factory=list)
     target_properties: list[str] = Field(default_factory=list)
     sparql_template: str | None = None

@@ -487,6 +487,7 @@ class TestCaseGenerator:
                 CompetencyQuestion(
                     id=f"CQ-C{i:02d}",
                     question=f"What is a {label} and how does it relate to the ontology?",
+                    cq_type="VCQ",
                     target_classes=[cls_uri],
                     target_properties=[],
                     difficulty=difficulty,
@@ -506,6 +507,7 @@ class TestCaseGenerator:
                 CompetencyQuestion(
                     id=f"CQ-P{j:02d}",
                     question=f"What relationship does '{label}' describe between entities?",
+                    cq_type="RCQ",
                     target_classes=[],
                     target_properties=[prop_uri],
                     difficulty=difficulty,

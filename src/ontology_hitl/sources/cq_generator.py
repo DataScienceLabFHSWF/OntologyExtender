@@ -29,6 +29,7 @@ well-designed ontology should be able to answer.
 Each CQ must include:
 - id: sequential "CQ_NNN"
 - question: a natural language question (German or English)
+- cq_type: one of SCQ, VCQ, FCQ, RCQ, MpCQ (Keet & Khan 2024)
 - expected_entity_types: list of OWL class names needed to answer it
 - expected_relations: list of ObjectProperty names needed
 - difficulty: 1-5 (1=simple lookup, 5=multi-hop inference)
@@ -126,12 +127,23 @@ class CQGenerator:
         new_cqs: list[dict] = []
         for cq in generated:
             q = cq.get("question", "").lower()
-            if q and q not in existing_questions:
-                max_id += 1
-                cq["id"] = f"CQ_{max_id:03d}"
-                cq["added_in_iteration"] = "auto-generated"
-                new_cqs.append(cq)
-                existing_questions.add(q)
+            if not q or q in existing_questions:
+                continue
+
+            # Ensure CQ type is valid; fallback to VCQ for unknown/missing
+            if "cq_type" in cq:
+                cq_type = str(cq.get("cq_type", "")).strip()
+                if cq_type not in {"SCQ", "VCQ", "FCQ", "RCQ", "MpCQ"}:
+                    cq_type = "VCQ"
+            else:
+                cq_type = "VCQ"
+            cq["cq_type"] = cq_type
+
+            max_id += 1
+            cq["id"] = f"CQ_{max_id:03d}"
+            cq["added_in_iteration"] = "auto-generated"
+            new_cqs.append(cq)
+            existing_questions.add(q)
 
         combined = existing + new_cqs
         logger.info("cq_generation_done",
