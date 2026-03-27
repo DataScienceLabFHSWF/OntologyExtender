@@ -1,18 +1,82 @@
-version: "3.8"
+# OntologyExtender — Standalone Docker Compose
+#
+# Brings up Fuseki + Ollama + the Ontology HITL API in one command.
+# Models are pulled automatically on first run.
+#
+# Usage:
+#   docker compose up -d              # start everything
+#   docker compose up -d --build      # rebuild API image + start
+#   docker compose logs -f ontology-api  # follow API logs
+#
+# When running inside KGPlatform, this file is NOT used.
+# KGPlatform's root docker-compose.yml handles everything.
 
 services:
-  # Dedicated Ollama instance for ontology extension (port 18135)
-  ollama-ontology-extender:
-    image: ollama/ollama:0.14.3
-    container_name: ollama-ontology-extender
+  # ── OntologyExtender API ───────────────────────────────────
+  ontology-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: ontology-api
+    restart: unless-stopped
     ports:
-      - "18135:11434"
-    volumes:
-      - ollama_data:/root/.ollama
+      - "${UVICORN_PORT:-8003}:8003"
     environment:
-      - OLLAMA_KEEP_ALIVE=1h
-      - OLLAMA_NUM_PARALLEL=4
-      - OLLAMA_FLASH_ATTENTION=1
+      SERVICE_NAME: ontology
+      UVICORN_PORT: "8003"
+      HITL_FUSEKI_URL: http://ontology-fuseki:3030
+      HITL_FUSEKI_DATASET: ${HITL_FUSEKI_DATASET:-kgbuilder}
+      HITL_FUSEKI_STAGING_DATASET: ${HITL_FUSEKI_STAGING_DATASET:-kgbuilder-staging}
+      HITL_OLLAMA_URL: http://ontology-ollama:11434
+      HITL_OLLAMA_MODEL: ${HITL_OLLAMA_MODEL:-qwen3:8b}
+      KGBUILDER_API_URL: ${KGBUILDER_API_URL:-}
+    depends_on:
+      ontology-ollama-init:
+        condition: service_completed_successfully
+      ontology-fuseki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ontology-net
+
+  # ── Fuseki (SPARQL / ontology store) ───────────────────────
+  ontology-fuseki:
+    image: stain/jena-fuseki:latest
+    container_name: ontology-fuseki
+    restart: unless-stopped
+    ports:
+      - "${FUSEKI_PORT:-3030}:3030"
+    environment:
+      ADMIN_PASSWORD: ${HITL_FUSEKI_PASSWORD:-admin}
+      FUSEKI_DATASET_1: ${HITL_FUSEKI_DATASET:-kgbuilder}
+      FUSEKI_DATASET_2: ${HITL_FUSEKI_STAGING_DATASET:-kgbuilder-staging}
+    volumes:
+      - fuseki-data:/fuseki
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3030/$/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - ontology-net
+
+  # ── Ollama + model init ────────────────────────────────────
+  ontology-ollama:
+    image: ollama/ollama:0.14.3
+    container_name: ontology-ollama
+    restart: unless-stopped
+    ports:
+      - "${OLLAMA_PORT:-11437}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+      - OLLAMA_ALLOW_DOWNLOADS=true
     deploy:
       resources:
         reservations:
@@ -20,20 +84,39 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ontology-net
 
-  # Optional — only needed if NOT sharing Fuseki with KnowledgeGraphBuilder
-  fuseki-staging:
-    image: secoresearch/fuseki:latest
-    container_name: hitl-fuseki
-    ports:
-      - "3031:3030"
+  ontology-ollama-init:
+    image: ollama/ollama:0.14.3
+    container_name: ontology-ollama-init
+    depends_on:
+      ontology-ollama:
+        condition: service_healthy
     environment:
-      - ADMIN_PASSWORD=${HITL_FUSEKI_PASSWORD:-admin}
-    volumes:
-      - fuseki_data:/fuseki
-    restart: unless-stopped
+      - OLLAMA_HOST=ontology-ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Pulling models for OntologyExtender..."
+        ollama pull ${HITL_OLLAMA_MODEL:-qwen3:8b}
+        echo "OntologyExtender models ready."
+    restart: "no"
+    networks:
+      - ontology-net
 
 volumes:
-  ollama_data:
-  fuseki_data:
+  fuseki-data:
+    driver: local
+  ollama-data:
+    driver: local
+
+networks:
+  ontology-net:
+    driver: bridge

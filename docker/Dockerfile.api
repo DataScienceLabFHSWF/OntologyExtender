@@ -1,0 +1,22 @@
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+
+# Install system deps
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc g++ && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python deps (frozen for fast, reliable builds)
+COPY requirements-frozen.txt ./
+RUN pip install --no-cache-dir --upgrade pip && \
+    grep -v "backports.asyncio.runner" requirements-frozen.txt | pip install --no-cache-dir -r /dev/stdin
+
+# Copy source and install package
+COPY pyproject.toml README.md ./
+COPY src ./src
+RUN pip install --no-cache-dir --no-deps -e ".[api]"
+
+EXPOSE 8003
+
+CMD ["uvicorn", "ontology_hitl.api.server:app", "--host", "0.0.0.0", "--port", "8003"]

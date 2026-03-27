@@ -128,6 +128,18 @@ def test_generate_cq_verification_tests_and_owlunit_suite(tmp_path: Path):
     assert any(r.test_type == OWLUnitTestType.COMPETENCY_Q for r in suite.results)
 
 
+def test_competency_question_type_field_is_preserved():
+    cq = CompetencyQuestion(
+        id="cq2",
+        question="Is this a scope question?",
+        target_classes=[],
+        target_properties=[],
+        sparql_template=None,
+        cq_type="SCQ",
+    )
+    assert cq.cq_type == "SCQ"
+
+
 def test_get_embedding_respects_model_arg(monkeypatch):
     called = {}
 

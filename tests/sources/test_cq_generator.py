@@ -72,6 +72,19 @@ class TestCQGeneration:
         # Should deduplicate to 1
         assert len(result) == 1
 
+    def test_generate_sets_default_cq_type(self, cq_generator):
+        cq_generator.qdrant_source.fetch_chunks = MagicMock(return_value=[
+            DocumentChunk("1", "Some text.", "doc1.pdf"),
+        ])
+        cq_generator._generate_batch = MagicMock(return_value=[
+            {"question": "What is X?", "difficulty": 2, "priority": 1,
+             "expected_entity_types": [], "expected_relations": []},
+        ])
+
+        result = cq_generator.generate(num_chunks=5)
+        assert len(result) == 1
+        assert result[0]["cq_type"] == "VCQ"
+
 
 class TestSampleDiverse:
     def test_round_robin_across_docs(self):
