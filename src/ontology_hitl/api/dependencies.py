@@ -23,7 +23,7 @@ def get_settings() -> dict[str, str]:
         "fuseki_dataset": os.getenv("HITL_FUSEKI_DATASET", "kgbuilder"),
         "fuseki_staging": os.getenv("HITL_FUSEKI_STAGING_DATASET", "kgbuilder-staging"),
         "ollama_url": os.getenv("HITL_OLLAMA_URL", "http://localhost:11434"),
-        "ollama_model": os.getenv("HITL_OLLAMA_MODEL", "qwen3:8b"),
+        "ollama_model": os.getenv("HITL_OLLAMA_MODEL", "gemma4:31b"),
         "kgbuilder_api_url": os.getenv("KGBUILDER_API_URL", "http://localhost:8001"),
     }
 

@@ -819,7 +819,7 @@ class BenchmarkConfig(BaseModel):
     test_cases: list[TestCase] = Field(default_factory=list)
     systems: list[BaselineSystemConfig] = Field(default_factory=list)
     output_dir: Path = Path("results/benchmarking")
-    embedding_model: str = "llama3.2:3b"
+    embedding_model: str = "gemma4:e2b"
     embedding_url: str = "http://localhost:18135"
     similarity_threshold: float = 0.85
     wandb_enabled: bool = True

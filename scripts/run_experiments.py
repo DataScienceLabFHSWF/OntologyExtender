@@ -446,11 +446,13 @@ class ExperimentRunner:
         for exp in experiments:
             # Extract model family for grouping
             model = exp.model.lower()
-            if "llama3.2:3b" in model or "llama3.2" in model:
+            if "gemma4:e2b" in model or "e2b" in model:
                 group_key = "small"
+            elif "gemma4:e4b" in model or "e4b" in model:
+                group_key = "medium"
             elif "nemotron" in model:
-                group_key = "medium"  # nemotron-3-nano is medium-sized
-            elif "qwen" in model or "79b" in model or "72b" in model or "70b" in model:
+                group_key = "medium"  # nemotron-3-nano is medium-sized (ablation)
+            elif "gemma4:31b" in model or "31b" in model:
                 group_key = "large"
             else:
                 group_key = "medium"  # Default to medium for unknown models

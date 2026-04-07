@@ -1,14 +1,14 @@
 [
   {
-    "name": "small_baseline_1",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_baseline_1",
+    "model": "gemma4:e2b",
     "strategy_overrides": {},
     "structured_output": true,
     "description": "Small model baseline test 1"
   },
   {
-    "name": "small_dialectical_1",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_dialectical_1",
+    "model": "gemma4:e2b",
     "strategy_overrides": {
       "hierarchy": "dialectical",
       "properties": "dialectical"
@@ -17,22 +17,22 @@
     "description": "Small model dialectical test 1"
   },
   {
-    "name": "medium_baseline_1",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_baseline_1",
+    "model": "gemma4:e4b",
     "strategy_overrides": {},
     "structured_output": true,
     "description": "Medium model baseline test 1"
   },
   {
-    "name": "large_baseline_1",
-    "model": "qwen3-next:latest",
+    "name": "gemma31b_baseline_1",
+    "model": "gemma4:31b",
     "strategy_overrides": {},
     "structured_output": true,
     "description": "Large model baseline test 1"
   },
   {
-    "name": "large_dialectical_1",
-    "model": "qwen3-next:latest",
+    "name": "gemma31b_dialectical_1",
+    "model": "gemma4:31b",
     "strategy_overrides": {
       "hierarchy": "dialectical",
       "properties": "dialectical"

@@ -58,7 +58,7 @@ def set_experiment_context(
     experiment_name : str
         Name of the current experiment (e.g. "exp_llama3_debate").
     model : str
-        Model identifier (e.g. "llama3.2:3b").
+        Model identifier (e.g. "gemma4:e2b").
     strategy : str
         Strategy name (e.g. "vanilla_zero", "debate").
     extra_tags : list[str] | None
@@ -357,7 +357,7 @@ class BaseAgent:
     ) -> dict[str, Any] | None:
         """Call Ollama chat API and parse JSON from the response.
 
-        Handles qwen3-next thinking mode — extracts content after
+        Handles gemma4 thinking mode — extracts content after
         the ``</think>`` tag if present.
 
         Args:

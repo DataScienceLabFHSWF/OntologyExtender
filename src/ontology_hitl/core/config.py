@@ -47,7 +47,7 @@ class Settings(BaseSettings):
 
     # LLM (for definition generation)
     ollama_url: str = "http://localhost:18135"
-    ollama_model: str = "llama3.2:3b"  # Using smaller model for faster testing
+    ollama_model: str = "gemma4:e2b"  # Using smaller model for faster testing
     # Embedding model used as a fallback for semantic matching when
     # `sentence-transformers` is not available. Exposed via
     # `HITL_SEMANTIC_EMBEDDING_MODEL` environment variable.

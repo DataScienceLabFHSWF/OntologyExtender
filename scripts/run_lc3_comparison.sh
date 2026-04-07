@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run comparison between Vanilla (Standard) and HCOME (LLM4ACOE/LC3) strategies
 
-MODEL="llama3.2:3b"  # Adjust model as needed
+MODEL="gemma4:e2b"  # Adjust model as needed
 OUTPUT_DIR="results/lc3_comparison"
 
 echo "Starting LC3 Comparison Benchmark..."

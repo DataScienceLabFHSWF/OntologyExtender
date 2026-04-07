@@ -37,7 +37,7 @@ class LawCollectionSource(QdrantDocumentSource):
         qdrant_url: str = "http://localhost:6333",
         law_collection: str = "lawgraph",  # Dedicated legal documents collection
         ollama_url: str = "http://localhost:18135",
-        ollama_model: str = "qwen3-next",
+        ollama_model: str = "gemma4:31b",
     ) -> None:
         super().__init__(
             qdrant_url=qdrant_url,

@@ -15,7 +15,7 @@ def qdrant_source():
         qdrant_url="http://localhost:6333",
         collection="test-docs",
         ollama_url="http://localhost:18135",
-        ollama_model="qwen3-next",
+        ollama_model="gemma4:31b",
     )
 
 

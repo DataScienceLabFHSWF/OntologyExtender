@@ -9,7 +9,7 @@ This script implements several baseline approaches for ontology extension:
 
 Usage:
     python scripts/llm_only_baseline.py \\
-        --model llama3.2:3b \\
+        --model gemma4:e2b \\
         --strategy naive \\
         --output data/exports/baseline_naive \\
         --experiment-name baseline_naive
@@ -161,7 +161,7 @@ class LLMOnlyBaseline:
         cq_path: Path,
         strategy: Literal["naive", "modular", "iterative", "adaptive"] = "naive",
         ollama_url: str = "http://localhost:18135",
-        model: str = "llama3.2:3b",
+        model: str = "gemma4:e2b",
         verbose: bool = False,
     ):
         self.seed_path = seed_ontology_path
@@ -1042,7 +1042,7 @@ def main():
     import time
 
     parser = argparse.ArgumentParser(description="LLM-only ontology extension baseline")
-    parser.add_argument("--model", default="llama3.2:3b", help="Ollama model to use")
+    parser.add_argument("--model", default="gemma4:e2b", help="Ollama model to use")
     parser.add_argument("--strategy", default="naive", 
                        choices=["naive", "modular", "iterative", "adaptive"],
                        help="Baseline strategy to use")

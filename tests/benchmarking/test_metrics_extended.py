@@ -159,7 +159,7 @@ def test_get_embedding_respects_model_arg(monkeypatch):
         return FakeResp({'embeddings': [[0.1, 0.2, 0.3]]})
 
     monkeypatch.setattr('httpx.post', fake_post)
-    ev = BenchmarkEvaluator(embedding_url='http://localhost:18135', embedding_model='llama3.2:3b')
+    ev = BenchmarkEvaluator(embedding_url='http://localhost:18135', embedding_model='gemma4:e2b')
     vec = ev._get_embedding('test text', model='qwen3-embedding')
     assert vec == [0.1, 0.2, 0.3]
     assert called.get('model') == 'qwen3-embedding'

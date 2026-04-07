@@ -54,7 +54,7 @@ class OllamaAdapter:
 
     def __init__(
         self,
-        model: str = "llama3.2:3b",
+        model: str = "gemma4:e2b",
         ollama_url: str = "http://localhost:18135",
         temperature: float = 0.0,
         max_tokens: int = 512,

@@ -12,7 +12,7 @@
 
 TOPIC="${1:-Pizza}"
 MODE="${2:-both}"
-MODEL="${MODEL:-llama3.2:3b}"
+MODEL="${MODEL:-gemma4:e2b}"
 OLLAMA_URL="${OLLAMA_URL:-http://localhost:18135}"
 
 echo "Starting CogAgent Discussion Demo..."

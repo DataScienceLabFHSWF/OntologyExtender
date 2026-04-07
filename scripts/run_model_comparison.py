@@ -5,8 +5,8 @@ This script extends the base experiment runner to support model-aware
 experiments. It runs the full pipeline (7-phase debate + export + evaluation)
 with different LLM models, allowing direct comparison of:
 
-- Small non-reasoning models (e.g., llama3.2:3b, 3.2B params)
-- Large reasoning models (e.g., qwen3-next, 79.7B params)
+- Small non-reasoning models (e.g., gemma4:e2b, 3.2B params)
+- Large reasoning models (e.g., gemma4:31b, 79.7B params)
 
 Each experiment combination (model × strategy) gets:
 - Its own iteration directory:  data/iterations/{model}_{strategy}/
@@ -108,7 +108,7 @@ class ModelExperimentConfig(BaseModel):
         Unique experiment name. Used as directory name for results.
         Convention: {model_short}_{strategy}, e.g. "small_dialectical"
     model : str
-        Ollama model identifier, e.g. "llama3.2:3b" or "qwen3-next:latest"
+        Ollama model identifier, e.g. "gemma4:e2b" or "gemma4:31b"
     strategy_overrides : dict
         Phase → strategy mapping. Empty dict = use defaults.
     description : str
@@ -1218,8 +1218,8 @@ def main():
         print("  python scripts/run_model_comparison.py --run-all --output results/full_comparison.json")
         print()
         print("Available experiment configs:")
-        print("  small_model_experiments.json  (llama3.2:3b, 4 experiments)")
-        print("  large_model_experiments.json  (qwen3-next, 4 experiments)")
+        print("  small_model_experiments.json  (gemma4:e2b, 4 experiments)")
+        print("  large_model_experiments.json  (gemma4:31b, 4 experiments)")
         sys.exit(0)
 
     # Set up results directory

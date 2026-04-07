@@ -20,9 +20,10 @@ LOG_DIR="logs/ontourl"
 mkdir -p "$LOG_DIR"
 
 MODELS=(
-    "llama3.2:3b"
-    "nemotron-3-nano:latest"
-    "qwen3-next:latest"
+    "gemma4:e2b"
+    "gemma4:e4b"
+    "nemotron-3-nano"
+    "gemma4:31b"
 )
 
 # All strategies — runner automatically skips inapplicable ones per task

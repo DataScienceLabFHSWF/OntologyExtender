@@ -108,7 +108,7 @@ class BenchmarkEvaluator:
     def __init__(
         self,
         embedding_url: str = "http://localhost:18135",
-        embedding_model: str = "llama3.2:3b",
+        embedding_model: str = "gemma4:e2b",
         similarity_threshold: float = 0.85,
         fuseki_url: str | None = None,
         # --- TamingHallucinations settings ---

@@ -90,7 +90,7 @@ class OntologyGapAnalyzer:
         fuseki_url: str = "http://localhost:3030",
         dataset: str = "kgbuilder",
         ollama_url: str = "http://localhost:18135",
-        embedding_model: str = "qwen3-next",
+        embedding_model: str = "gemma4:31b",
         min_frequency: int = 3,
         similarity_threshold: float = 0.65,
     ) -> None:

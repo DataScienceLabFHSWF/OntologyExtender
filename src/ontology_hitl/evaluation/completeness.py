@@ -73,7 +73,7 @@ class CompletenessAnalyzer:
         fuseki_url: str = "http://localhost:3031",
         dataset: str = "kgbuilder",
         ollama_url: str = "http://localhost:18135",
-        model: str = "qwen3-next",
+        model: str = "gemma4:31b",
         similarity_threshold: float = 0.80,
     ) -> None:
         self.fuseki_url = fuseki_url.rstrip("/")

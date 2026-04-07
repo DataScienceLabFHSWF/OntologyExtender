@@ -119,7 +119,7 @@ class RelationProposalGenerator:
     def __init__(
         self,
         ollama_url: str = "http://localhost:18135",
-        model: str = "qwen3-next",
+        model: str = "gemma4:31b",
         fuseki_url: str = "http://localhost:3030",
         dataset: str = "kgbuilder",
         temperature: float = 0.5,

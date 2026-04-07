@@ -52,7 +52,7 @@ def settings():
         qdrant_url="http://localhost:6333",
         qdrant_collection="kgbuilder",
         ollama_url="http://localhost:18135",
-        ollama_model="llama3.2:3b",
+        ollama_model="gemma4:e2b",
         ollama_embedding_model="nomic-embed-text",
         vector_top_k=5,
         fusion_weight_vector=0.4,

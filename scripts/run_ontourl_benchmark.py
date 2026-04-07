@@ -2,14 +2,14 @@
 """Run OntoURL benchmark with our models and strategies.
 
 Usage:
-    # Full benchmark (all 15 tasks, zero-shot, llama3.2:3b)
-    python scripts/run_ontourl_benchmark.py --model llama3.2:3b
+    # Full benchmark (all 15 tasks, zero-shot, gemma4:e2b)
+    python scripts/run_ontourl_benchmark.py --model gemma4:e2b
 
     # Learning tasks only, all strategies
     python scripts/run_ontourl_benchmark.py \\
         --tasks L1 L2 L3 L4 L5 \\
         --strategies vanilla_zero cot engineer multi_turn debate \\
-        --model qwen3-next:latest
+        --model gemma4:31b
 
     # Quick test run (50 examples per split)
     python scripts/run_ontourl_benchmark.py --max-examples 50
@@ -20,7 +20,7 @@ Usage:
     # Specific task with few-shot
     python scripts/run_ontourl_benchmark.py \\
         --tasks L2 --strategies vanilla_zero \\
-        --model llama3.2:3b
+        --model gemma4:e2b
 """
 
 from __future__ import annotations
@@ -361,8 +361,8 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--model", default="llama3.2:3b",
-        help="Ollama model name (default: llama3.2:3b)",
+        "--model", default="gemma4:e2b",
+        help="Ollama model name (default: gemma4:e2b)",
     )
     parser.add_argument(
         "--tasks", nargs="*", default=None,

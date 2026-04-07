@@ -65,7 +65,7 @@ class CQGenerator:
         self,
         qdrant_source: QdrantDocumentSource | None = None,
         ollama_url: str = "http://localhost:18135",
-        ollama_model: str = "qwen3-next",
+        ollama_model: str = "gemma4:31b",
         domain_name: str = "",
     ) -> None:
         self.qdrant_source = qdrant_source or QdrantDocumentSource()

@@ -1,14 +1,14 @@
 [
   {
-    "name": "small_baseline",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_baseline",
+    "model": "gemma4:e2b",
     "strategy_overrides": {},
     "structured_output": true,
-    "description": "Baseline with small non-reasoning model (llama3.2 3B). No debate strategy overrides."
+    "description": "Baseline with small model (gemma4:e2b). No debate strategy overrides."
   },
   {
-    "name": "small_dialectical",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_dialectical",
+    "model": "gemma4:e2b",
     "strategy_overrides": {
       "hierarchy": "dialectical",
       "properties": "dialectical"
@@ -17,8 +17,8 @@
     "structured_output": true
   },
   {
-    "name": "small_socratic",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_socratic",
+    "model": "gemma4:e2b",
     "strategy_overrides": {
       "scope": "socratic",
       "terms": "socratic"
@@ -27,8 +27,8 @@
     "structured_output": true
   },
   {
-    "name": "small_mixed",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_mixed",
+    "model": "gemma4:e2b",
     "strategy_overrides": {
       "scope": "socratic",
       "reuse": "consensus_building",
@@ -42,8 +42,8 @@
     "structured_output": true
   },
   {
-    "name": "small_llm_only_naive",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_llm_only_naive",
+    "model": "gemma4:e2b",
     "strategy": "naive",
     "strategy_overrides": {},
     "description": "LLM-only naive baseline with small model. Single comprehensive prompt.",
@@ -53,8 +53,8 @@
     "structured_output": true
   },
   {
-    "name": "small_llm_only_modular",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_llm_only_modular",
+    "model": "gemma4:e2b",
     "strategy": "modular",
     "strategy_overrides": {},
     "description": "LLM-only modular baseline with small model. CQ grouping by theme.",
@@ -64,8 +64,8 @@
     "structured_output": true
   },
   {
-    "name": "small_llm_only_iterative",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_llm_only_iterative",
+    "model": "gemma4:e2b",
     "strategy": "iterative",
     "strategy_overrides": {},
     "description": "LLM-only iterative baseline with small model. Theme-by-theme processing.",
@@ -75,8 +75,8 @@
     "structured_output": true
   },
   {
-    "name": "small_llm_only_adaptive",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_llm_only_adaptive",
+    "model": "gemma4:e2b",
     "strategy": "adaptive",
     "strategy_overrides": {},
     "description": "LLM-only adaptive baseline with small model. LLM decides scope.",
@@ -86,15 +86,15 @@
     "structured_output": true
   },
   {
-    "name": "medium_baseline",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_baseline",
+    "model": "gemma4:e4b",
     "strategy_overrides": {},
-    "description": "Baseline with medium thinking model (nemotron-3-nano). No debate strategy overrides.",
+    "description": "Baseline with medium model (gemma4:e4b). No debate strategy overrides.",
     "structured_output": true
   },
   {
-    "name": "medium_dialectical",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_dialectical",
+    "model": "gemma4:e4b",
     "strategy_overrides": {
       "hierarchy": "dialectical",
       "properties": "dialectical"
@@ -103,8 +103,8 @@
     "structured_output": true
   },
   {
-    "name": "medium_socratic",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_socratic",
+    "model": "gemma4:e4b",
     "strategy_overrides": {
       "scope": "socratic",
       "terms": "socratic"
@@ -113,8 +113,8 @@
     "structured_output": true
   },
   {
-    "name": "medium_mixed",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_mixed",
+    "model": "gemma4:e4b",
     "strategy_overrides": {
       "scope": "socratic",
       "reuse": "consensus_building",
@@ -128,8 +128,8 @@
     "structured_output": true
   },
   {
-    "name": "medium_llm_only_naive",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_llm_only_naive",
+    "model": "gemma4:e4b",
     "strategy": "naive",
     "strategy_overrides": {},
     "description": "LLM-only naive baseline with medium thinking model. Single comprehensive prompt.",
@@ -139,8 +139,8 @@
     "structured_output": true
   },
   {
-    "name": "medium_llm_only_modular",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_llm_only_modular",
+    "model": "gemma4:e4b",
     "strategy": "modular",
     "strategy_overrides": {},
     "description": "LLM-only modular baseline with medium thinking model. CQ grouping by theme.",
@@ -150,8 +150,8 @@
     "structured_output": true
   },
   {
-    "name": "medium_llm_only_iterative",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_llm_only_iterative",
+    "model": "gemma4:e4b",
     "strategy": "iterative",
     "strategy_overrides": {},
     "description": "LLM-only iterative baseline with medium thinking model. Theme-by-theme processing.",
@@ -161,8 +161,8 @@
     "structured_output": true
   },
   {
-    "name": "medium_llm_only_adaptive",
-    "model": "nemotron-3-nano",
+    "name": "gemma4b_llm_only_adaptive",
+    "model": "gemma4:e4b",
     "strategy": "adaptive",
     "strategy_overrides": {},
     "description": "LLM-only adaptive baseline with medium thinking model. LLM decides scope.",
@@ -172,15 +172,101 @@
     "structured_output": true
   },
   {
-    "name": "large_baseline",
-    "model": "qwen3-next:latest",
+    "name": "nemotron_baseline",
+    "model": "nemotron-3-nano",
     "strategy_overrides": {},
-    "description": "Baseline with large reasoning model (Qwen3-Next 80B). No debate strategy overrides.",
+    "description": "Baseline with nemotron (ablation). No debate strategy overrides.",
     "structured_output": true
   },
   {
-    "name": "large_dialectical",
-    "model": "qwen3-next:latest",
+    "name": "nemotron_dialectical",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "description": "Dialectical debate for structural phases with nemotron (ablation).",
+    "structured_output": true
+  },
+  {
+    "name": "nemotron_socratic",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "description": "Socratic questioning for conceptual phases with nemotron (ablation).",
+    "structured_output": true
+  },
+  {
+    "name": "nemotron_mixed",
+    "model": "nemotron-3-nano",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "description": "Best-of-each strategy per phase with nemotron (ablation).",
+    "structured_output": true
+  },
+  {
+    "name": "nemotron_llm_only_naive",
+    "model": "nemotron-3-nano",
+    "strategy": "naive",
+    "strategy_overrides": {},
+    "description": "LLM-only naive baseline with nemotron (ablation). Single comprehensive prompt.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "nemotron_llm_only_modular",
+    "model": "nemotron-3-nano",
+    "strategy": "modular",
+    "strategy_overrides": {},
+    "description": "LLM-only modular baseline with nemotron (ablation). CQ grouping by theme.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "nemotron_llm_only_iterative",
+    "model": "nemotron-3-nano",
+    "strategy": "iterative",
+    "strategy_overrides": {},
+    "description": "LLM-only iterative baseline with nemotron (ablation). Theme-by-theme processing.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "nemotron_llm_only_adaptive",
+    "model": "nemotron-3-nano",
+    "strategy": "adaptive",
+    "strategy_overrides": {},
+    "description": "LLM-only adaptive baseline with nemotron (ablation). LLM decides scope.",
+    "method": "llm_only",
+    "timeout_seconds": 900,
+    "temperature": 0.5,
+    "structured_output": true
+  },
+  {
+    "name": "gemma31b_baseline",
+    "model": "gemma4:31b",
+    "strategy_overrides": {},
+    "description": "Baseline with large model (gemma4:31b). No debate strategy overrides.",
+    "structured_output": true
+  },
+  {
+    "name": "gemma31b_dialectical",
+    "model": "gemma4:31b",
     "strategy_overrides": {
       "hierarchy": "dialectical",
       "properties": "dialectical"
@@ -189,8 +275,8 @@
     "structured_output": true
   },
   {
-    "name": "large_socratic",
-    "model": "qwen3-next:latest",
+    "name": "gemma31b_socratic",
+    "model": "gemma4:31b",
     "strategy_overrides": {
       "scope": "socratic",
       "terms": "socratic"
@@ -199,8 +285,8 @@
     "structured_output": true
   },
   {
-    "name": "large_mixed",
-    "model": "qwen3-next:latest",
+    "name": "gemma31b_mixed",
+    "model": "gemma4:31b",
     "strategy_overrides": {
       "scope": "socratic",
       "reuse": "consensus_building",
@@ -214,8 +300,8 @@
     "structured_output": true
   },
   {
-    "name": "large_llm_only_naive",
-    "model": "qwen3-next:latest",
+    "name": "gemma31b_llm_only_naive",
+    "model": "gemma4:31b",
     "strategy": "naive",
     "strategy_overrides": {},
     "description": "LLM-only naive baseline with large model. Single comprehensive prompt.",
@@ -225,8 +311,8 @@
     "structured_output": true
   },
   {
-    "name": "large_llm_only_modular",
-    "model": "qwen3-next:latest",
+    "name": "gemma31b_llm_only_modular",
+    "model": "gemma4:31b",
     "strategy": "modular",
     "strategy_overrides": {},
     "description": "LLM-only modular baseline with large model. CQ grouping by theme.",
@@ -236,8 +322,8 @@
     "structured_output": true
   },
   {
-    "name": "large_llm_only_iterative",
-    "model": "qwen3-next:latest",
+    "name": "gemma31b_llm_only_iterative",
+    "model": "gemma4:31b",
     "strategy": "iterative",
     "strategy_overrides": {},
     "description": "LLM-only iterative baseline with large model. Theme-by-theme processing.",
@@ -247,8 +333,8 @@
     "structured_output": true
   },
   {
-    "name": "large_llm_only_adaptive",
-    "model": "qwen3-next:latest",
+    "name": "gemma31b_llm_only_adaptive",
+    "model": "gemma4:31b",
     "strategy": "adaptive",
     "strategy_overrides": {},
     "description": "LLM-only adaptive baseline with large model. LLM decides scope.",

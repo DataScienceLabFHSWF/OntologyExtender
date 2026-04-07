@@ -1,14 +1,14 @@
 [
   {
-    "name": "small_baseline",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_baseline",
+    "model": "gemma4:e2b",
     "strategy_overrides": {},
     "structured_output": true,
     "description": "Baseline with small non-reasoning model (llama3.2 3B). No debate strategy overrides."
   },
   {
-    "name": "small_dialectical",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_dialectical",
+    "model": "gemma4:e2b",
     "strategy_overrides": {
       "hierarchy": "dialectical",
       "properties": "dialectical"
@@ -17,8 +17,8 @@
     "description": "Dialectical debate for structural phases with small model. Tests whether structured disagreement helps a weak model."
   },
   {
-    "name": "small_socratic",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_socratic",
+    "model": "gemma4:e2b",
     "strategy_overrides": {
       "scope": "socratic",
       "terms": "socratic"
@@ -27,8 +27,8 @@
     "description": "Socratic questioning for conceptual phases with small model. Tests whether question-driven probing helps a weak model."
   },
   {
-    "name": "small_mixed",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_mixed",
+    "model": "gemma4:e2b",
     "strategy_overrides": {
       "scope": "socratic",
       "reuse": "consensus_building",
@@ -42,8 +42,8 @@
     "description": "Best-of-each strategy per phase with small model. Tests whether per-phase strategy optimization compensates for weak model."
   },
   {
-    "name": "small_llm_only",
-    "model": "llama3.2:3b",
+    "name": "gemma2b_llm_only",
+    "model": "gemma4:e2b",
     "strategy_overrides": {},
     "structured_output": true,
     "description": "LLM-only baseline with small model. Direct single-shot prompting without multi-agent debate. Matches naive approaches in related work.",

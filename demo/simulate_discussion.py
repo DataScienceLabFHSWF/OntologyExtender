@@ -108,7 +108,7 @@ def pause(label: str = "", seconds: float = 1.0):
 
 def llm_call(
     prompt: str,
-    model: str = "llama3.2:3b",
+    model: str = "gemma4:e2b",
     system: str | None = None,
     url: str = "http://localhost:18135",
     temperature: float = 0.7,
@@ -658,7 +658,7 @@ def main():
         help="Ontology concept to define (e.g. 'Pizza', 'Alzheimer Disease')",
     )
     parser.add_argument(
-        "--model", default="llama3.2:3b",
+        "--model", default="gemma4:e2b",
         help="Ollama model name",
     )
     parser.add_argument(

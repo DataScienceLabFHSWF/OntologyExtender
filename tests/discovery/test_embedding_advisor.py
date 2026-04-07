@@ -29,9 +29,9 @@ def test_advisor_report_creation():
     report = EmbeddingAdvisorReport(
         recommendations=[],
         avg_confidence=0.0,
-        model_used="qwen3-next",
+        model_used="gemma4:31b",
     )
-    assert report.model_used == "qwen3-next"
+    assert report.model_used == "gemma4:31b"
 
 
 # ── Cosine similarity ──────────────────────────────────────────────

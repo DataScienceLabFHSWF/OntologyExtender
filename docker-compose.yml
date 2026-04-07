@@ -28,7 +28,7 @@ services:
       HITL_FUSEKI_DATASET: ${HITL_FUSEKI_DATASET:-kgbuilder}
       HITL_FUSEKI_STAGING_DATASET: ${HITL_FUSEKI_STAGING_DATASET:-kgbuilder-staging}
       HITL_OLLAMA_URL: http://ontology-ollama:11434
-      HITL_OLLAMA_MODEL: ${HITL_OLLAMA_MODEL:-qwen3:8b}
+      HITL_OLLAMA_MODEL: ${HITL_OLLAMA_MODEL:-gemma4:31b}
       KGBUILDER_API_URL: ${KGBUILDER_API_URL:-}
     depends_on:
       ontology-ollama-init:
@@ -67,7 +67,7 @@ services:
 
   # ── Ollama + model init ────────────────────────────────────
   ontology-ollama:
-    image: ollama/ollama:0.14.3
+    image: ollama/ollama:latest
     container_name: ontology-ollama
     restart: unless-stopped
     ports:
@@ -94,7 +94,7 @@ services:
       - ontology-net
 
   ontology-ollama-init:
-    image: ollama/ollama:0.14.3
+    image: ollama/ollama:latest
     container_name: ontology-ollama-init
     depends_on:
       ontology-ollama:
@@ -105,7 +105,7 @@ services:
     command:
       - |
         echo "Pulling models for OntologyExtender..."
-        ollama pull ${HITL_OLLAMA_MODEL:-qwen3:8b}
+        ollama pull ${HITL_OLLAMA_MODEL:-gemma4:31b}
         echo "OntologyExtender models ready."
     restart: "no"
     networks:

@@ -96,7 +96,7 @@ class TestCaseGenerator:
         output_dir: str | Path = "data/test_cases",
         random_seed: int = 42,
         ollama_url: str = "http://localhost:18135",
-        ollama_model: str = "llama3.2:3b",
+        ollama_model: str = "gemma4:e2b",
     ) -> None:
         self.gold_standard_path = Path(gold_standard_path)
         self.output_dir = Path(output_dir)

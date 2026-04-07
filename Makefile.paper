@@ -1,0 +1,159 @@
+# =============================================================================
+# OntologyExtender Paper Experiments
+# "Multi-Agent Debate with Human-in-the-Loop for LLM-Driven Ontology Extension"
+# =============================================================================
+#
+# Usage:
+#   make -f Makefile.paper check          # Verify infra + models ready
+#   make -f Makefile.paper experiments    # Run all multi-agent + LLM-only experiments
+#   make -f Makefile.paper ontourl        # Run full OntoURL benchmark
+#   make -f Makefile.paper all            # Run everything
+#
+# Prerequisites:
+#   - KGPlatform infra running (make up from root)
+#   - Models pulled into ollama-ontology container
+#   - Virtual environment with project installed
+# =============================================================================
+
+SHELL := /bin/bash
+.ONESHELL:
+
+# --- Configuration ---
+VENV         := .venv/bin/python
+OLLAMA_URL   := http://localhost:18135
+FUSEKI_URL   := http://localhost:3030
+RESULTS_DIR  := experiment_results
+ONTOURL_DIR  := results/ontourl
+MODELS       := gemma4:e2b gemma4:e4b nemotron-3-nano gemma4:31b
+
+.PHONY: all check check-ollama check-models check-fuseki check-venv \
+        experiments comprehensive llm-only ontourl lc3 clean help
+
+# =============================================================================
+# Top-level targets
+# =============================================================================
+
+all: check experiments ontourl
+	@echo ""
+	@echo "════════════════════════════════════════"
+	@echo "  All OntologyExtender experiments done"
+	@echo "════════════════════════════════════════"
+
+# =============================================================================
+# Dependency checks
+# =============================================================================
+
+check: check-venv check-ollama check-models check-fuseki
+	@echo "✓ All checks passed"
+
+check-venv:
+	@test -f .venv/bin/python || { echo "✗ .venv not found. Run: python3 -m venv .venv && pip install -e ."; exit 1; }
+	@$(VENV) -c "import ontology_hitl" 2>/dev/null || { echo "✗ ontology_hitl not installed. Run: .venv/bin/pip install -e ."; exit 1; }
+	@echo "✓ Virtual environment ready"
+
+check-ollama:
+	@curl -sf $(OLLAMA_URL)/api/tags > /dev/null || { echo "✗ Ollama not reachable at $(OLLAMA_URL)"; exit 1; }
+	@echo "✓ Ollama reachable at $(OLLAMA_URL)"
+
+check-models:
+	@for model in $(MODELS); do \
+		curl -sf $(OLLAMA_URL)/api/tags | python3 -c "import sys,json; models=[m['name'] for m in json.load(sys.stdin)['models']]; sys.exit(0 if any('$$model' in m for m in models) else 1)" \
+		|| { echo "✗ Model $$model not pulled. Run: docker exec ollama-ontology ollama pull $$model"; exit 1; }; \
+	done
+	@echo "✓ All models available: $(MODELS)"
+
+check-fuseki:
+	@curl -sf $(FUSEKI_URL)/$$/ping > /dev/null || { echo "✗ Fuseki not reachable at $(FUSEKI_URL)"; exit 1; }
+	@echo "✓ Fuseki reachable at $(FUSEKI_URL)"
+
+# =============================================================================
+# Pull models (if not already present)
+# =============================================================================
+
+pull-models:
+	@for model in $(MODELS); do \
+		echo "Pulling $$model..."; \
+		docker exec ollama-ontology ollama pull $$model; \
+	done
+
+# =============================================================================
+# Multi-Agent Debate + LLM-Only Experiments (SAR domain)
+# =============================================================================
+
+experiments: comprehensive llm-only
+	@echo "✓ All SAR experiments complete"
+
+comprehensive: check
+	@echo ""
+	@echo "Running comprehensive experiments (32 experiments: 4 models × 8 strategies)..."
+	@mkdir -p $(RESULTS_DIR)
+	$(VENV) scripts/run_experiments.py \
+		--experiments experiments/comprehensive_experiments.json \
+		--output $(RESULTS_DIR)/comprehensive_results.json \
+		--resume
+	@echo "✓ Comprehensive experiments done → $(RESULTS_DIR)/comprehensive_results.json"
+
+llm-only: check
+	@echo ""
+	@echo "Running LLM-only baselines (16 experiments: 4 models × 4 strategies)..."
+	@mkdir -p $(RESULTS_DIR)
+	$(VENV) scripts/run_experiments.py \
+		--experiments experiments/llm_only_experiments.json \
+		--output $(RESULTS_DIR)/llm_only_results.json \
+		--resume
+	@echo "✓ LLM-only baselines done → $(RESULTS_DIR)/llm_only_results.json"
+
+# =============================================================================
+# OntoURL Benchmark (15 tasks × 6 strategies × 4 models)
+# =============================================================================
+
+ontourl: check
+	@echo ""
+	@echo "Running full OntoURL benchmark (4 models × 6 strategies × 15 tasks)..."
+	@echo "This will take several days on GPU hardware."
+	@mkdir -p $(ONTOURL_DIR)
+	bash scripts/run_full_ontourl.sh
+	@echo "✓ OntoURL benchmark done → $(ONTOURL_DIR)/"
+
+ontourl-quick: check
+	@echo ""
+	@echo "Running quick OntoURL test (50 examples per split)..."
+	@mkdir -p $(ONTOURL_DIR)
+	$(VENV) scripts/run_ontourl_benchmark.py \
+		--model gemma4:e2b \
+		--max-examples 50 \
+		--output-dir $(ONTOURL_DIR)/quick_test
+	@echo "✓ Quick OntoURL test done"
+
+# =============================================================================
+# LC3 / LLM4ACOE Comparison
+# =============================================================================
+
+lc3: check
+	@echo ""
+	@echo "Running LC3 head-to-head comparison..."
+	bash scripts/run_lc3_comparison.sh
+	@echo "✓ LC3 comparison done"
+
+# =============================================================================
+# Utilities
+# =============================================================================
+
+clean:
+	@echo "This would remove experiment results. Are you sure? Run: rm -rf $(RESULTS_DIR) $(ONTOURL_DIR)"
+
+help:
+	@echo "OntologyExtender Paper Experiments"
+	@echo ""
+	@echo "  make -f Makefile.paper check          Verify infra + models"
+	@echo "  make -f Makefile.paper pull-models     Pull all required models"
+	@echo "  make -f Makefile.paper experiments     Multi-agent + LLM-only (SAR domain)"
+	@echo "  make -f Makefile.paper comprehensive   Multi-agent debate experiments only"
+	@echo "  make -f Makefile.paper llm-only        LLM-only baselines only"
+	@echo "  make -f Makefile.paper ontourl         Full OntoURL benchmark (days)"
+	@echo "  make -f Makefile.paper ontourl-quick   Quick OntoURL smoke test"
+	@echo "  make -f Makefile.paper lc3             LC3/LLM4ACOE comparison"
+	@echo "  make -f Makefile.paper all             Everything"
+	@echo ""
+	@echo "Models: $(MODELS)"
+	@echo "Ollama: $(OLLAMA_URL)  Fuseki: $(FUSEKI_URL)"
