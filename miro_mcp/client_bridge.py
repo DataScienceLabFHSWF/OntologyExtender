@@ -66,6 +66,17 @@ def _extract_text_from_tool_result(result: Any) -> str:
     return "\n".join(out)
 
 
+def _extract_content_from_json_text(text: str) -> str:
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        return text
+
+    if isinstance(payload, dict) and isinstance(payload.get("content"), str):
+        return payload["content"]
+    return text
+
+
 def _extract_context_from_miro_url(url: str) -> tuple[str | None, str | None]:
     board_id: str | None = None
     frame_id: str | None = None
@@ -113,6 +124,22 @@ def _extract_miro_context(text: str) -> tuple[str | None, str | None]:
         frame_id = default_frame_id
 
     return board_id, frame_id
+
+
+def _extract_first_miro_url(text: str) -> str | None:
+    for candidate in re.findall(r"https?://\S+", text):
+        if "miro.com/app/board/" in candidate:
+            return candidate.rstrip(").,;\"'")
+    return None
+
+
+def _get_default_miro_url(frame_id: str | None) -> str | None:
+    if frame_id:
+        frame_url = os.getenv("MIRO_DEFAULT_FRAME_URL", "").strip()
+        if frame_url:
+            return frame_url
+    board_url = os.getenv("MIRO_DEFAULT_BOARD_URL", "").strip()
+    return board_url or None
 
 
 def _infer_steps_from_prompt(prompt: str) -> list[str]:
@@ -264,6 +291,13 @@ def _should_force_diagram(prompt: str, frame_id: str | None) -> bool:
 def _should_list_tools(prompt: str) -> bool:
     lowered = prompt.lower()
     return "tool" in lowered and any(word in lowered for word in ("available", "what", "list", "show"))
+
+
+def _should_explain_miro_content(prompt: str) -> bool:
+    lowered = prompt.lower()
+    asks_explanation = any(word in lowered for word in ("explain", "describe", "summarize", "read", "interpret"))
+    target_noun = any(word in lowered for word in ("diagram", "board", "frame", "widget", "content"))
+    return asks_explanation and target_noun
 
 
 def _strip_frontmatter(text: str) -> str:
@@ -466,6 +500,11 @@ async def _run_with_session(
         tool_lines = [f"- {tool.name}: {tool.description or 'No description'}" for tool in mcp_tools]
         return "Available MCP tools:\n" + "\n".join(tool_lines)
 
+    context_url = _extract_first_miro_url(prompt) or _get_default_miro_url(inferred_frame_id)
+    if _should_explain_miro_content(prompt) and "context_get" in available_tool_names and context_url:
+        result = await session.call_tool("context_get", {"url": context_url})
+        return _extract_content_from_json_text(_extract_text_from_tool_result(result))
+
     if (
         _should_force_ontology_schema(prompt, inferred_frame_id)
         and {"diagram_get_dsl", "diagram_create"}.issubset(available_tool_names)
@@ -561,6 +600,7 @@ async def _run_with_session(
         )
 
     client = _build_openai_client()
+    last_tool_text = ""
     for _ in range(max_rounds):
         response = client.chat.completions.create(
             model=os.getenv("LOCAL_LLM_MODEL", "llama3.1:8b").strip(),
@@ -594,7 +634,12 @@ async def _run_with_session(
         )
 
         if not tool_calls:
-            return assistant_message.content or ""
+            final_content = (assistant_message.content or "").strip()
+            if final_content:
+                return final_content
+            if last_tool_text:
+                return last_tool_text
+            return "The model returned no final text."
 
         for tool_call in tool_calls:
             tool_name = tool_call.function.name
@@ -606,6 +651,7 @@ async def _run_with_session(
 
             tool_result = await session.call_tool(tool_name, parsed_args)
             tool_text = _extract_text_from_tool_result(tool_result)
+            last_tool_text = _extract_content_from_json_text(tool_text)
 
             messages.append(
                 {
