@@ -174,7 +174,7 @@ class ConsistencyChecker:
 
     def check_proposal(
         self,
-        proposal: dict[str, Any],
+        proposal: Any,
         seed_graph: Graph | None = None,
     ) -> ConsistencyReport:
         """Materialise a proposal dict (optionally merged with a seed graph)
@@ -184,6 +184,12 @@ class ConsistencyChecker:
         if seed_graph is not None:
             for triple in seed_graph:
                 graph.add(triple)
+        if not isinstance(proposal, dict):
+            logger.info(
+                "reasoner_skipped_non_dict_proposal",
+                proposal_type=type(proposal).__name__,
+            )
+            return self.check_graph(graph)
         self.proposal_to_graph(proposal, graph)
         return self.check_graph(graph)
 

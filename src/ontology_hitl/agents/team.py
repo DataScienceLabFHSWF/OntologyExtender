@@ -148,6 +148,32 @@ class AgentTeam:
         """
         self.domain_expert.set_ingestor(ingestor)
 
+    @staticmethod
+    def _prepare_proposal_for_review(proposal: Any) -> dict[str, Any]:
+        """Normalize non-dict proposals into a safe review payload."""
+        if isinstance(proposal, dict):
+            return proposal
+        if isinstance(proposal, list):
+            return {"proposal_list": proposal}
+        return {"proposal": proposal}
+
+    @staticmethod
+    def _supports_reasoner(proposal: Any) -> bool:
+        """Return True only for structured ontology proposals the reasoner can analyse."""
+        if not isinstance(proposal, dict):
+            return False
+        return any(
+            proposal.get(key)
+            for key in (
+                "classes",
+                "nodes",
+                "terms",
+                "properties",
+                "relations",
+                "new_classes",
+            )
+        )
+
     def set_competency_questions(self, cqs: list[dict]) -> None:
         """Forward CQs to the Critic for evaluation-aware reviews."""
         self.critic.set_competency_questions(cqs)
@@ -247,23 +273,31 @@ class AgentTeam:
         # Review rounds
         for round_num in range(1, self.max_debate_rounds + 1):
             current_proposal = debate.latest_proposal or {}
+            proposal_for_review = self._prepare_proposal_for_review(current_proposal)
 
             # DomainExpert reviews
-            expert_review = self.domain_expert.review(phase, current_proposal)
+            expert_review = self.domain_expert.review(phase, proposal_for_review)
             debate.add_message(expert_review)
 
             # Critic reviews (sees expert's review too)
             critic_review = self.critic.review(
-                phase, current_proposal,
+                phase, proposal_for_review,
                 prior_discussion=[m for m in debate.messages if m.role != AgentRole.CRITIC],
             )
             debate.add_message(critic_review)
 
-            # Reasoner verifies logical consistency (deterministic verdict).
+            # Reasoner verifies logical consistency (deterministic verdict) when the
+            # proposal is a structured ontology proposal.
             reasoner_review: AgentMessage | None = None
-            if self.reasoner is not None:
-                reasoner_review = self.reasoner.review(phase, current_proposal)
+            if self.reasoner is not None and self._supports_reasoner(current_proposal):
+                reasoner_review = self.reasoner.review(phase, proposal_for_review)
                 debate.add_message(reasoner_review)
+            elif self.reasoner is not None:
+                logger.info(
+                    "reasoner_skipped",
+                    phase=phase.value,
+                    proposal_type=type(current_proposal).__name__,
+                )
 
             logger.info(
                 "reviews_complete",

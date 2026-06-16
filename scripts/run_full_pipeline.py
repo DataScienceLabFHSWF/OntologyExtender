@@ -102,7 +102,16 @@ def main():
 
     # Step 0: load settings so environment overrides like HITL_SEED_ONTOLOGY_PATH
     settings = Settings()
-    seed_ontology = os.environ.get("HITL_SEED_ONTOLOGY_PATH", settings.seed_ontology_path)
+    seed_ontology = os.environ.get("HITL_SEED_ONTOLOGY_PATH", "") or settings.seed_ontology_path
+    if not os.environ.get("HITL_SEED_ONTOLOGY_PATH") and experiment_name:
+        inferred_seed = infer_seed_ontology_from_experiment(experiment_name)
+        if inferred_seed:
+            seed_ontology = inferred_seed
+            print(f"Inferred reproduction seed ontology from experiment name: {seed_ontology}")
+
+    # Ensure the feedback loop subprocess inherits the selected seed ontology
+    os.environ["HITL_SEED_ONTOLOGY_PATH"] = seed_ontology
+    print(f"Using seed ontology: {seed_ontology}")
 
     # Step 1: Run the feedback loop (multi-agent debate)
     cmd = [

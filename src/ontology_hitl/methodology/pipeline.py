@@ -539,6 +539,11 @@ class Ont101Pipeline:
         elif isinstance(response, list):
             # If LLM returned just a list, assume it's terms_already_covered
             report.terms_already_covered = [str(x) for x in response]
+        else:
+            logger.warning(
+                "reuse_phase_unexpected_response_type",
+                response_type=type(response).__name__,
+            )
 
         self._save_phase("2_reuse", {
             "terms_already_covered": report.terms_already_covered,
