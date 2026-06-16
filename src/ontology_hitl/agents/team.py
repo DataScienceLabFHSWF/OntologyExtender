@@ -31,6 +31,7 @@ from ontology_hitl.agents.base import (
 from ontology_hitl.agents.ontology_engineer import OntologyEngineerAgent
 from ontology_hitl.agents.domain_expert import DomainExpertAgent
 from ontology_hitl.agents.critic import CriticAgent
+from ontology_hitl.agents.reasoner import ReasonerAgent
 from ontology_hitl.core.config import Settings
 from ontology_hitl.methodology.ontology101 import AgentQuestion, Phase
 from ontology_hitl.sources.law_collection_source import LawCollectionSource
@@ -87,6 +88,7 @@ class AgentTeam:
             AgentRole.ONTOLOGY_ENGINEER: AgentPerformanceMetrics(AgentRole.ONTOLOGY_ENGINEER),
             AgentRole.DOMAIN_EXPERT: AgentPerformanceMetrics(AgentRole.DOMAIN_EXPERT),
             AgentRole.CRITIC: AgentPerformanceMetrics(AgentRole.CRITIC),
+            AgentRole.REASONER: AgentPerformanceMetrics(AgentRole.REASONER),
         }
 
         # Create agents
@@ -111,6 +113,16 @@ class AgentTeam:
             law_graph=law_graph,
         )
         self.critic = CriticAgent(settings=self.settings)
+
+        # Optional formal Reasoner — verifies logical consistency of each
+        # proposal. Disabled via settings.reasoner_enabled=False.
+        self.reasoner: ReasonerAgent | None = None
+        if self.settings.reasoner_enabled:
+            self.reasoner = ReasonerAgent(
+                settings=self.settings,
+                seed_ontology_path=self.settings.seed_ontology_path,
+                use_llm_explanations=self.settings.reasoner_llm_explanations,
+            )
 
     def set_document_context(self, context: str) -> None:
         """Update document context for the DomainExpert."""
@@ -227,12 +239,21 @@ class AgentTeam:
             )
             debate.add_message(critic_review)
 
+            # Reasoner verifies logical consistency (deterministic verdict).
+            reasoner_review: AgentMessage | None = None
+            if self.reasoner is not None:
+                reasoner_review = self.reasoner.review(phase, current_proposal)
+                debate.add_message(reasoner_review)
+
             logger.info(
                 "reviews_complete",
                 phase=phase.value,
                 round=round_num,
                 expert_approves=expert_review.approves,
                 critic_approves=critic_review.approves,
+                reasoner_approves=(
+                    reasoner_review.approves if reasoner_review else None
+                ),
                 expert_issues=len(expert_review.issues_raised),
                 critic_issues=len(critic_review.issues_raised),
             )
@@ -247,6 +268,8 @@ class AgentTeam:
             # If not last round, let engineer revise
             if round_num < self.max_debate_rounds:
                 feedback = [expert_review, critic_review]
+                if reasoner_review is not None:
+                    feedback.append(reasoner_review)
                 revision = self.engineer.revise(
                     phase, current_proposal, feedback, context,
                 )

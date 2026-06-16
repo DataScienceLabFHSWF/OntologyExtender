@@ -159,6 +159,7 @@ class AgentRole(str, Enum):
     ONTOLOGY_ENGINEER = "ontology_engineer"
     DOMAIN_EXPERT = "domain_expert"
     CRITIC = "critic"
+    REASONER = "reasoner"
 
 
 class DebateStrategy(str, Enum):

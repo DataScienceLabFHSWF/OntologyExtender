@@ -29,6 +29,7 @@ from ontology_hitl.agents.base import (
 from ontology_hitl.agents.ontology_engineer import OntologyEngineerAgent
 from ontology_hitl.agents.domain_expert import DomainExpertAgent
 from ontology_hitl.agents.critic import CriticAgent
+from ontology_hitl.agents.reasoner import ReasonerAgent
 from ontology_hitl.agents.team import AgentTeam
 from ontology_hitl.agents.debate_strategies import DebateStrategist
 from ontology_hitl.agents.moderator import (
@@ -58,5 +59,6 @@ __all__ = [
     "OntologyEngineerAgent",
     "DomainExpertAgent",
     "CriticAgent",
+    "ReasonerAgent",
     "AgentTeam",
 ]

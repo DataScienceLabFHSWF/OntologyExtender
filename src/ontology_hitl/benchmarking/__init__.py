@@ -41,6 +41,18 @@ from .models import (
     BaselineSystemConfig,
 )
 
+from .oeo_cq_loader import (
+    OEOCompetencyQuestion,
+    load_cq_directory,
+    parse_omn,
+)
+from .oeo_benchmark import (
+    CQEvaluationResult,
+    OEOBenchmark,
+    OntologyDelta,
+    ReproductionScore,
+)
+
 __all__ = [
     "BenchmarkConfig",
     "BenchmarkDataset",
@@ -57,4 +69,11 @@ __all__ = [
     "SemanticMatchResult",
     "TestCase",
     "BaselineSystemConfig",
+    "OEOCompetencyQuestion",
+    "load_cq_directory",
+    "parse_omn",
+    "CQEvaluationResult",
+    "OEOBenchmark",
+    "OntologyDelta",
+    "ReproductionScore",
 ]

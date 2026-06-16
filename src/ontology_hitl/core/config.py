@@ -110,6 +110,10 @@ class Settings(BaseSettings):
     # Legal enrichment (LawGraph / lawgraph Qdrant collection)
     legal_enrichment_enabled: bool = True
 
+    # Reasoner agent (logical consistency checking during debate)
+    reasoner_enabled: bool = True
+    reasoner_llm_explanations: bool = True
+
     # Ollama embeddings
     ollama_embedding_model: str = "nomic-embed-text"
 

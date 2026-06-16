@@ -23,12 +23,13 @@ from ontology_hitl.methodology.ontology101 import AgentQuestion, Phase
 
 class TestAgentRole:
     def test_three_roles(self):
-        assert len(AgentRole) == 3
+        assert len(AgentRole) == 4
 
     def test_role_values(self):
         assert AgentRole.ONTOLOGY_ENGINEER.value == "ontology_engineer"
         assert AgentRole.DOMAIN_EXPERT.value == "domain_expert"
         assert AgentRole.CRITIC.value == "critic"
+        assert AgentRole.REASONER.value == "reasoner"
 
 
 # ── DebateVerdict ───────────────────────────────────────────────────
