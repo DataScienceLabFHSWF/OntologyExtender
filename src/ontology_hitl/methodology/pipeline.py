@@ -96,6 +96,7 @@ class Ont101Pipeline:
         seed_manager: SeedProtectedOntology | None = None,
         provenance: ProvenanceTracker | None = None,
         feedback_learner: FeedbackLearner | None = None,
+        ingestor: object = None,
     ) -> None:
         self.settings = settings or Settings()
         self.iteration = iteration
@@ -108,6 +109,9 @@ class Ont101Pipeline:
 
         # Agent team (created lazily with document context)
         self._team: AgentTeam | None = None
+
+        # Per-ontology knowledge ingestor (optional — set by orchestrator)
+        self._ingestor = ingestor
 
         # Literature-inspired modules (A–F)
         self.seed_manager = seed_manager
@@ -158,6 +162,8 @@ class Ont101Pipeline:
                 feedback_learner=self.feedback_learner,
                 provenance=self.provenance,
             )
+            if self._ingestor is not None:
+                self._team.set_ingestor(self._ingestor)
         else:
             self._team.set_document_context(docs_text)
         return self._team

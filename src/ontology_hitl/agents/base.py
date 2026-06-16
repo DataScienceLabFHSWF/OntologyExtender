@@ -336,6 +336,14 @@ class BaseAgent:
         self.system_prompt = system_prompt
         self._response_cache: dict[str, dict[str, Any]] = {}  # Simple in-memory cache
 
+        # Pre-flight: verify the configured model is pulled before any LLM call
+        from ontology_hitl.tools.ollama_preflight import check_ollama_model
+        check_ollama_model(
+            self.settings.ollama_url,
+            self.settings.ollama_model,
+            raise_on_failure=True,
+        )
+
     @property
     def effective_llm_timeout_seconds(self) -> float:
         """Get timeout based on model size - large models need more time."""

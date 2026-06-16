@@ -16,6 +16,7 @@ import asyncio
 import json
 from typing import Any
 
+from ontology_hitl.tools.web_search import DomainWebSearch
 import structlog
 
 from .base import AgentMessage, AgentRole, BaseAgent, ls_traceable
@@ -257,9 +258,34 @@ class DomainExpertAgent(BaseAgent):
         self.graph_retriever = graph_retriever  # New: async GraphRAG retriever
         self._has_legal = has_legal
 
+        # Web search — enabled via HITL_WEB_SEARCH_ENABLED; off by default
+        cfg = self.settings
+        if cfg.web_search_enabled:
+            self._web_search: DomainWebSearch | None = DomainWebSearch(
+                max_queries=cfg.web_search_max_queries,
+                max_chars=cfg.web_search_max_chars,
+                timeout=cfg.web_search_timeout,
+            )
+        else:
+            self._web_search = None
+
+        # Ingestor — stores web evidence back into the per-ontology collection
+        # Lazily imported to avoid circular deps; set by the orchestrator via
+        # set_ingestor() or left None (web results are still used in-prompt).
+        self._ingestor = None
+
     def set_documents(self, document_context: str) -> None:
         """Update the document context (e.g. between iterations)."""
         self.document_context = document_context
+
+    def set_ingestor(self, ingestor: object) -> None:
+        """Attach a :class:`~ontology_hitl.sources.qdrant_ingestor.QdrantKnowledgeIngestor`.
+
+        When set, web-search results are persisted back into the per-ontology
+        Qdrant collection so subsequent iterations can retrieve them via
+        the normal document-fetch path.
+        """
+        self._ingestor = ingestor
 
     def _fetch_graph_context_for_classes(self, classes: list[dict[str, Any]]) -> str:
         """Use async GraphRetriever to fetch KG evidence for proposed classes.
@@ -350,6 +376,36 @@ class DomainExpertAgent(BaseAgent):
         if self.law_collection is not None:
             legal_docs = self.fetch_legal_documents(limit=10)
 
+        # Web search: fetch short Wikipedia/DDG snippets for proposed concepts
+        # that the local corpus may not cover (e.g. reproduction benchmarks on
+        # Wine, OWL-Time, PROV-O where Qdrant has no matching documents).
+        web_evidence = ""
+        if self._web_search is not None:
+            concepts = [
+                cls.get("name", "")
+                for cls in proposal.get("classes", [])
+                if cls.get("name")
+            ]
+            # Also pull from top-level proposed_terms / scope if present
+            concepts += [
+                t if isinstance(t, str) else t.get("term", "")
+                for t in proposal.get("proposed_terms", [])
+            ]
+            concepts = [c for c in concepts if c][:self._web_search.max_queries]
+            if concepts:
+                results = self._web_search.batch_search(concepts)
+                web_evidence = self._web_search.format_for_prompt(results)
+                if web_evidence:
+                    logger.debug(
+                        "domain_expert_web_evidence",
+                        concepts=concepts,
+                        hits=len(results),
+                    )
+                    # Persist web evidence back to the per-ontology collection
+                    if self._ingestor is not None:
+                        stored = self._ingestor.ingest_web_results(results)
+                        logger.debug("domain_expert_web_ingested", stored=stored)
+
         # NEW: Use async GraphRetriever when available (preferred over legacy LawGraphSource)
         if self.graph_retriever is not None and "classes" in proposal:
             graph_context = self._fetch_graph_context_for_classes(proposal["classes"])
@@ -392,6 +448,9 @@ class DomainExpertAgent(BaseAgent):
                 proposal=json.dumps(proposal, indent=2, default=str),
                 documents=self.document_context[:4000],
             )
+
+        if web_evidence:
+            user_prompt += f"\n\n{web_evidence}"
 
         response = self.call_llm(user_prompt)
 

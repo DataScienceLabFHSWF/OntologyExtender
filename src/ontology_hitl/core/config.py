@@ -114,6 +114,15 @@ class Settings(BaseSettings):
     reasoner_enabled: bool = True
     reasoner_llm_explanations: bool = True
 
+    # DomainExpert web search (Wikipedia + DDG Lite, allowlisted, rate-limited)
+    # When enabled, the expert fetches short Wikipedia/DDG snippets for proposed
+    # concepts it cannot ground from the local corpus. Disabled by default to
+    # keep behaviour deterministic; enable for richer CQ generation.
+    web_search_enabled: bool = False
+    web_search_max_queries: int = 3   # per review call
+    web_search_max_chars: int = 500   # per snippet
+    web_search_timeout: float = 5.0   # seconds per HTTP request
+
     # Ollama embeddings
     ollama_embedding_model: str = "nomic-embed-text"
 

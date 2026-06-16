@@ -36,6 +36,7 @@ import structlog
 # Add project root so local imports work when called directly
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from src.ontology_hitl.tools.ollama_preflight import check_ollama_model
 from src.ontology_hitl.benchmarking.reproduction_suite import (
     REGISTRY_ORDERED,
     Complexity,
@@ -111,6 +112,14 @@ def _score_run(
 
 def main() -> None:
     args = parse_args()
+
+    # ── Pre-flight model check ────────────────────────────────────────────────
+    if args.model or args.ollama_url:
+        model = args.model or os.environ.get("HITL_OLLAMA_MODEL", "")
+        url = args.ollama_url or os.environ.get("HITL_OLLAMA_URL", "http://localhost:11434")
+        if model:
+            result = check_ollama_model(url, model, raise_on_failure=True)
+            print(f"✓ {result.message}\n")
 
     # ── Select targets ────────────────────────────────────────────────────────
     targets = [

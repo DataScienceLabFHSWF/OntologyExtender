@@ -18,6 +18,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+import httpx
 import structlog
 
 from ontology_hitl.core.config import Settings
@@ -104,6 +105,13 @@ class FeedbackLoopOrchestrator:
         self.experiment_name = experiment_name
         self.metrics_history: list[FeedbackMetrics] = []
         self._iteration = 0
+
+        # Per-ontology Qdrant collection — created lazily on first iteration
+        from ontology_hitl.sources.qdrant_ingestor import QdrantKnowledgeIngestor
+        self._ingestor = QdrantKnowledgeIngestor(
+            self.settings,
+            experiment_name=experiment_name,
+        )
 
         # Literature-inspired modules (shared across iterations)
         self.seed_manager: SeedProtectedOntology | None = None
@@ -277,6 +285,7 @@ class FeedbackLoopOrchestrator:
             seed_manager=self.seed_manager,
             provenance=self.provenance,
             feedback_learner=self.feedback_learner,
+            ingestor=self._ingestor,
         )
         result = pipeline.run_iteration(
             document_excerpts=doc_excerpts,
@@ -384,10 +393,89 @@ class FeedbackLoopOrchestrator:
         Honor optional environment flags for document filtering and
         legal-document prioritization so callers can force a domain-only
         corpus (e.g. `HITL_QDRANT_SOURCE_FILTER=SAR`).
+
+        The collection is checked for existence before fetching.  When the
+        configured collection does not exist (e.g. running a reproduction
+        benchmark against Wine/OWL-Time where the Qdrant store holds nuclear-
+        decommissioning docs) a warning is logged and an empty list is
+        returned rather than injecting irrelevant corpus context into the
+        agent prompts.  Set ``HITL_QDRANT_SKIP_MISSING=false`` to revert to
+        the old behaviour of fetching from whatever collection is configured.
         """
         try:
             import os
             from ontology_hitl.sources.qdrant_source import QdrantDocumentSource
+
+            # Allow per-run collection override (e.g. reproduction benchmarks
+            # that have a dedicated Qdrant collection for their domain).
+            # Default: per-ontology collection derived from experiment name/seed.
+            collection = (
+                os.getenv("HITL_QDRANT_COLLECTION")
+                or self._ingestor.collection
+            )
+
+            # Ensure the per-ontology collection exists (idempotent)
+            self._ingestor.ensure_collection()
+
+            # If the collection was just created this run it is empty — skip the
+            # Qdrant fetch entirely.  Web search + seed ontology provide grounding
+            # for the first iteration; documents accumulate from subsequent runs.
+            if self._ingestor.is_new_collection:
+                logger.info(
+                    "qdrant_collection_new_skip",
+                    collection=self._ingestor.collection,
+                    msg="New per-ontology collection is empty — skipping fetch. "
+                        "Enable HITL_WEB_SEARCH_ENABLED=true for web grounding.",
+                )
+                return []
+            skip_missing = os.getenv("HITL_QDRANT_SKIP_MISSING", "true").lower() not in ("0", "false", "no")
+            if skip_missing:
+                try:
+                    check_resp = httpx.get(
+                        f"{self.settings.qdrant_url.rstrip('/')}/collections/{collection}",
+                        timeout=5.0,
+                    )
+                    if check_resp.status_code == 404:
+                        logger.warning(
+                            "qdrant_collection_missing",
+                            collection=collection,
+                            url=self.settings.qdrant_url,
+                            msg=(
+                                f"Collection '{collection}' not found — skipping Qdrant fetch. "
+                                "For reproduction benchmarks, set HITL_QDRANT_COLLECTION to the "
+                                "relevant collection or HITL_WEB_SEARCH_ENABLED=true to use web "
+                                "evidence instead."
+                            ),
+                        )
+                        return []
+                    check_resp.raise_for_status()
+                    # Warn when the collection exists but the seed ontology topic
+                    # looks unrelated (heuristic: seed path mentions a domain name
+                    # not present in the collection name).
+                    seed_path = self.settings.seed_ontology_path.lower()
+                    domain_hints = {
+                        "wine": ["wine", "vino"],
+                        "owl_time": ["time", "temporal"],
+                        "prov": ["prov", "provenance"],
+                    }
+                    for domain, keywords in domain_hints.items():
+                        if any(k in seed_path for k in keywords):
+                            if not any(k in collection.lower() for k in keywords):
+                                logger.warning(
+                                    "qdrant_collection_domain_mismatch",
+                                    collection=collection,
+                                    seed=self.settings.seed_ontology_path,
+                                    msg=(
+                                        f"Seed ontology appears to be '{domain}' but Qdrant "
+                                        f"collection is '{collection}'. Documents may not be "
+                                        "relevant. Consider HITL_QDRANT_COLLECTION=<domain-collection> "
+                                        "or HITL_WEB_SEARCH_ENABLED=true."
+                                    ),
+                                )
+                            break
+                except Exception as e:
+                    logger.warning("qdrant_preflight_failed", error=str(e))
+                    return []
 
             # Env-controlled behaviour (defaults preserve existing behaviour)
             src_filter = os.getenv("HITL_QDRANT_SOURCE_FILTER")
@@ -404,7 +492,7 @@ class FeedbackLoopOrchestrator:
 
             source = QdrantDocumentSource(
                 qdrant_url=self.settings.qdrant_url,
-                collection=self.settings.qdrant_collection,
+                collection=collection,
                 ollama_url=self.settings.ollama_url,
                 ollama_model=self.settings.ollama_model,
             )

@@ -128,6 +128,15 @@ class AgentTeam:
         """Update document context for the DomainExpert."""
         self.domain_expert.set_documents(context)
 
+    def set_ingestor(self, ingestor: object) -> None:
+        """Attach a QdrantKnowledgeIngestor so web evidence is stored back.
+
+        Called by the loop orchestrator after creating the team so that
+        web-search snippets gathered by the DomainExpert during each
+        debate are persisted into the per-ontology Qdrant collection.
+        """
+        self.domain_expert.set_ingestor(ingestor)
+
     def set_competency_questions(self, cqs: list[dict]) -> None:
         """Forward CQs to the Critic for evaluation-aware reviews."""
         self.critic.set_competency_questions(cqs)
