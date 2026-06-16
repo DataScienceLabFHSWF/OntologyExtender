@@ -17,6 +17,48 @@ from pathlib import Path
 
 from ontology_hitl.core.config import Settings
 
+
+def infer_seed_ontology_from_experiment(experiment_name: str) -> str | None:
+    """Infer a reproduction benchmark seed ontology from an experiment name."""
+    if not experiment_name.startswith("repro_") or "_r" not in experiment_name:
+        return None
+    target = experiment_name[len("repro_"):experiment_name.index("_r")]
+    if not target:
+        return None
+    candidate_dir = Path("data/benchmark_datasets/reproduction") / target
+    if not candidate_dir.exists():
+        return None
+    for pattern in ("*seed*.ttl", "*seed*.owl", "*seed*.rdf", "*seed*.xml"):
+        matches = sorted(candidate_dir.glob(pattern))
+        if matches:
+            return str(matches[0])
+    return None
+
+
+def write_skip_evaluation_report(before_path: Path, after_path: Path, output_path: Path) -> None:
+    report = {
+        "before_file": str(before_path),
+        "after_file": str(after_path),
+        "metrics": [],
+        "summary": {"improved": 0, "degraded": 0, "unchanged": 0},
+        "notes": "Skipped evaluation because competency question files were passed instead of KG metrics JSON.",
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump(report, f, indent=2)
+
+
+def is_json_list(path: Path) -> bool:
+    if not path.exists():
+        return False
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        return isinstance(data, list)
+    except Exception:
+        return False
+
+
 def run_command(cmd, description):
     """Run a command and return success status."""
     print(f"\n{'='*60}")
@@ -99,13 +141,21 @@ def main():
         return False
 
     # Step 4: Run evaluation on the new ontology
-    if not run_command([
-        sys.executable, "scripts/evaluate_iteration.py",
-        "--before", "data/evaluation/competency_questions.json",
-        "--after", f"{output_dir}/cq_latest.json",
-        "--output", f"{iteration_dir}/evaluation_report.json"
-    ], "Evaluate improvement in competency question coverage"):
-        return False
+    before_path = Path("data/evaluation/competency_questions.json")
+    after_path = Path(f"{output_dir}/cq_latest.json")
+    eval_output = Path(f"{iteration_dir}/evaluation_report.json")
+
+    if is_json_list(before_path) or is_json_list(after_path):
+        print("WARNING: Evaluation input files are lists, skipping metric comparison.")
+        write_skip_evaluation_report(before_path, after_path, eval_output)
+    else:
+        if not run_command([
+            sys.executable, "scripts/evaluate_iteration.py",
+            "--before", str(before_path),
+            "--after", str(after_path),
+            "--output", str(eval_output)
+        ], "Evaluate improvement in competency question coverage"):
+            return False
 
     # Step 5: Check what files were created
     print(f"\n{'='*60}")

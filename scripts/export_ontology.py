@@ -102,13 +102,11 @@ def main(
     for cls in accepted_classes:
         shacl_gen.generate_shape(cls)
 
-    # Export
+    # Export ontology OWL and the final CQ file
     output_owl.parent.mkdir(parents=True, exist_ok=True)
     manager.export_owl(output_owl)
-    manager.export_updated_cqs(output_cq)
 
-    # Save extended CQs
-    import json
+    output_cq.parent.mkdir(parents=True, exist_ok=True)
     with open(output_cq, "w") as f:
         json.dump(extended_cqs, f, indent=2)
 
