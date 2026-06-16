@@ -23,6 +23,8 @@ def create_proposals_from_iteration(iteration_dir="data/iterations/v1"):
                     properties_by_class[class_name] = []
                 
                 # Preserve full property details including object vs datatype distinction
+                # Use property_type field to determine classification
+                prop_type = prop.get("property_type", "datatype")
                 prop_entry = {
                     "name": prop.get("name", ""),
                     "description": prop.get("description", ""),
@@ -30,10 +32,19 @@ def create_proposals_from_iteration(iteration_dir="data/iterations/v1"):
                 }
                 
                 # Handle both datatype and object properties
-                if prop.get("property_type") == "object":
-                    # Object property: use range_class instead of datatype
+                if prop_type == "object":
+                    # Object property: set datatype=None, use range_class or infer from property name
                     prop_entry["datatype"] = None
-                    prop_entry["range_class"] = prop.get("range_class", "")
+                    # Try to infer range_class from property name or use explicit range_class
+                    range_class = prop.get("range_class")
+                    if not range_class and prop.get("name"):
+                        # Try to infer: hasGrapeVariety -> GrapeVariety
+                        name = prop.get("name", "")
+                        if name.startswith("has"):
+                            range_class = name[3:]  # Remove "has" prefix
+                        elif name.startswith("is"):
+                            range_class = name[2:]  # Remove "is" prefix
+                    prop_entry["range_class"] = range_class or ""
                     prop_entry["inverse_name"] = prop.get("inverse_name")
                 else:
                     # Datatype property: use datatype (default to xsd:string if missing/None)
@@ -52,31 +63,51 @@ def create_proposals_from_iteration(iteration_dir="data/iterations/v1"):
             hierarchy = json.load(f)
 
         # Create class proposals from hierarchy
+        processed_labels = set()
         for i, node in enumerate(hierarchy.get("nodes", [])):
             label = node["label"]
-            # Include both new and seed classes if they have properties
-            has_properties = label in properties_by_class and properties_by_class[label]
-            is_new = not node.get("is_from_seed", True)
-            
-            if is_new or has_properties:
+            processed_labels.add(label)
+            proposal = {
+                "id": f"class_{i}",
+                "type": "class",
+                "uri": node["uri"],
+                "label": label,
+                "definition": node.get("definition", ""),
+                "parent_uri": node.get("parent_uri", ""),
+                "parent_label": node.get("parent_label", ""),
+                "examples": node.get("examples", []),
+                "strategy": node.get("strategy", "unknown"),
+                "confidence": 0.8,
+                "source_evidence": [],
+                "is_from_seed": node.get("is_from_seed", False),
+                # ✅ NEW: Attach properties discovered in Phase 5
+                "suggested_properties": properties_by_class.get(label, []),
+                "suggested_relations": [],
+            }
+            proposals.append(proposal)
+        
+        # ✅ NEW: Also add seed classes that have properties (e.g., Wine with hasGrapeVariety)
+        i = len(proposals)  # Continue numbering from existing proposals
+        for class_label, props in properties_by_class.items():
+            if class_label not in processed_labels and props:
                 proposal = {
                     "id": f"class_{i}",
                     "type": "class",
-                    "uri": node["uri"],
-                    "label": label,
-                    "definition": node.get("definition", "") if is_new else "",
-                    "parent_uri": node.get("parent_uri", "") if is_new else "",
-                    "parent_label": node.get("parent_label", "") if is_new else "",
-                    "examples": node.get("examples", []) if is_new else [],
-                    "strategy": node.get("strategy", "unknown") if is_new else "seed_extension",
+                    "uri": f"plan:{class_label}",  # Generate URI for seed class
+                    "label": class_label,
+                    "definition": "",  # Seed class, no new definition
+                    "parent_uri": "",
+                    "parent_label": "",
+                    "examples": [],
+                    "strategy": "seed_extension",
                     "confidence": 0.8,
                     "source_evidence": [],
-                    "is_from_seed": node.get("is_from_seed", False),  # Track origin
-                    # ✅ NEW: Attach properties discovered in Phase 5
-                    "suggested_properties": properties_by_class.get(label, []),
-                    "suggested_relations": [],  # Phase 5 also generates relations
+                    "is_from_seed": True,  # Mark as seed class
+                    "suggested_properties": props,
+                    "suggested_relations": [],
                 }
                 proposals.append(proposal)
+                i += 1
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Warning: Could not load hierarchy data from {iteration_dir}: {e}")
 
