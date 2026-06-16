@@ -10,9 +10,12 @@ This script runs the full workflow:
 """
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
+
+from ontology_hitl.core.config import Settings
 
 def run_command(cmd, description):
     """Run a command and return success status."""
@@ -55,6 +58,10 @@ def main():
     print("ONTOLOGY EXTENSION PIPELINE - FULL WORKFLOW")
     print("=" * 60)
 
+    # Step 0: load settings so environment overrides like HITL_SEED_ONTOLOGY_PATH
+    settings = Settings()
+    seed_ontology = os.environ.get("HITL_SEED_ONTOLOGY_PATH", settings.seed_ontology_path)
+
     # Step 1: Run the feedback loop (multi-agent debate)
     cmd = [
         sys.executable, "scripts/run_feedback_loop.py",
@@ -81,6 +88,7 @@ def main():
         sys.executable, "scripts/export_ontology.py",
         "--decisions", f"{iteration_dir}/decisions.json",
         "--proposals", f"{iteration_dir}/proposals.json",
+        "--seed", seed_ontology,
         "--output-owl", f"{output_dir}/ontology_latest.owl",
         "--output-cq", f"{output_dir}/cq_latest.json"
     ]

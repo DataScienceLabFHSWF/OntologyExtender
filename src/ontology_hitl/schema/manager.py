@@ -66,6 +66,27 @@ class OntologySchemaManager:
         self.seed_ontology_path = Path(seed_ontology_path)
         self._accepted_classes: list[ProposedClass] = []
 
+    def _infer_ontology_base(self, graph) -> str:
+        """Infer the base namespace for new classes from the seed ontology."""
+        # Prefer the default namespace if declared in the seed graph.
+        for prefix, namespace in graph.namespaces():
+            if prefix == "":
+                return str(namespace)
+
+        # Fall back to the ontology IRI if available.
+        try:
+            from rdflib import RDF, OWL
+            for ont in graph.subjects(RDF.type, OWL.Ontology):
+                uri = str(ont)
+                if uri.endswith("#") or uri.endswith("/"):
+                    return uri
+                return uri + "#"
+        except Exception:
+            pass
+
+        # Final fallback: derive from seed filename.
+        return f"http://example.org/{self.seed_ontology_path.stem}#"
+
     # ── Decision loading (complete) ─────────────────────────────────
 
     def apply_decisions(
@@ -134,7 +155,8 @@ class OntologySchemaManager:
         except Exception as e:
             logger.error("seed_ontology_parse_failed", error=str(e))
             raise SchemaUpdateError("Failed to parse seed ontology")
-        EX = Namespace(_ONTOLOGY_BASE)
+        ontology_base = self._infer_ontology_base(g)
+        EX = Namespace(ontology_base)
         g.bind("ex", EX)
         for cls in self._accepted_classes:
             class_uri = EX[cls.label]

@@ -97,7 +97,7 @@ def _score_run(
     exp_name = f"repro_{target.name}_r{'on' if reasoner_enabled else 'off'}"
     output_dir = Path("data/exports") / exp_name
     # Try common export filenames
-    for fname in ("ontology_extended.owl", "extended_ontology.owl",
+    for fname in ("ontology_latest.owl", "ontology_extended.owl", "extended_ontology.owl",
                   "output.owl", "ontology.owl"):
         candidate = output_dir / fname
         if candidate.exists():

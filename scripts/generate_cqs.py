@@ -14,6 +14,7 @@ Usage:
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import typer
@@ -41,7 +42,7 @@ def main(
 
     source = QdrantDocumentSource(
         qdrant_url=settings.qdrant_url,
-        collection=settings.qdrant_collection,
+        collection=os.getenv("HITL_QDRANT_COLLECTION") or settings.qdrant_collection,
         ollama_url=settings.ollama_url,
         ollama_model=settings.ollama_model,
     )

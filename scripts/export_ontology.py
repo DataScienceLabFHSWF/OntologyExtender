@@ -11,11 +11,13 @@ Usage:
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import typer
 import structlog
 
+from ontology_hitl.core.config import Settings
 from ontology_hitl.agents.moderator import Moderator
 from ontology_hitl.schema.manager import OntologySchemaManager
 from ontology_hitl.schema.shacl_generator import SHACLGenerator
@@ -28,7 +30,7 @@ app = typer.Typer()
 def main(
     decisions: Path = typer.Option(..., help="Review decisions JSON"),
     proposals: Path = typer.Option(..., help="Proposals JSON"),
-    seed: Path = typer.Option("data/seed_ontology/plan-ontology-v1.0.owl", help="Seed ontology"),
+    seed: Path | None = typer.Option(None, help="Seed ontology"),
     output_owl: Path = typer.Option("data/exports/ontology_latest.owl", help="Output OWL file"),
     output_cq: Path = typer.Option("data/exports/cq_latest.json", help="Output CQ JSON"),
     existing_cq: Path = typer.Option("data/evaluation/competency_questions.json", help="Existing CQ file to extend"),
@@ -36,6 +38,9 @@ def main(
 ) -> None:
     """Export accepted proposals as extended ontology."""
     # Set default paths based on experiment name
+    settings = Settings()
+    seed = Path(seed or settings.seed_ontology_path)
+
     if experiment_name:
         base_iterations = Path("data/iterations") / experiment_name
         base_exports = Path("data/exports") / experiment_name
@@ -60,12 +65,27 @@ def main(
         decisions_path=decisions,
     )
 
-    # Load existing CQs for extension
-    existing_cqs = []
-    if existing_cq.exists():
-        import json
-        with open(existing_cq) as f:
-            existing_cqs = json.load(f)
+    # Load existing CQs for extension. Prefer experiment-specific scope CQs
+    existing_cq_path = existing_cq
+    if experiment_name:
+        scope_cq_path = Path('data/iterations') / experiment_name / '1_scope.json'
+        if scope_cq_path.exists():
+            try:
+                scope_data = json.loads(scope_cq_path.read_text())
+                scope_cqs = scope_data.get('competency_questions', [])
+                if scope_cqs:
+                    existing_cq_path = Path('data/iterations') / experiment_name / '1_scope.json'
+                    existing_cqs = scope_cqs
+                else:
+                    existing_cqs = []
+            except Exception:
+                existing_cqs = []
+        else:
+            existing_cqs = []
+    else:
+        existing_cqs = []
+        if existing_cq.exists():
+            existing_cqs = json.loads(existing_cq.read_text())
 
     # Generate new CQs based on accepted classes (debate outcomes)
     moderator = Moderator()

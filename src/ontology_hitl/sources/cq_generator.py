@@ -12,11 +12,13 @@ any prior KGB run.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import httpx
 import structlog
 
+from ontology_hitl.core.config import Settings
 from ontology_hitl.sources.qdrant_source import DocumentChunk, QdrantDocumentSource
 
 logger = structlog.get_logger(__name__)
@@ -64,13 +66,20 @@ class CQGenerator:
     def __init__(
         self,
         qdrant_source: QdrantDocumentSource | None = None,
-        ollama_url: str = "http://localhost:18135",
-        ollama_model: str = "qwen3-next",
+        ollama_url: str | None = None,
+        ollama_model: str | None = None,
         domain_name: str = "",
+        qdrant_collection: str | None = None,
     ) -> None:
-        self.qdrant_source = qdrant_source or QdrantDocumentSource()
-        self.ollama_url = ollama_url.rstrip("/")
-        self.ollama_model = ollama_model
+        settings = Settings()
+        self.qdrant_source = qdrant_source or QdrantDocumentSource(
+            qdrant_url=settings.qdrant_url,
+            collection=qdrant_collection or os.getenv("HITL_QDRANT_COLLECTION") or settings.qdrant_collection,
+            ollama_url=ollama_url or settings.ollama_url,
+            ollama_model=ollama_model or settings.ollama_model,
+        )
+        self.ollama_url = (ollama_url or settings.ollama_url).rstrip("/")
+        self.ollama_model = ollama_model or settings.ollama_model
         self._domain_name = domain_name
         domain_clause = f" from the {domain_name} domain" if domain_name else ""
         self._system_prompt = _SYSTEM_PROMPT_TEMPLATE.format(domain_clause=domain_clause)

@@ -22,11 +22,13 @@ document ingestion pipeline.
 from __future__ import annotations
 
 import hashlib
+import os
 from dataclasses import dataclass, field
 
 import httpx
 import structlog
 
+from ontology_hitl.core.config import Settings
 from ontology_hitl.core.models import ExtractedEntitySummary
 
 logger = structlog.get_logger(__name__)
@@ -64,15 +66,19 @@ class QdrantDocumentSource:
     def __init__(
         self,
         qdrant_url: str = "http://localhost:6333",
-        collection: str = "kgbuilder",
-        ollama_url: str = "http://localhost:18135",
-        ollama_model: str = "qwen3-next",
+        collection: str | None = None,
+        ollama_url: str | None = None,
+        ollama_model: str | None = None,
         domain_name: str = "",
     ) -> None:
         self.qdrant_url = qdrant_url.rstrip("/")
-        self.collection = collection
-        self.ollama_url = ollama_url.rstrip("/")
-        self.ollama_model = ollama_model
+        self.collection = (
+            collection
+            or os.getenv("HITL_QDRANT_COLLECTION")
+            or Settings().qdrant_collection
+        )
+        self.ollama_url = (ollama_url or os.getenv("HITL_OLLAMA_URL") or Settings().ollama_url).rstrip("/")
+        self.ollama_model = ollama_model or os.getenv("HITL_OLLAMA_MODEL") or Settings().ollama_model
         self._domain_name = domain_name
 
     # ------------------------------------------------------------------

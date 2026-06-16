@@ -1,4 +1,665 @@
 {
-  "total_records": 0,
-  "records": []
+  "total_records": 66,
+  "records": [
+    {
+      "element_uri": "plan:wine",
+      "element_label": "wine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.215033"
+    },
+    {
+      "element_uri": "plan:WineDescriptor",
+      "element_label": "WineDescriptor",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.215690"
+    },
+    {
+      "element_uri": "plan:WineDescriptor",
+      "element_label": "WineDescriptor",
+      "document_id": "proposal",
+      "passage": "Suggests a general concept container for sensory attributes.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.216284"
+    },
+    {
+      "element_uri": "plan:WineTaste",
+      "element_label": "WineTaste",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.216871"
+    },
+    {
+      "element_uri": "plan:WineTaste",
+      "element_label": "WineTaste",
+      "document_id": "proposal",
+      "passage": "Potential synonym for WineDescriptor.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.217433"
+    },
+    {
+      "element_uri": "plan:RedWine",
+      "element_label": "RedWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.217847"
+    },
+    {
+      "element_uri": "plan:RedWine",
+      "element_label": "RedWine",
+      "document_id": "proposal",
+      "passage": "Potential parent class for specific red wine types.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.218213"
+    },
+    {
+      "element_uri": "plan:DryRedWine",
+      "element_label": "DryRedWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.218483"
+    },
+    {
+      "element_uri": "plan:DryRedWine",
+      "element_label": "DryRedWine",
+      "document_id": "proposal",
+      "passage": "More specific classification than RedWine.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.218607"
+    },
+    {
+      "element_uri": "plan:DryWhiteWine",
+      "element_label": "DryWhiteWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.218722"
+    },
+    {
+      "element_uri": "plan:DryWine",
+      "element_label": "DryWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.218836"
+    },
+    {
+      "element_uri": "plan:DryWine",
+      "element_label": "DryWine",
+      "document_id": "proposal",
+      "passage": "Potentially a superclass for DryRedWine and DryWhiteWine.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.218942"
+    },
+    {
+      "element_uri": "plan:DessertWine",
+      "element_label": "DessertWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.224546"
+    },
+    {
+      "element_uri": "plan:FullBodiedWine",
+      "element_label": "FullBodiedWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.225032"
+    },
+    {
+      "element_uri": "plan:FullBodiedWine",
+      "element_label": "FullBodiedWine",
+      "document_id": "proposal",
+      "passage": "A structural descriptor, potentially a facet or subclass.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.225294"
+    },
+    {
+      "element_uri": "plan:LateHarvest",
+      "element_label": "LateHarvest",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.225537"
+    },
+    {
+      "element_uri": "plan:LateHarvest",
+      "element_label": "LateHarvest",
+      "document_id": "proposal",
+      "passage": "A temporal classification.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.225774"
+    },
+    {
+      "element_uri": "plan:EarlyHarvest",
+      "element_label": "EarlyHarvest",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.226008"
+    },
+    {
+      "element_uri": "plan:EarlyHarvest",
+      "element_label": "EarlyHarvest",
+      "document_id": "proposal",
+      "passage": "A temporal classification.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.226245"
+    },
+    {
+      "element_uri": "plan:AmericanWine",
+      "element_label": "AmericanWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.226478"
+    },
+    {
+      "element_uri": "plan:AmericanWine",
+      "element_label": "AmericanWine",
+      "document_id": "proposal",
+      "passage": "This term appears to be a general grouping of regional/national origin classes.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.226707"
+    },
+    {
+      "element_uri": "plan:FrenchWine",
+      "element_label": "FrenchWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.226931"
+    },
+    {
+      "element_uri": "plan:FrenchWine",
+      "element_label": "FrenchWine",
+      "document_id": "proposal",
+      "passage": "This term appears to be a general grouping of regional/national origin classes.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.227159"
+    },
+    {
+      "element_uri": "plan:ItalianWine",
+      "element_label": "ItalianWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.227383"
+    },
+    {
+      "element_uri": "plan:GermanWine",
+      "element_label": "GermanWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.227608"
+    },
+    {
+      "element_uri": "plan:GrapeVariety",
+      "element_label": "GrapeVariety",
+      "document_id": "proposal",
+      "passage": "Inferred grouping: The list contains many grape varieties (e.g., CabernetFranc, Chardonnay). A dedicated class for 'GrapeVariety' is needed to structure these terms.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.227832"
+    },
+    {
+      "element_uri": "plan:AlsatianWine",
+      "element_label": "AlsatianWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.228052"
+    },
+    {
+      "element_uri": "plan:AlsatianWine",
+      "element_label": "AlsatianWine",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.228246"
+    },
+    {
+      "element_uri": "plan:Anjou",
+      "element_label": "Anjou",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.228456"
+    },
+    {
+      "element_uri": "plan:Anjou",
+      "element_label": "Anjou",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.228664"
+    },
+    {
+      "element_uri": "plan:Beaujolais",
+      "element_label": "Beaujolais",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.228914"
+    },
+    {
+      "element_uri": "plan:Beaujolais",
+      "element_label": "Beaujolais",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.229039"
+    },
+    {
+      "element_uri": "plan:Bordeaux",
+      "element_label": "Bordeaux",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.229268"
+    },
+    {
+      "element_uri": "plan:Bordeaux",
+      "element_label": "Bordeaux",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.229466"
+    },
+    {
+      "element_uri": "plan:Burgundy",
+      "element_label": "Burgundy",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.229711"
+    },
+    {
+      "element_uri": "plan:Burgundy",
+      "element_label": "Burgundy",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.229834"
+    },
+    {
+      "element_uri": "plan:CabernetFranc",
+      "element_label": "CabernetFranc",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.230055"
+    },
+    {
+      "element_uri": "plan:CabernetFranc",
+      "element_label": "CabernetFranc",
+      "document_id": "proposal",
+      "passage": "Specific GrapeVariety.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.230259"
+    },
+    {
+      "element_uri": "plan:CabernetSauvignon",
+      "element_label": "CabernetSauvignon",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.230498"
+    },
+    {
+      "element_uri": "plan:CabernetSauvignon",
+      "element_label": "CabernetSauvignon",
+      "document_id": "proposal",
+      "passage": "Specific GrapeVariety.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.230620"
+    },
+    {
+      "element_uri": "plan:CaliforniaWine",
+      "element_label": "CaliforniaWine",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.230834"
+    },
+    {
+      "element_uri": "plan:CaliforniaWine",
+      "element_label": "CaliforniaWine",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.231042"
+    },
+    {
+      "element_uri": "plan:Chardonnay",
+      "element_label": "Chardonnay",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.231290"
+    },
+    {
+      "element_uri": "plan:Chardonnay",
+      "element_label": "Chardonnay",
+      "document_id": "proposal",
+      "passage": "Specific GrapeVariety.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.231409"
+    },
+    {
+      "element_uri": "plan:CheninBlanc",
+      "element_label": "CheninBlanc",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.231619"
+    },
+    {
+      "element_uri": "plan:CheninBlanc",
+      "element_label": "CheninBlanc",
+      "document_id": "proposal",
+      "passage": "Specific GrapeVariety.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.231808"
+    },
+    {
+      "element_uri": "plan:Chianti",
+      "element_label": "Chianti",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.232045"
+    },
+    {
+      "element_uri": "plan:Chianti",
+      "element_label": "Chianti",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.232169"
+    },
+    {
+      "element_uri": "plan:CotesDOr",
+      "element_label": "CotesDOr",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.232388"
+    },
+    {
+      "element_uri": "plan:CotesDOr",
+      "element_label": "CotesDOr",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.232582"
+    },
+    {
+      "element_uri": "plan:DryRiesling",
+      "element_label": "DryRiesling",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.232778"
+    },
+    {
+      "element_uri": "plan:DryRiesling",
+      "element_label": "DryRiesling",
+      "document_id": "proposal",
+      "passage": "Specific wine type/style.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.233021"
+    },
+    {
+      "element_uri": "plan:Merlot",
+      "element_label": "Merlot",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.233150"
+    },
+    {
+      "element_uri": "plan:Merlot",
+      "element_label": "Merlot",
+      "document_id": "proposal",
+      "passage": "Specific GrapeVariety.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.233379"
+    },
+    {
+      "element_uri": "plan:Meursault",
+      "element_label": "Meursault",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.233577"
+    },
+    {
+      "element_uri": "plan:Meursault",
+      "element_label": "Meursault",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.233819"
+    },
+    {
+      "element_uri": "plan:Muscadet",
+      "element_label": "Muscadet",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.233939"
+    },
+    {
+      "element_uri": "plan:Muscadet",
+      "element_label": "Muscadet",
+      "document_id": "proposal",
+      "passage": "Specific GrapeVariety.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.234212"
+    },
+    {
+      "element_uri": "plan:Loire",
+      "element_label": "Loire",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.234423"
+    },
+    {
+      "element_uri": "plan:Loire",
+      "element_label": "Loire",
+      "document_id": "proposal",
+      "passage": "Specific geographical region class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.234626"
+    },
+    {
+      "element_uri": "plan:Margaux",
+      "element_label": "Margaux",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.234828"
+    },
+    {
+      "element_uri": "plan:Margaux",
+      "element_label": "Margaux",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.235026"
+    },
+    {
+      "element_uri": "plan:Medoc",
+      "element_label": "Medoc",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.235232"
+    },
+    {
+      "element_uri": "plan:Medoc",
+      "element_label": "Medoc",
+      "document_id": "proposal",
+      "passage": "Specific regional/style class (potentially subsumed by Bordeaux).",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.235427"
+    },
+    {
+      "element_uri": "plan:Meritage",
+      "element_label": "Meritage",
+      "document_id": "proposal",
+      "passage": "Provided seed ontology reference list.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.235619"
+    },
+    {
+      "element_uri": "plan:Meritage",
+      "element_label": "Meritage",
+      "document_id": "proposal",
+      "passage": "Specific blend/style class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T12:32:38.235860"
+    }
+  ]
 }
