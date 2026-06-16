@@ -347,8 +347,26 @@ src/ontology_hitl/benchmarking/
 ├── aggregator.py       # ResultsAggregator: cross-system comparison tables
 ├── statistics.py       # StatisticalAnalyzer: t-test, bootstrap CI, Cohen's d
 ├── reporting.py        # ReportGenerator: charts, LaTeX, Markdown, W&B
-└── runner.py           # BenchmarkRunner: 7-phase orchestrator + checkpointing
+├── runner.py           # BenchmarkRunner: 7-phase orchestrator + checkpointing
+├── oeo_cq_loader.py    # Parser for OEO .omn Manchester-syntax CQ entailment tests
+└── oeo_benchmark.py    # OEOBenchmark: version delta, reproduction P/R/F1, CQ evaluation
 ```
+
+### OEO Reproduction Benchmark
+
+`oeo_benchmark.py` and `oeo_cq_loader.py` reproduce a published ontology
+version bump (designed around the Open Energy Ontology) and measure how well
+the agentic pipeline recovers the human-authored additions. It reuses the same
+`reasoning/consistency.py` core as the Reasoner agent.
+
+| Component | Purpose |
+|-----------|---------|
+| `parse_omn` / `load_cq_directory` | Parse OEO `.omn` competency-question entailment tests (`EquivalentClasses(<expr>, owl:Nothing)`) |
+| `OEOBenchmark.version_delta(old, new)` | Diff two ontology versions → added/removed classes, properties, subclass axioms |
+| `OEOBenchmark.score_reproduction(generated, gold, seed)` | Precision/recall/F1 of the recovered *delta* (seed-aware), plus consistency check |
+| `OEOBenchmark.evaluate_competency_questions(ont, cqs)` | DL-reasoner entailment check via `owlready2` when available; explicit skip (no fake score) otherwise |
+
+CLI: `python scripts/run_oeo_benchmark.py {delta,score,cqs} ...` (see README).
 
 ---
 

@@ -20,10 +20,11 @@ Qdrant Vectors ─────────────────────�
 
 1. **Gap Analysis** — Live graph + SPARQL comparison finds entities the ontology can't represent
 2. **Hybrid Retrieval** — Vector, graph, Cypher and ontology retrieval fused via reciprocal rank fusion
-3. **7-Phase Pipeline** — Three agents debate scope, terms, hierarchy, properties, facets, instances
-4. **Human Review** — Accept, reject, or revise proposals
-5. **Export** — Produce OWL, SHACL constraints, and updated competency questions
-6. **Evaluate** — Measure improvement across 6 dimensions. Repeat until convergence.
+3. **7-Phase Pipeline** — Four agents debate scope, terms, hierarchy, properties, facets, instances
+4. **Logical Gate** — A formal Reasoner (OWL-RL/DL) checks every proposal for consistency; an inconsistent extension can never reach consensus
+5. **Human Review** — Accept, reject, or revise proposals
+6. **Export** — Produce OWL, SHACL constraints, and updated competency questions
+7. **Evaluate** — Measure improvement across 6 dimensions. Repeat until convergence.
 
 ## Quick Start
 
@@ -80,9 +81,10 @@ python scripts/evaluate_iteration.py  --before before.json --after after.json --
 
 ```
 src/ontology_hitl/
-├── agents/          3 agents + moderator + 5 debate strategies
+├── agents/          4 agents + moderator + 5 debate strategies
 ├── core/            Loop orchestrator, config, data models
 ├── connectors/      Neo4j · Fuseki · Ollama (LangChain) · Qdrant
+├── reasoning/       Shared OWL consistency checker (owlrl / owlready2)
 ├── retrieval/       Hybrid agentic GraphRAG pipeline (see below)
 ├── methodology/     Ont-101 pipeline (7 phases), validation
 ├── discovery/       Gap analysis, entity linking, embedding advisor
@@ -91,7 +93,7 @@ src/ontology_hitl/
 ├── review/          CLI (Rich/Typer) + web dashboard (Streamlit)
 ├── sources/         Qdrant document source, CQ generator
 ├── mapping/         YARRRML/RML mapping rules
-└── benchmarking/    OntoURL benchmark + 6-dimension evaluation
+└── benchmarking/    OntoURL + OEO reproduction + 6-dimension evaluation
 ```
 
 ### Connectors
@@ -134,6 +136,15 @@ QAQuery ──→   ├──── GraphRetriever (Neo4j, 4 modes) ┼──→
 | **OntologyEngineer** | Propose extensions (Ont-101 methodology) |
 | **DomainExpert** | Validate against documents |
 | **Critic** | Stress-test structural quality |
+| **Reasoner** | Formal logical-consistency gate (deterministic, OWL reasoner — not LLM judgement) |
+
+The **Reasoner** ("Logician") materialises each proposal on top of the seed
+ontology, runs an OWL-RL deductive closure (via `owlrl`, with optional
+`owlready2`/HermiT DL reasoning when Java is present) and reports
+unsatisfiable classes, disjointness violations, subclass cycles and
+domain/range conflicts. Its verdict is **deterministic** and binding: because
+consensus requires *all* reviewers to approve, a logically inconsistent
+extension can never be accepted. Toggle via `HITL_REASONER_ENABLED`.
 
 | Strategy | Phase | Prevents |
 |----------|-------|----------|
@@ -181,7 +192,34 @@ python scripts/run_benchmark.py evaluate --enable-semantic-matching --enable-owl
 
 Full evaluation rationale: [docs/BENCHMARKING_RATIONALE.md](docs/BENCHMARKING_RATIONALE.md)
 
-## Design Rationale
+### OEO Reproduction Benchmark
+
+Reproduce a published ontology version delta (e.g. Open Energy Ontology) and
+score how well the agentic pipeline recovers the human-authored additions:
+
+```bash
+# Diff two ontology versions (what classes/properties/axioms were added)
+python scripts/run_oeo_benchmark.py delta \
+    --old oeo-v1.0.owl --new oeo-v1.1.owl --output delta.json
+
+# Score a generated ontology against the gold version (precision/recall/F1)
+python scripts/run_oeo_benchmark.py score \
+    --generated generated.owl --gold oeo-v1.1.owl --seed oeo-v1.0.owl \
+    --output score.json
+
+# Evaluate OEO competency questions (.omn entailment tests)
+python scripts/run_oeo_benchmark.py cqs \
+    --cq-dir path/to/oeo/competency_questions --ontology generated.owl \
+    --output cqs.json
+```
+
+OEO ships its competency questions as OWL Manchester-syntax (`.omn`)
+entailment tests (`EquivalentClasses(<expr>, owl:Nothing)`). The loader parses
+these and the benchmark evaluates them with a DL reasoner when `owlready2`
+(+ Java) is available; without it, CQ evaluation is **explicitly skipped**
+rather than reported with a misleading score. The reproduction scorer compares
+only the *delta* the pipeline added on top of the seed, not the whole
+ontology.
 
 Philosophical traditions as engineering mechanisms:
 
@@ -306,6 +344,10 @@ HITL_GRAPH_MAX_HOPS=2
 HITL_PPR_TOP_K=20
 
 HITL_CQ_ANSWERABILITY_TARGET=0.80
+
+# Logical Reasoner gate
+HITL_REASONER_ENABLED=true              # formal consistency check in every debate
+HITL_REASONER_LLM_EXPLANATIONS=true     # LLM phrases remediation advice for issues
 ```
 
 CI note: the GitHub Actions CI job can optionally pull the configured Ollama
@@ -322,7 +364,10 @@ WANDB_PROJECT=ontology-hitl       # W&B experiment tracking
 ## Tests
 
 ```bash
-python -m pytest tests/ -v                      # all tests (60+)
+python -m pytest tests/ -v                      # all tests (310+)
+python -m pytest tests/reasoning/ -v              # logical consistency checker
+python -m pytest tests/agents/test_reasoner.py -v  # Reasoner agent gate
+python -m pytest tests/benchmarking/test_oeo_benchmark.py -v  # OEO reproduction
 python -m pytest tests/test_graphrag.py -v        # graph retrieval layer
 python -m pytest tests/test_hybrid_graphrag.py -v  # hybrid agentic pipeline
 ```

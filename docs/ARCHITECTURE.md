@@ -67,8 +67,9 @@ Extended Ontology (OWL + SHACL + CQs + YARRRML)
 
 ```
 src/ontology_hitl/
-├── agents/          Multi-agent system (base, engineer, expert, critic, team, moderator)
+├── agents/          Multi-agent system (base, engineer, expert, critic, reasoner, team, moderator)
 ├── core/            Loop orchestrator, config, data models, protocols
+├── reasoning/       Shared OWL consistency checker (owlrl / owlready2)
 ├── methodology/     Ont-101 pipeline (7 phases), validation rules
 ├── discovery/       Gap analysis, entity linking, embedding advisor, ensemble
 ├── schema/          OWL export, SHACL generation, seed protection, versioning
@@ -90,6 +91,7 @@ src/ontology_hitl/
 | **OntologyEngineer** | Proposer | Ont-101 methodology, formal OWL modelling, taxonomic structure |
 | **DomainExpert** | Document-grounded reviewer | Domain accuracy, evidence from Qdrant documents |
 | **Critic** | Quality reviewer | Structural quality, naming conventions, CQ coverage, consistency |
+| **Reasoner** | Logical-consistency gate | Description-logic satisfiability — deterministic OWL reasoner, no LLM judgement |
 
 ### Source Files
 
@@ -99,6 +101,7 @@ src/ontology_hitl/agents/
 ├── ontology_engineer.py     # OntologyEngineerAgent (propose + revise)
 ├── domain_expert.py         # DomainExpertAgent (review + answer questions)
 ├── critic.py                # CriticAgent (review + CQ coverage checking)
+├── reasoner.py              # ReasonerAgent (logical consistency gate)
 ├── team.py                  # AgentTeam (orchestrates debates)
 ├── epistemics.py            # EpistemicStance, SOCRATIC_DIMENSIONS, SYSTEM_ASSEMBLAGE
 ├── debate_strategies.py     # DebateStrategist with 5 strategies
@@ -135,17 +138,23 @@ Round 1:
   OntologyEngineer.propose(phase, context) → AgentMessage
   DomainExpert.review(phase, proposal)     → AgentMessage
   Critic.review(phase, proposal, prior)    → AgentMessage
+  Reasoner.review(phase, proposal)         → AgentMessage  [if reasoner_enabled]
 
 If not consensus AND round < max_rounds:
   OntologyEngineer.revise(phase, proposal, feedback) → AgentMessage
   → repeat review
 
 Outcome:
-  CONSENSUS  — all reviewers approve
+  CONSENSUS  — all reviewers approve (incl. Reasoner: logically consistent)
   REVISED    — proposal improved, accepted on revision
   PARTIAL    — some issues resolved, minor ones accepted
   ESCALATED  — fundamental disagreement → AgentQuestion for HITL
 ```
+
+Because `Debate.has_consensus` requires **every** review to approve, the
+Reasoner acts as a hard correctness gate: a proposal with a logical
+inconsistency cannot reach consensus and is forced into revision or HITL
+escalation.
 
 ### Usage
 
@@ -416,10 +425,12 @@ All modules are implemented. Stale `TODO` markers remain in ~12 files
 | | `ontology_engineer.py` | Implemented | Proposer with 7 phase-specific prompts |
 | | `domain_expert.py` | Implemented | Hermeneutic reviewer with document grounding |
 | | `critic.py` | Implemented | Falsificationist reviewer with CQ checking |
-| | `team.py` | Implemented | 3-agent debate orchestration, 7 context builders |
+| | `reasoner.py` | Implemented | Logical-consistency gate (deterministic OWL reasoner) |
+| | `team.py` | Implemented | 4-agent debate orchestration, 7 context builders |
 | | `epistemics.py` | Implemented | Epistemic framework constants |
 | | `debate_strategies.py` | Implemented | 5 strategies (dialectical, Socratic, Delphi, abductive, consensus) |
 | | `moderator.py` | Implemented | Deterministic strategy selection, grounding, drift detection |
+| **reasoning/** | `consistency.py` | Implemented | ConsistencyChecker (owlrl/owlready2), shared by Reasoner + OEO benchmark |
 | **core/** | `loop_orchestrator.py` | Implemented | Iterative convergence loop with W&B |
 | | `config.py` | Implemented | Pydantic Settings with `HITL_` env prefix |
 | | `models.py` | Implemented | 11 data models (ProposedClass, GapCandidate, etc.) |

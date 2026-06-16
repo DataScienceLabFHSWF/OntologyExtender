@@ -2,6 +2,47 @@
 
 All notable changes, experiments and fixes.
 
+## 2026-06-16 — Logical Reasoner agent + OEO reproduction benchmark
+
+Summary
+- Added a shared OWL **consistency-checking core** (`reasoning/consistency.py`)
+  built on `owlrl` (OWL-RL/RDFS deductive closure) with optional `owlready2`/
+  HermiT DL reasoning when Java is present. Detects unsatisfiable classes,
+  disjointness violations, subclass cycles and domain/range conflicts; runs on
+  a copy of the graph and never mutates the input.
+- Added a fourth debate agent, the **Reasoner** ("Logician",
+  `agents/reasoner.py`, `AgentRole.REASONER`). Its verdict is *deterministic*
+  and binding — since consensus requires every reviewer to approve, a logically
+  inconsistent proposal can no longer be accepted. Wired into `AgentTeam`
+  (gated by `HITL_REASONER_ENABLED`, default on) and feeds remediation notes
+  back into the engineer's revision loop.
+- Added the **OEO reproduction benchmark** (`benchmarking/oeo_benchmark.py`,
+  `oeo_cq_loader.py`): parses OEO `.omn` Manchester-syntax competency-question
+  entailment tests, diffs two ontology versions, and scores how well the
+  pipeline recovers the human-authored delta (precision/recall/F1). CQ
+  entailment is evaluated with a DL reasoner when `owlready2` is available, and
+  explicitly skipped (not faked) otherwise.
+- New CLI `scripts/run_oeo_benchmark.py` with `delta`/`score`/`cqs`
+  subcommands.
+
+Key files changed
+- `src/ontology_hitl/reasoning/{__init__,consistency}.py` — new reasoning core
+- `src/ontology_hitl/agents/reasoner.py` — new Reasoner agent
+- `src/ontology_hitl/agents/{base,team,__init__}.py` — `REASONER` role + wiring
+- `src/ontology_hitl/core/config.py` — `reasoner_enabled`,
+  `reasoner_llm_explanations`
+- `src/ontology_hitl/benchmarking/{oeo_benchmark,oeo_cq_loader,__init__}.py`
+- `scripts/run_oeo_benchmark.py` — new benchmark CLI
+- `tests/{reasoning,agents,benchmarking}/` — 33 new tests, all passing
+
+Notes / follow-ups
+- Existing ablation configs (`experiments/*.json`) do not vary the agent set;
+  they assume the default team. With the Reasoner enabled by default, prior
+  ablation numbers reflect a *3-agent* team. To get clean before/after
+  comparisons, re-run with `HITL_REASONER_ENABLED=false` (pre-Reasoner
+  baseline) and `=true` (new behaviour), or add a `reasoner_enabled` field to
+  the experiment JSON.
+
 ## 2026-02-16 — SAR reproduction, HITL metrics, tests, experiments
 
 Summary
