@@ -1,15 +1,75 @@
 {
-  "total_records": 1,
+  "total_records": 7,
   "records": [
     {
-      "element_uri": "plan:N/A",
-      "element_label": "N/A",
+      "element_uri": "plan:wine",
+      "element_label": "wine",
       "document_id": "proposal",
-      "passage": "Cannot cite evidence. Domain documents required for term extraction.",
+      "passage": "Derived from the provided list of current ontology classes.",
       "confidence": 0.0,
       "agent_role": "ontology_engineer",
       "phase": "3_terms",
-      "timestamp": "2026-06-16T14:21:16.817285"
+      "timestamp": "2026-06-16T16:12:55.102826"
+    },
+    {
+      "element_uri": "plan:wineDescriptor",
+      "element_label": "wineDescriptor",
+      "document_id": "proposal",
+      "passage": "Derived from the provided list of current ontology classes.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T16:12:55.103346"
+    },
+    {
+      "element_uri": "plan:wineTaste",
+      "element_label": "wineTaste",
+      "document_id": "proposal",
+      "passage": "Derived from the provided list of current ontology classes.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T16:12:55.103641"
+    },
+    {
+      "element_uri": "plan:FrenchWine",
+      "element_label": "FrenchWine",
+      "document_id": "proposal",
+      "passage": "Derived from the provided list of current ontology classes. This appears to be a high-level grouping class.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T16:12:55.103893"
+    },
+    {
+      "element_uri": "plan:ItalianWine",
+      "element_label": "ItalianWine",
+      "document_id": "proposal",
+      "passage": "Derived from the provided list of current ontology classes.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T16:12:55.104140"
+    },
+    {
+      "element_uri": "plan:AmericanWine",
+      "element_label": "AmericanWine",
+      "document_id": "proposal",
+      "passage": "Derived from the provided list of current ontology classes.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T16:12:55.111504"
+    },
+    {
+      "element_uri": "plan:Region/Variety Specific Classes (e.g., Bordeaux, Burgundy, etc.)",
+      "element_label": "Region/Variety Specific Classes (e.g., Bordeaux, Burgundy, etc.)",
+      "document_id": "proposal",
+      "passage": "The following terms are treated as specific subclasses of 'wine' or 'FrenchWine': AlsatianWine, Anjou, Beaujolais, Bordeaux, Burgundy, CabernetFranc, CabernetSauvignon, CaliforniaWine, Chardonnay, CheninBlanc, Chianti, CotesDOr, DessertWine, DryRedWine, DryRiesling, DryWhiteWine, DryWine, FullBodiedWine, Gamay, GermanWine, IceWine, LateHarvest, Loire, Margaux, Medoc, Meritage, Merlot, Meursault, Muscadet, RedWine, EarlyHarvest.",
+      "confidence": 0.0,
+      "agent_role": "ontology_engineer",
+      "phase": "3_terms",
+      "timestamp": "2026-06-16T16:12:55.112495"
     }
   ]
 }

@@ -63,10 +63,8 @@ def create_proposals_from_iteration(iteration_dir="data/iterations/v1"):
             hierarchy = json.load(f)
 
         # Create class proposals from hierarchy
-        processed_labels = set()
         for i, node in enumerate(hierarchy.get("nodes", [])):
             label = node["label"]
-            processed_labels.add(label)
             proposal = {
                 "id": f"class_{i}",
                 "type": "class",
@@ -80,34 +78,11 @@ def create_proposals_from_iteration(iteration_dir="data/iterations/v1"):
                 "confidence": 0.8,
                 "source_evidence": [],
                 "is_from_seed": node.get("is_from_seed", False),
-                # ✅ NEW: Attach properties discovered in Phase 5
+                # ✅ Attach properties discovered in Phase 5
                 "suggested_properties": properties_by_class.get(label, []),
                 "suggested_relations": [],
             }
             proposals.append(proposal)
-        
-        # ✅ NEW: Also add seed classes that have properties (e.g., Wine with hasGrapeVariety)
-        i = len(proposals)  # Continue numbering from existing proposals
-        for class_label, props in properties_by_class.items():
-            if class_label not in processed_labels and props:
-                proposal = {
-                    "id": f"class_{i}",
-                    "type": "class",
-                    "uri": f"plan:{class_label}",  # Generate URI for seed class
-                    "label": class_label,
-                    "definition": "",  # Seed class, no new definition
-                    "parent_uri": "",
-                    "parent_label": "",
-                    "examples": [],
-                    "strategy": "seed_extension",
-                    "confidence": 0.8,
-                    "source_evidence": [],
-                    "is_from_seed": True,  # Mark as seed class
-                    "suggested_properties": props,
-                    "suggested_relations": [],
-                }
-                proposals.append(proposal)
-                i += 1
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Warning: Could not load hierarchy data from {iteration_dir}: {e}")
 
