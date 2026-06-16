@@ -1,0 +1,113 @@
+[
+  {
+    "name": "ablation_single_agent_hierarchy",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Single agent for hierarchy (no ensemble). Baseline for ensemble impact.",
+    "strategy_overrides": {
+      "hierarchy": "single_shot"
+    },
+    "ensemble": {
+      "enabled": false,
+      "hierarchy_agents": 1
+    },
+    "timeout_seconds": 600,
+    "skip_phases": []
+  },
+  {
+    "name": "ablation_ensemble_hierarchy",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Multi-agent ensemble for hierarchy only. Isolates ensemble impact.",
+    "strategy_overrides": {
+      "hierarchy": "ensemble_vote"
+    },
+    "ensemble": {
+      "enabled": true,
+      "hierarchy_agents": 3,
+      "voting_strategy": "majority"
+    },
+    "timeout_seconds": 1200,
+    "skip_phases": []
+  },
+  {
+    "name": "ablation_no_properties",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Skip Phase 5 property extraction entirely. Measures property impact on score.",
+    "strategy_overrides": {},
+    "skip_phases": ["properties"],
+    "timeout_seconds": 300,
+    "expected_gap": "Phase 5 properties not generated"
+  },
+  {
+    "name": "ablation_with_properties",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Include Phase 5 properties (enabled by default in export). Baseline for property impact.",
+    "strategy_overrides": {},
+    "skip_phases": [],
+    "enable_property_export": true,
+    "timeout_seconds": 600,
+    "expected_improvement": "Phase 5 properties exported to OWL"
+  },
+  {
+    "name": "ablation_feedback_loop_1_iter",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Single feedback loop iteration. Tests if iteration helps.",
+    "strategy_overrides": {
+      "hierarchy": "dialectical"
+    },
+    "feedback_loop": {
+      "enabled": true,
+      "max_iterations": 1
+    },
+    "timeout_seconds": 600
+  },
+  {
+    "name": "ablation_feedback_loop_3_iter",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Three feedback loop iterations. Tests iteration depth impact.",
+    "strategy_overrides": {
+      "hierarchy": "dialectical"
+    },
+    "feedback_loop": {
+      "enabled": true,
+      "max_iterations": 3
+    },
+    "timeout_seconds": 1800
+  },
+  {
+    "name": "ablation_no_seed_ontology",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Generate ontology from scratch without seed. Tests seed ontology necessity.",
+    "strategy_overrides": {},
+    "use_seed_ontology": false,
+    "timeout_seconds": 600,
+    "expected_gap": "No seed ontology baseline"
+  },
+  {
+    "name": "ablation_with_seed_ontology",
+    "model": "gemma4:e4b",
+    "description": "Ablation: With seed ontology (standard). Baseline for seed impact.",
+    "strategy_overrides": {},
+    "use_seed_ontology": true,
+    "timeout_seconds": 600
+  },
+  {
+    "name": "ablation_hierarchy_raw",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Raw LLM hierarchy output (no refinement). Tests refinement impact.",
+    "strategy_overrides": {
+      "hierarchy": "single_shot"
+    },
+    "hierarchy_refinement": false,
+    "timeout_seconds": 300
+  },
+  {
+    "name": "ablation_hierarchy_refined",
+    "model": "gemma4:e4b",
+    "description": "Ablation: Hierarchy with refinement passes. Baseline for refinement value.",
+    "strategy_overrides": {
+      "hierarchy": "dialectical"
+    },
+    "hierarchy_refinement": true,
+    "timeout_seconds": 600
+  }
+]
