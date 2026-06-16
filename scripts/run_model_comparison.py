@@ -128,6 +128,7 @@ class ModelExperimentConfig(BaseModel):
     model: str
     ollama_url: str = ""  # Override Ollama endpoint (e.g. gemma4 container on :18134)
     reasoner_enabled: Optional[bool] = None  # None = config default; toggle Reasoner ablation
+    seed_ontology_path: str = ""  # Override seed ontology for reproduction benchmarks
     strategy: str = "naive"  # For llm_only method: naive, modular, iterative, adaptive
     strategy_overrides: Dict[str, str] = {}
     description: str = ""
@@ -724,6 +725,8 @@ class ModelExperimentRunner:
             env["HITL_OLLAMA_URL"] = config.ollama_url
         if config.reasoner_enabled is not None:
             env["HITL_REASONER_ENABLED"] = str(config.reasoner_enabled).lower()
+        if config.seed_ontology_path:
+            env["HITL_SEED_ONTOLOGY_PATH"] = config.seed_ontology_path
         env["HITL_LLM_TIMEOUT_SECONDS"] = str(config.timeout_seconds)
         env["HITL_LLM_TEMPERATURE"] = str(config.temperature)
         env["ONTOLOGY_EXPERIMENT_NAME"] = config.name
@@ -795,6 +798,8 @@ class ModelExperimentRunner:
             env["HITL_OLLAMA_URL"] = config.ollama_url
         if config.reasoner_enabled is not None:
             env["HITL_REASONER_ENABLED"] = str(config.reasoner_enabled).lower()
+        if config.seed_ontology_path:
+            env["HITL_SEED_ONTOLOGY_PATH"] = config.seed_ontology_path
         env["HITL_LLM_TIMEOUT_SECONDS"] = str(config.timeout_seconds)
         env["HITL_LLM_TEMPERATURE"] = str(config.temperature)
 

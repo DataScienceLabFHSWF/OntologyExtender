@@ -52,6 +52,13 @@ from .oeo_benchmark import (
     OntologyDelta,
     ReproductionScore,
 )
+from .reproduction_suite import (
+    Complexity,
+    REGISTRY,
+    REGISTRY_ORDERED,
+    ReproductionSuite,
+    ReproductionTarget,
+)
 
 __all__ = [
     "BenchmarkConfig",
@@ -76,4 +83,9 @@ __all__ = [
     "OEOBenchmark",
     "OntologyDelta",
     "ReproductionScore",
+    "Complexity",
+    "REGISTRY",
+    "REGISTRY_ORDERED",
+    "ReproductionSuite",
+    "ReproductionTarget",
 ]

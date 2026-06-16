@@ -29,6 +29,7 @@ class ExperimentConfig(BaseModel):
     model: str = ""  # Model name for grouping parallel experiments
     ollama_url: str = ""  # Override Ollama endpoint (e.g. gemma4 container on :18134)
     reasoner_enabled: Optional[bool] = None  # None = use config default; toggle Reasoner ablation
+    seed_ontology_path: str = ""  # Override seed ontology for reproduction benchmarks
     strategy_overrides: Dict[str, str]  # phase -> strategy mapping
     description: str = ""
     structured_output: bool = False
@@ -297,6 +298,8 @@ class ExperimentRunner:
                 env["HITL_OLLAMA_URL"] = config.ollama_url
             if config.reasoner_enabled is not None:
                 env["HITL_REASONER_ENABLED"] = str(config.reasoner_enabled).lower()
+            if config.seed_ontology_path:
+                env["HITL_SEED_ONTOLOGY_PATH"] = config.seed_ontology_path
             if config.temperature:
                 env["HITL_LLM_TEMPERATURE"] = str(config.temperature)
 
@@ -368,11 +371,13 @@ class ExperimentRunner:
         timeout_seconds = self._get_timeout_for_model(model)
 
         try:
-            # Explicitly set W&B environment variables for subprocess
+            # W&B environment variables for subprocess — key read from env, never hardcoded
             env["HITL_WANDB_ENABLED"] = "true"
             env["HITL_WANDB_ENTITY"] = "dsfhswf"
             env["HITL_WANDB_PROJECT"] = "ontology-hitl"
-            env["HITL_WANDB_API_KEY"] = "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"
+            wandb_key = os.environ.get("HITL_WANDB_API_KEY", "")
+            if wandb_key:
+                env["HITL_WANDB_API_KEY"] = wandb_key
 
             cmd = [sys.executable, "scripts/run_full_pipeline.py"]
             if experiment_name:
@@ -481,14 +486,18 @@ class ExperimentRunner:
                 env["HITL_OLLAMA_URL"] = config.ollama_url
             if config.reasoner_enabled is not None:
                 env["HITL_REASONER_ENABLED"] = str(config.reasoner_enabled).lower()
+            if config.seed_ontology_path:
+                env["HITL_SEED_ONTOLOGY_PATH"] = config.seed_ontology_path
             if hasattr(config, 'temperature') and config.temperature:
                 env["HITL_LLM_TEMPERATURE"] = str(config.temperature)
             
-            # Explicitly set W&B environment variables for subprocess
+            # W&B environment variables for subprocess — key read from env, never hardcoded
             env["HITL_WANDB_ENABLED"] = "true"
             env["HITL_WANDB_ENTITY"] = "dsfhswf"
             env["HITL_WANDB_PROJECT"] = "ontology-hitl"
-            env["HITL_WANDB_API_KEY"] = "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"
+            wandb_key = os.environ.get("HITL_WANDB_API_KEY", "")
+            if wandb_key:
+                env["HITL_WANDB_API_KEY"] = wandb_key
 
             # Set up command for LLM-only baseline
             cmd = [

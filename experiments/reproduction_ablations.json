@@ -1,0 +1,146 @@
+[
+  {
+    "name": "repro_wine_small_no_reasoner",
+    "description": "Wine ontology smoke test — llama3.2:3b — Reasoner OFF (pre-gate baseline)",
+    "complexity": "SMOKE",
+    "model": "llama3.2:3b",
+    "reasoner_enabled": false,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/wine/wine_seed.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_wine_small_with_reasoner",
+    "description": "Wine ontology smoke test — llama3.2:3b — Reasoner ON",
+    "complexity": "SMOKE",
+    "model": "llama3.2:3b",
+    "reasoner_enabled": true,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/wine/wine_seed.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_wine_large_no_reasoner",
+    "description": "Wine ontology smoke test — qwen3:8b — Reasoner OFF",
+    "complexity": "SMOKE",
+    "model": "qwen3:8b",
+    "reasoner_enabled": false,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/wine/wine_seed.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_wine_large_with_reasoner",
+    "description": "Wine ontology smoke test — qwen3:8b — Reasoner ON",
+    "complexity": "SMOKE",
+    "model": "qwen3:8b",
+    "reasoner_enabled": true,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/wine/wine_seed.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_owl_time_small_no_reasoner",
+    "description": "OWL-Time 2006→2017 real delta — llama3.2:3b — Reasoner OFF",
+    "complexity": "FORMAL",
+    "model": "llama3.2:3b",
+    "reasoner_enabled": false,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/owl_time/time_2006.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_owl_time_small_with_reasoner",
+    "description": "OWL-Time 2006→2017 real delta — llama3.2:3b — Reasoner ON (temporal axiom stress)",
+    "complexity": "FORMAL",
+    "model": "llama3.2:3b",
+    "reasoner_enabled": true,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/owl_time/time_2006.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_owl_time_large_no_reasoner",
+    "description": "OWL-Time 2006→2017 real delta — qwen3:8b — Reasoner OFF",
+    "complexity": "FORMAL",
+    "model": "qwen3:8b",
+    "reasoner_enabled": false,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/owl_time/time_2006.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_owl_time_large_with_reasoner",
+    "description": "OWL-Time 2006→2017 real delta — qwen3:8b — Reasoner ON",
+    "complexity": "FORMAL",
+    "model": "qwen3:8b",
+    "reasoner_enabled": true,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/owl_time/time_2006.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_prov_o_small_no_reasoner",
+    "description": "PROV-O core→full split — llama3.2:3b — Reasoner OFF",
+    "complexity": "PROVENANCE",
+    "model": "llama3.2:3b",
+    "reasoner_enabled": false,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/prov_o/prov_seed.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_prov_o_small_with_reasoner",
+    "description": "PROV-O core→full split — llama3.2:3b — Reasoner ON",
+    "complexity": "PROVENANCE",
+    "model": "llama3.2:3b",
+    "reasoner_enabled": true,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/prov_o/prov_seed.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_prov_o_large_no_reasoner",
+    "description": "PROV-O core→full split — qwen3:8b — Reasoner OFF",
+    "complexity": "PROVENANCE",
+    "model": "qwen3:8b",
+    "reasoner_enabled": false,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/prov_o/prov_seed.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_prov_o_large_with_reasoner",
+    "description": "PROV-O core→full split — qwen3:8b — Reasoner ON",
+    "complexity": "PROVENANCE",
+    "model": "qwen3:8b",
+    "reasoner_enabled": true,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/prov_o/prov_seed.ttl",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_oeo_small_no_reasoner",
+    "description": "OEO v1.9→v2.0 version delta — llama3.2:3b — Reasoner OFF (pre-gate research baseline)",
+    "complexity": "RESEARCH",
+    "model": "llama3.2:3b",
+    "reasoner_enabled": false,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/oeo/oeo_v1.9.omn",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_oeo_small_with_reasoner",
+    "description": "OEO v1.9→v2.0 version delta — llama3.2:3b — Reasoner ON",
+    "complexity": "RESEARCH",
+    "model": "llama3.2:3b",
+    "reasoner_enabled": true,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/oeo/oeo_v1.9.omn",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_oeo_large_no_reasoner",
+    "description": "OEO v1.9→v2.0 version delta — qwen3:8b — Reasoner OFF",
+    "complexity": "RESEARCH",
+    "model": "qwen3:8b",
+    "reasoner_enabled": false,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/oeo/oeo_v1.9.omn",
+    "strategy_overrides": {}
+  },
+  {
+    "name": "repro_oeo_large_with_reasoner",
+    "description": "OEO v1.9→v2.0 version delta — qwen3:8b — Reasoner ON",
+    "complexity": "RESEARCH",
+    "model": "qwen3:8b",
+    "reasoner_enabled": true,
+    "seed_ontology_path": "data/benchmark_datasets/reproduction/oeo/oeo_v1.9.omn",
+    "strategy_overrides": {}
+  }
+]
