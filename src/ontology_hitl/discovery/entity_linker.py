@@ -199,7 +199,7 @@ class EntityLinker:
             resp = httpx.post(
                 f"{self.settings.ollama_url}/api/embed",
                 json={
-                    "model": self.settings.ollama_model,
+                    "model": self.settings.semantic_embedding_model,
                     "input": text,
                 },
                 timeout=30.0,

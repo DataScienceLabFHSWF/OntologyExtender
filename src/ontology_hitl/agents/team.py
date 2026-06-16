@@ -83,6 +83,17 @@ class AgentTeam:
         self.feedback_learner = feedback_learner
         self.provenance = provenance
 
+        # Web search — shared instance (caches results across phases)
+        from ontology_hitl.tools.web_search import DomainWebSearch
+        self._web_search: DomainWebSearch | None = (
+            DomainWebSearch(
+                max_queries=self.settings.web_search_max_queries,
+                max_chars=self.settings.web_search_max_chars,
+                timeout=self.settings.web_search_timeout,
+            )
+            if self.settings.web_search_enabled else None
+        )
+
         # Performance analytics
         self.performance_metrics: dict[AgentRole, AgentPerformanceMetrics] = {
             AgentRole.ONTOLOGY_ENGINEER: AgentPerformanceMetrics(AgentRole.ONTOLOGY_ENGINEER),
@@ -327,6 +338,32 @@ Return JSON:
         cqs_text: str,
     ) -> str:
         """Build context for Phase 2: Reuse."""
+        # Search LOV for ontologies relevant to the domain terms
+        reuse_catalog = ""
+        if self._web_search is not None:
+            # Use a handful of the most prominent terms as search queries
+            sample_terms = [
+                t.strip()
+                for t in term_preview.replace(",", "\n").splitlines()
+                if t.strip()
+            ][:4]
+            if not sample_terms:
+                sample_terms = [
+                    t.strip()
+                    for t in seed_cls.split(",")
+                    if t.strip()
+                ][:4]
+            if sample_terms:
+                candidates = self._web_search.search_for_reuse_ontologies(sample_terms, max_results=6)
+                reuse_catalog = self._web_search.format_reuse_candidates(candidates)
+                if reuse_catalog:
+                    import structlog
+                    structlog.get_logger(__name__).debug(
+                        "reuse_lov_search", terms=sample_terms, hits=len(candidates)
+                    )
+
+        catalog_section = f"\n\n{reuse_catalog}" if reuse_catalog else ""
+
         return f"""Seed ontology classes and properties:
 Classes: {seed_cls}
 Properties: {seed_props}
@@ -335,7 +372,7 @@ Domain terms extracted (preliminary):
 {term_preview}
 
 Competency questions from Phase 1:
-{cqs_text}
+{cqs_text}{catalog_section}
 
 For each uncovered term cluster, decide: import / extend / reference / skip.
 Justify each decision based on which CQs require those terms.

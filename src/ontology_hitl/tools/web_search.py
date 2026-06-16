@@ -74,6 +74,19 @@ _BLOCKED_EXTENSIONS: frozenset[str] = frozenset([
     ".jsonld", ".ofn", ".omn", ".obo", ".owx",
 ])
 
+# Rule 3 — LOV vocabulary prefixes for reproduction targets.
+# When searching the LOV API for reusable ontologies, these vocab prefixes
+# are suppressed so the agent can't trivially look up its target answer.
+# Keys are lowercase LOV prefixes; values are human-readable labels.
+_BLOCKED_LOV_PREFIXES: frozenset[str] = frozenset([
+    "wine",       # W3C OWL-Guide Wine ontology (SMOKE target)
+    "time",       # OWL-Time (FORMAL target)
+    "owl-time",
+    "prov",       # PROV-O (PROVENANCE target)
+    "prov-o",
+    "oeo",        # Open Energy Ontology (RESEARCH target)
+])
+
 # Rule 2 — W3C Technical Report path prefixes for reproduction targets:
 #   www.w3.org/TR/owl-guide  → Wine OWL 1.0 guide (contains wine.rdf)
 #   www.w3.org/TR/owl-time   → OWL-Time (reproduction target)
@@ -330,6 +343,97 @@ class DomainWebSearch:
         except Exception as exc:
             logger.debug("web_search_ddg_error", concept=concept, error=str(exc))
         return None
+
+    # ── Backend: LOV (Linked Open Vocabularies) ───────────────────────────────
+
+    def search_for_reuse_ontologies(
+        self,
+        domain_terms: list[str],
+        max_results: int = 5,
+    ) -> list[dict]:
+        """Search the LOV registry for ontologies relevant to *domain_terms*.
+
+        Uses the public LOV search API (no key required).  Returns a list of
+        dicts with keys ``prefix``, ``uri``, ``title``, ``description``.
+
+        Reproduction-target vocabularies listed in :data:`_BLOCKED_LOV_PREFIXES`
+        are suppressed so the agent cannot directly retrieve its ground-truth
+        answer from the catalog.
+
+        Parameters
+        ----------
+        domain_terms:
+            A handful of key domain terms to search for (e.g.
+            ``["Wine", "grape variety", "appellation"]``).
+        max_results:
+            Maximum number of ontology candidates to return in total.
+        """
+        import httpx
+
+        seen_prefixes: set[str] = set()
+        results: list[dict] = []
+
+        for term in domain_terms[:self.max_queries]:
+            if len(results) >= max_results:
+                break
+            try:
+                url = "https://lov.linkeddata.es/api/v2/vocab/search"
+                params = {"q": term, "lang": "en", "type": "voc"}
+                resp = httpx.get(
+                    url,
+                    params=params,
+                    timeout=self.timeout,
+                    headers={"User-Agent": "OntologyExtender/1.0"},
+                    follow_redirects=True,
+                )
+                if resp.status_code != 200:
+                    continue
+                data = resp.json()
+                for hit in data.get("results", []):
+                    prefix = (hit.get("prefix") or "").lower()
+                    if not prefix or prefix in seen_prefixes:
+                        continue
+                    if prefix in _BLOCKED_LOV_PREFIXES:
+                        logger.debug("web_search_lov_blocked", prefix=prefix)
+                        continue
+                    seen_prefixes.add(prefix)
+                    title = ""
+                    for t in hit.get("titles", []):
+                        if isinstance(t, dict) and t.get("lang") == "en":
+                            title = t.get("value", "")
+                            break
+                    if not title:
+                        title = prefix
+                    description = ""
+                    for d in hit.get("descriptions", []):
+                        if isinstance(d, dict) and d.get("lang") == "en":
+                            description = d.get("value", "")[:self.max_chars]
+                            break
+                    uri = hit.get("uri", "")
+                    results.append({
+                        "prefix": prefix,
+                        "uri": uri,
+                        "title": title,
+                        "description": description,
+                    })
+                    logger.debug("web_search_lov_hit", prefix=prefix, term=term)
+                    if len(results) >= max_results:
+                        break
+            except Exception as exc:
+                logger.debug("web_search_lov_error", term=term, error=str(exc))
+
+        return results
+
+    @staticmethod
+    def format_reuse_candidates(candidates: list[dict]) -> str:
+        """Format LOV candidates as a compact context block for the REUSE phase prompt."""
+        if not candidates:
+            return ""
+        lines = ["=== Existing Ontologies (LOV catalog, may be reusable) ==="]
+        for c in candidates:
+            desc = f" — {c['description']}" if c.get("description") else ""
+            lines.append(f"• {c['title']} ({c['prefix']}) <{c['uri']}>{desc}")
+        return "\n".join(lines)
 
 
 # Sentinel for cache miss (distinct from cached None)

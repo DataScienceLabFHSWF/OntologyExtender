@@ -160,6 +160,18 @@ Return JSON:
   "confidence": 0.0-1.0
 }}"""
 
+# Extra-context block appended to the base prompt when domain-specific
+# enrichment is available (legal docs, graph evidence, web snippets, etc.).
+# Kept separate so the base prompt is domain-agnostic.
+_EXTRA_CONTEXT_BLOCK = """\
+
+=== Additional Domain Context ===
+{extra_context}
+
+Use the above context as supplementary evidence when assessing the proposal.
+Prefer primary domain documents over supplementary context if they conflict."""
+
+# Legacy alias — LawGraph use-case still uses the legal prompt variant
 _REVIEW_PROMPT_LEGAL = """\
 The Ontology Engineer has proposed the following for Phase {phase}:
 
@@ -429,28 +441,28 @@ class DomainExpertAgent(BaseAgent):
                         for req in compliance["requirements"][:3]:
                             legal_context += f"- {req.get('requirement', '')} (severity: {req.get('severity', 'medium')})\n"
 
+        # Assemble extra context from any available enrichment sources:
+        # legal docs, graph evidence, web search snippets.
+        # The base prompt is domain-agnostic; extra_context is pluggable.
+        extra_parts: list[str] = []
         if self._has_legal:
-            legal_enrichment = ""
-            if legal_docs or legal_context:
-                legal_enrichment = legal_docs[:2000] + legal_context[:1000]
-            else:
-                legal_enrichment = "(No legal sources found.)"
-
-            user_prompt = _REVIEW_PROMPT_LEGAL.format(
-                phase=phase.value,
-                proposal=json.dumps(proposal, indent=2, default=str),
-                documents=self.document_context[:4000],
-                legal_documents=legal_enrichment,
-            )
-        else:
-            user_prompt = _REVIEW_PROMPT_BASE.format(
-                phase=phase.value,
-                proposal=json.dumps(proposal, indent=2, default=str),
-                documents=self.document_context[:4000],
-            )
-
+            legal_enrichment = (legal_docs[:2000] + legal_context[:1000]) if (legal_docs or legal_context) else "(No legal sources found.)"
+            extra_parts.append(legal_enrichment)
+        elif legal_context:
+            # graph_retriever or law_graph context even without law_collection
+            extra_parts.append(legal_context[:1500])
         if web_evidence:
-            user_prompt += f"\n\n{web_evidence}"
+            extra_parts.append(web_evidence)
+
+        user_prompt = _REVIEW_PROMPT_BASE.format(
+            phase=phase.value,
+            proposal=json.dumps(proposal, indent=2, default=str),
+            documents=self.document_context[:4000],
+        )
+        if extra_parts:
+            user_prompt += _EXTRA_CONTEXT_BLOCK.format(
+                extra_context="\n\n".join(extra_parts)
+            )
 
         response = self.call_llm(user_prompt)
 

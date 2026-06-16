@@ -108,7 +108,9 @@ class Settings(BaseSettings):
     provenance_enabled: bool = True
 
     # Legal enrichment (LawGraph / lawgraph Qdrant collection)
-    legal_enrichment_enabled: bool = True
+    # OFF by default — only enable for legal/regulatory use cases.
+    # Set HITL_LEGAL_ENRICHMENT_ENABLED=true in .env or environment.
+    legal_enrichment_enabled: bool = False
 
     # Reasoner agent (logical consistency checking during debate)
     reasoner_enabled: bool = True
