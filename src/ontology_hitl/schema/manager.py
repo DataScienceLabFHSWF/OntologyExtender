@@ -27,7 +27,7 @@ import rdflib
 import structlog
 
 from ontology_hitl.core.exceptions import SchemaUpdateError
-from ontology_hitl.core.models import ProposedClass
+from ontology_hitl.core.models import ProposedClass, PropertyDef, RelationDef
 
 logger = structlog.get_logger(__name__)
 
@@ -115,6 +115,31 @@ class OntologySchemaManager:
             pid = prop.get("id", "")
             dec = decision_map.get(pid, {})
             if dec.get("decision") == "accept":
+                # ✅ NEW: Extract suggested_properties from Phase 5
+                properties: list[PropertyDef] = []
+                for p in prop.get("suggested_properties", []):
+                    properties.append(PropertyDef(
+                        name=p.get("name", ""),
+                        description=p.get("description", ""),
+                        datatype=p.get("datatype"),  # None for object properties
+                        range_class=p.get("range_class"),
+                        inverse_name=p.get("inverse_name"),
+                        required=p.get("required", False),
+                        max_count=p.get("max_count"),
+                    ))
+                
+                # ✅ NEW: Extract suggested_relations from Phase 5
+                relations: list[RelationDef] = []
+                for r in prop.get("suggested_relations", []):
+                    relations.append(RelationDef(
+                        name=r.get("name", ""),
+                        domain=r.get("domain", ""),
+                        range=r.get("range", ""),
+                        description=r.get("description", ""),
+                        inverse_name=r.get("inverse_name"),
+                        cardinality=r.get("cardinality", "0..*"),
+                    ))
+                
                 accepted.append(
                     ProposedClass(
                         id=pid,
@@ -125,6 +150,8 @@ class OntologySchemaManager:
                         examples=prop.get("examples", []),
                         frequency=prop.get("frequency", 0),
                         confidence=prop.get("confidence", 0.0),
+                        suggested_properties=properties,  # ✅ NEW
+                        suggested_relations=relations,    # ✅ NEW
                     )
                 )
 
@@ -135,7 +162,7 @@ class OntologySchemaManager:
     # ── OWL export ───────────────────────────────────────────
 
     def export_owl(self, output_path: Path | str) -> None:
-        """Export extended ontology as OWL/XML."""
+        """Export extended ontology as OWL/XML with property restrictions."""
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -145,7 +172,7 @@ class OntologySchemaManager:
             classes=len(self._accepted_classes),
         )
         try:
-            from rdflib import Graph, Namespace, Literal, URIRef, RDF, RDFS, OWL, XSD
+            from rdflib import Graph, Namespace, Literal, URIRef, RDF, RDFS, OWL, XSD, BNode
         except ImportError as e:
             logger.error("rdflib_import_failed", error=str(e))
             raise SchemaUpdateError("rdflib is required for OWL export")
@@ -158,6 +185,7 @@ class OntologySchemaManager:
         ontology_base = self._infer_ontology_base(g)
         EX = Namespace(ontology_base)
         g.bind("ex", EX)
+        
         for cls in self._accepted_classes:
             class_uri = EX[cls.label]
             g.add((class_uri, RDF.type, OWL.Class))
@@ -165,14 +193,46 @@ class OntologySchemaManager:
             g.add((class_uri, RDFS.comment, Literal(cls.definition)))
             parent = URIRef(cls.parent_uri) if cls.parent_uri else OWL.Thing
             g.add((class_uri, RDFS.subClassOf, parent))
+            
+            # ✅ NEW: Process properties with cardinality constraints
             for prop in getattr(cls, 'suggested_properties', []):
                 prop_uri = EX[prop.name]
-                g.add((prop_uri, RDF.type, OWL.DatatypeProperty))
-                g.add((prop_uri, RDFS.domain, class_uri))
-                xsd_uri = URIRef(_XSD_TYPE_MAP.get(prop.datatype, _XSD_TYPE_MAP["xsd:string"]))
-                g.add((prop_uri, RDFS.range, xsd_uri))
                 g.add((prop_uri, RDFS.label, Literal(prop.name)))
                 g.add((prop_uri, RDFS.comment, Literal(prop.description)))
+                
+                if prop.is_object_property:
+                    # ObjectProperty: has range_class
+                    g.add((prop_uri, RDF.type, OWL.ObjectProperty))
+                    g.add((prop_uri, RDFS.domain, class_uri))
+                    # Range is a class (could be external or in this ontology)
+                    if prop.range_class:
+                        range_uri = EX[prop.range_class]
+                    else:
+                        range_uri = OWL.Thing  # Fallback
+                    g.add((prop_uri, RDFS.range, range_uri))
+                    
+                    # Add inverse property if specified
+                    if prop.inverse_name:
+                        inv_uri = EX[prop.inverse_name]
+                        g.add((prop_uri, OWL.inverseOf, inv_uri))
+                else:
+                    # DatatypeProperty: has datatype range
+                    g.add((prop_uri, RDF.type, OWL.DatatypeProperty))
+                    g.add((prop_uri, RDFS.domain, class_uri))
+                    datatype_str = prop.datatype or "xsd:string"
+                    xsd_uri = URIRef(_XSD_TYPE_MAP.get(datatype_str, _XSD_TYPE_MAP["xsd:string"]))
+                    g.add((prop_uri, RDFS.range, xsd_uri))
+                
+                # ✅ NEW: Add cardinality restriction if max_count is specified
+                if hasattr(prop, 'max_count') and prop.max_count is not None:
+                    restr_node = BNode()
+                    g.add((restr_node, RDF.type, OWL.Restriction))
+                    g.add((restr_node, OWL.onProperty, prop_uri))
+                    g.add((restr_node, OWL.maxCardinality, 
+                          Literal(prop.max_count, datatype=XSD.nonNegativeInteger)))
+                    g.add((class_uri, RDFS.subClassOf, restr_node))
+            
+            # Process relations
             for rel in getattr(cls, 'suggested_relations', []):
                 rel_uri = EX[rel.name]
                 g.add((rel_uri, RDF.type, OWL.ObjectProperty))
@@ -180,9 +240,36 @@ class OntologySchemaManager:
                 g.add((rel_uri, RDFS.range, EX[rel.range]))
                 g.add((rel_uri, RDFS.label, Literal(rel.name)))
                 g.add((rel_uri, RDFS.comment, Literal(rel.description)))
+                
+                # ✅ NEW: Parse cardinality from RelationDef
+                if hasattr(rel, 'cardinality') and rel.cardinality:
+                    # Parse cardinality like "0..*", "1..1", etc.
+                    try:
+                        min_c, max_c = rel.cardinality.split("..")
+                        min_card = int(min_c) if min_c.isdigit() else None
+                        max_card = None if max_c == "*" else (int(max_c) if max_c.isdigit() else None)
+                        
+                        if min_card is not None or max_card is not None:
+                            restr_node = BNode()
+                            g.add((restr_node, RDF.type, OWL.Restriction))
+                            g.add((restr_node, OWL.onProperty, rel_uri))
+                            
+                            if min_card is not None:
+                                g.add((restr_node, OWL.minCardinality,
+                                      Literal(min_card, datatype=XSD.nonNegativeInteger)))
+                            if max_card is not None:
+                                g.add((restr_node, OWL.maxCardinality,
+                                      Literal(max_card, datatype=XSD.nonNegativeInteger)))
+                            
+                            g.add((class_uri, RDFS.subClassOf, restr_node))
+                    except (ValueError, AttributeError):
+                        # Skip if cardinality parsing fails
+                        pass
+                
                 if getattr(rel, 'inverse_name', None):
                     inv_uri = EX[rel.inverse_name]
                     g.add((rel_uri, OWL.inverseOf, inv_uri))
+        
         g.serialize(str(output_path), format="xml")
         logger.info("owl_exported", path=str(output_path), classes=len(self._accepted_classes))
 

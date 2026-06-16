@@ -190,10 +190,17 @@ class PropertyDef:
     """Proposed property for a class."""
 
     name: str
-    datatype: str  # "xsd:string", "xsd:integer", etc.
     description: str
+    datatype: str | None = None  # "xsd:string", etc.; None for object properties
+    range_class: str | None = None  # For object properties: target class name
+    inverse_name: str | None = None  # For object properties: inverse property name
     required: bool = False
     max_count: int | None = None
+    
+    @property
+    def is_object_property(self) -> bool:
+        """True if this is an ObjectProperty (has range_class), False if DatatypeProperty."""
+        return self.range_class is not None
 
 
 @dataclass
