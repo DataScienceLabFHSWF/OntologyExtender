@@ -242,10 +242,13 @@ Full derivation: [docs/PHILOSOPHY.md](docs/PHILOSOPHY.md)
 | `llama3.2:3b` | 3.2B | Small non-reasoning baseline for benchmarks | No — pull manually |
 | `nemotron-3-nano` | ~8B | Medium model for experiments | No — pull manually |
 | `qwen3-next` | 79.7B | Large reasoning model for benchmarks | No — pull manually |
+| `gemma4:e2b` / `e4b` / `31b` | 2B / 4B / 31B | Gemma 4 size-tier experiments (on the shared `:18134` container) | Pre-pulled on `ollama-kgbuilder` |
 | `qwen3-embedding` | — | Semantic matching fallback | No — pull if needed |
 
 All served locally via Ollama. The standalone container is `ontology-ollama` (port 11437);
-inside KGPlatform the instance is `ollama-ontology` (port 18135).
+inside KGPlatform the instance is `ollama-ontology` (port 18135). The Gemma 4
+and Nemotron models live on the shared `ollama-kgbuilder` container
+(`http://localhost:18134`) — point at it with `HITL_OLLAMA_URL=http://localhost:18134`.
 
 ### Pulling Additional Benchmark Models
 
@@ -292,6 +295,11 @@ python scripts/run_experiments.py \
     --experiments experiments/comprehensive_experiments.json \
     --parallel --output results/comprehensive_results.json
 
+# 4b. Gemma 4 size-tier experiments (uses the shared :18134 container)
+python scripts/run_experiments.py \
+    --experiments experiments/gemma4_experiments.json \
+    --parallel --output results/gemma4_results.json
+
 # 5. OntoURL benchmark (15 tasks, all strategies)
 python scripts/run_ontourl_benchmark.py --model llama3.2:3b
 bash scripts/run_lc3_comparison.sh          # Vanilla vs HCOME comparison
@@ -306,8 +314,14 @@ python scripts/llm_only_baseline.py --model llama3.2:3b --strategy naive
 |-------------|--------|-------------|
 | `experiments/small_model_experiments.json` | llama3.2:3b | 5 (baseline + debate strategies) |
 | `experiments/large_model_experiments.json` | qwen3-next | 5 (baseline + debate strategies) |
+| `experiments/gemma4_experiments.json` | gemma4:e2b/e4b/31b | 10 (baseline + strategies × 3 sizes) |
 | `experiments/llm_only_experiments.json` | all 3 | 12 (4 strategies × 3 models) |
 | `experiments/comprehensive_experiments.json` | all 3 | 24 (debate + LLM-only × 3 sizes) |
+
+Each experiment may set `ollama_url` (point at a specific Ollama container,
+e.g. the shared gemma4 host on `:18134`) and `reasoner_enabled` (toggle the
+logical Reasoner on/off for clean before/after ablations). The gemma4 configs
+use `"ollama_url": "http://localhost:18134"`.
 
 Details: [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md)
 

@@ -27,6 +27,8 @@ class ExperimentConfig(BaseModel):
 
     name: str
     model: str = ""  # Model name for grouping parallel experiments
+    ollama_url: str = ""  # Override Ollama endpoint (e.g. gemma4 container on :18134)
+    reasoner_enabled: Optional[bool] = None  # None = use config default; toggle Reasoner ablation
     strategy_overrides: Dict[str, str]  # phase -> strategy mapping
     description: str = ""
     structured_output: bool = False
@@ -291,6 +293,10 @@ class ExperimentRunner:
             env["ONTOLOGY_EXPERIMENT_NAME"] = experiment_name
             if config.model:
                 env["HITL_OLLAMA_MODEL"] = config.model
+            if config.ollama_url:
+                env["HITL_OLLAMA_URL"] = config.ollama_url
+            if config.reasoner_enabled is not None:
+                env["HITL_REASONER_ENABLED"] = str(config.reasoner_enabled).lower()
             if config.temperature:
                 env["HITL_LLM_TEMPERATURE"] = str(config.temperature)
 
@@ -471,6 +477,10 @@ class ExperimentRunner:
             env["ONTOLOGY_EXPERIMENT_NAME"] = config.name
             if config.model:
                 env["HITL_OLLAMA_MODEL"] = config.model
+            if config.ollama_url:
+                env["HITL_OLLAMA_URL"] = config.ollama_url
+            if config.reasoner_enabled is not None:
+                env["HITL_REASONER_ENABLED"] = str(config.reasoner_enabled).lower()
             if hasattr(config, 'temperature') and config.temperature:
                 env["HITL_LLM_TEMPERATURE"] = str(config.temperature)
             

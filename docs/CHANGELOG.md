@@ -43,6 +43,41 @@ Notes / follow-ups
   baseline) and `=true` (new behaviour), or add a `reasoner_enabled` field to
   the experiment JSON.
 
+## 2026-06-16 — Gemma 4 experiments + experiment-schema fields
+
+Summary
+- Added `experiments/gemma4_experiments.json`: 10 configs across Gemma 4
+  size tiers (`gemma4:e2b`, `gemma4:e4b`, `gemma4:31b`) mirroring the
+  baseline/dialectical/socratic/mixed strategy set. They target the shared
+  `ollama-kgbuilder` container (`http://localhost:18134`), which is where the
+  gemma4/nemotron models are pre-pulled.
+- Extended the experiment schema (`ExperimentConfig` in
+  `scripts/run_experiments.py` and `ModelExperimentConfig` in
+  `scripts/run_model_comparison.py`) with two optional fields:
+  - `ollama_url` — per-experiment Ollama endpoint override
+    (sets `HITL_OLLAMA_URL`); lets a config pick a specific container/model host.
+  - `reasoner_enabled` — per-experiment Reasoner toggle
+    (sets `HITL_REASONER_ENABLED`); makes the Reasoner on/off ablation a
+    first-class config option instead of a manual env var.
+- Documented the gemma4 container and the override in `.env.example`,
+  `README.md` (Models + Experiments) and below.
+
+Key files changed
+- `experiments/gemma4_experiments.json` — new
+- `scripts/run_experiments.py` — `ollama_url`, `reasoner_enabled` wiring
+- `scripts/run_model_comparison.py` — same fields in both env blocks
+- `.env.example`, `README.md` — gemma4 + override docs
+
+Container map (observed on this host)
+- `ollama-ontology` :18135 — qwen3:8b, qwen3-embedding (repo default)
+- `ollama-kgbuilder` :18134 — gemma4:31b/e4b/e2b, nemotron-3-nano:30b/4b,
+  qwen3:8b, qwen3-embedding
+
+Security note
+- `scripts/run_experiments.py` contains a hardcoded W&B API key
+  (`HITL_WANDB_API_KEY = "wandb_v1_..."`). This is a committed secret that
+  should be rotated and moved to an environment variable.
+
 ## 2026-02-16 — SAR reproduction, HITL metrics, tests, experiments
 
 Summary

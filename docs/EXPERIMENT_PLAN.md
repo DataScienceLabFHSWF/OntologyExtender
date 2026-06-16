@@ -31,10 +31,21 @@ may be smaller than expected if debate strategies are effective scaffolding.
 |-------|------|-----------|-----------|---------|
 | `llama3.2:3b` | 2.0 GB | 3.2B | No | 300s |
 | `qwen3-next:latest` | 50.4 GB | 79.7B | Yes (chain-of-thought) | 600s |
+| `gemma4:e2b` | ~2 GB | 2B | No | 300s |
+| `gemma4:e4b` | ~4 GB | 4B | No | 300s |
+| `gemma4:31b` | ~19 GB | 31B | Partial | 600s |
 
-Both models are served via the same Ollama instance at `localhost:18135`.
-Model switching happens per-experiment via the `HITL_OLLAMA_MODEL`
-environment variable — no restart required.
+`llama3.2:3b` and `qwen3-next` are served from `localhost:18135`
+(`ollama-ontology`). The Gemma 4 models live on the shared
+`ollama-kgbuilder` container at `localhost:18134`; select it per-experiment
+with the `ollama_url` config field (or `HITL_OLLAMA_URL`). Model switching
+happens per-experiment via `HITL_OLLAMA_MODEL` — no restart required.
+
+Two optional per-experiment config fields control the backend and ablation:
+- `ollama_url` — override the Ollama endpoint (→ `HITL_OLLAMA_URL`).
+- `reasoner_enabled` — toggle the logical Reasoner gate (→
+  `HITL_REASONER_ENABLED`); `true`/`false` for clean Reasoner ablations,
+  omit to use the config default (`true`).
 
 ### Debate Strategies Under Test
 
@@ -59,6 +70,10 @@ environment variable — no restart required.
 | 8 | `large_mixed` | qwen3-next | per-phase optimal | RQ2, RQ3 |
 
 Total: **8 experiments** (2 models × 4 strategies)
+
+The Gemma 4 tier (`experiments/gemma4_experiments.json`) adds 10 configs
+(`gemma4:e2b/e4b/31b` × baseline/dialectical/socratic/mixed) on the
+`:18134` container, for a model-size sweep alongside the small/large set.
 
 ---
 

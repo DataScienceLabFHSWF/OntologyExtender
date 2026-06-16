@@ -1,0 +1,118 @@
+[
+  {
+    "name": "gemma4_e2b_baseline",
+    "model": "gemma4:e2b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Baseline with Gemma 4 e2b (smallest/fastest tier) on the kgbuilder Ollama container (:18134). No debate strategy overrides."
+  },
+  {
+    "name": "gemma4_e2b_mixed",
+    "model": "gemma4:e2b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "structured_output": true,
+    "description": "Best-of-each per-phase strategy with Gemma 4 e2b. Tests whether per-phase strategy optimization compensates for the smallest model."
+  },
+  {
+    "name": "gemma4_e4b_baseline",
+    "model": "gemma4:e4b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Baseline with Gemma 4 e4b (mid tier) on the kgbuilder Ollama container (:18134). No debate strategy overrides."
+  },
+  {
+    "name": "gemma4_e4b_dialectical",
+    "model": "gemma4:e4b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "structured_output": true,
+    "description": "Dialectical debate for structural phases with Gemma 4 e4b. Tests whether structured disagreement helps a mid-tier model."
+  },
+  {
+    "name": "gemma4_e4b_socratic",
+    "model": "gemma4:e4b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "structured_output": true,
+    "description": "Socratic questioning for conceptual phases with Gemma 4 e4b. Tests whether question-driven probing helps a mid-tier model."
+  },
+  {
+    "name": "gemma4_e4b_mixed",
+    "model": "gemma4:e4b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "structured_output": true,
+    "description": "Best-of-each per-phase strategy with Gemma 4 e4b. Tests whether per-phase strategy optimization helps a mid-tier model."
+  },
+  {
+    "name": "gemma4_31b_baseline",
+    "model": "gemma4:31b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {},
+    "structured_output": true,
+    "description": "Baseline with Gemma 4 31b (large reasoning tier) on the kgbuilder Ollama container (:18134). No debate strategy overrides."
+  },
+  {
+    "name": "gemma4_31b_dialectical",
+    "model": "gemma4:31b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {
+      "hierarchy": "dialectical",
+      "properties": "dialectical"
+    },
+    "structured_output": true,
+    "description": "Dialectical debate for structural phases with Gemma 4 31b. Tests whether a strong model still benefits from structured disagreement."
+  },
+  {
+    "name": "gemma4_31b_socratic",
+    "model": "gemma4:31b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "terms": "socratic"
+    },
+    "structured_output": true,
+    "description": "Socratic questioning for conceptual phases with Gemma 4 31b."
+  },
+  {
+    "name": "gemma4_31b_mixed",
+    "model": "gemma4:31b",
+    "ollama_url": "http://localhost:18134",
+    "strategy_overrides": {
+      "scope": "socratic",
+      "reuse": "consensus_building",
+      "terms": "socratic",
+      "hierarchy": "dialectical",
+      "properties": "dialectical",
+      "facets": "delphi",
+      "instances": "abductive"
+    },
+    "structured_output": true,
+    "description": "Best-of-each per-phase strategy with Gemma 4 31b (large reasoning tier)."
+  }
+]

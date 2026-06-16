@@ -117,6 +117,17 @@ All agents extend `BaseAgent`, which provides:
 - `call_llm_multi_turn(system_prompt, messages)` → str — for multi-round
   review context
 
+> **Model backend / Hermes note.** `BaseAgent.call_llm` talks to any
+> OpenAI-compatible Ollama endpoint, so swapping the underlying model
+> (e.g. a Nous Hermes tool-calling model, Gemma 4, or Nemotron) is a config
+> change only (`HITL_OLLAMA_URL` + `HITL_OLLAMA_MODEL`) — no code changes.
+> The `hermes-agent` project is a **standalone CLI/TUI assistant
+> application**, not an importable orchestration library, so it does *not*
+> replace `AgentTeam`. The realistic "Hermes" integration here is running
+> Hermes *models* through this existing backend and benchmarking them as
+> another model tier — the deterministic Reasoner gate, seed protection and
+> grounding guarantees stay intact.
+
 ### AgentMessage
 
 ```python
